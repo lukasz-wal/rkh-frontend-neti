@@ -1,0 +1,1 @@
+{"version":3,"file":"ICommandHandler.d.ts","sourceRoot":"","sources":["../../src/interfaces/ICommandHandler.ts"],"names":[],"mappings":"AAAA,OAAO,EAAE,QAAQ,EAAE,MAAM,YAAY,CAAC;AAEtC,MAAM,WAAW,eAAe,CAAC,QAAQ,SAAS,QAAQ,GAAG,GAAG;IAC9D,eAAe,EAAE,MAAM,CAAC;IACxB,MAAM,CAAC,OAAO,EAAE,QAAQ,GAAG,GAAG,CAAC;CAChC"}

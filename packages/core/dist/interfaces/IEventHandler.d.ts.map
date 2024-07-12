@@ -1,0 +1,1 @@
+{"version":3,"file":"IEventHandler.d.ts","sourceRoot":"","sources":["../../src/interfaces/IEventHandler.ts"],"names":[],"mappings":"AAAA,OAAO,EAAE,MAAM,EAAE,MAAM,UAAU,CAAC;AAElC,MAAM,WAAW,aAAa,CAAC,CAAC,SAAS,MAAM;IAC7C,KAAK,EAAE,MAAM,CAAC;IACd,MAAM,CAAC,KAAK,EAAE,CAAC,GAAG,IAAI,CAAC;CACxB"}

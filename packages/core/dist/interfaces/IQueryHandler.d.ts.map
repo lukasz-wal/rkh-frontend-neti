@@ -1,0 +1,1 @@
+{"version":3,"file":"IQueryHandler.d.ts","sourceRoot":"","sources":["../../src/interfaces/IQueryHandler.ts"],"names":[],"mappings":"AAAA,OAAO,EAAE,MAAM,EAAE,MAAM,UAAU,CAAC;AAElC,MAAM,WAAW,aAAa,CAAC,CAAC,SAAS,MAAM,GAAG,GAAG,EAAE,CAAC,GAAG,GAAG;IAC5D,aAAa,EAAE,MAAM,CAAC;IACtB,OAAO,CAAC,KAAK,EAAE,CAAC,GAAG,OAAO,CAAC,CAAC,CAAC,CAAC;CAC/B"}

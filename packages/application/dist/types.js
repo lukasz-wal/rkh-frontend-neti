@@ -1,0 +1,17 @@
+export const TYPES = {
+    ApiServer: Symbol('ApiServer'),
+    AirtableClient: Symbol('AirtableClient'),
+    AirtableClientConfig: Symbol('AirtableClientConfig'),
+    CommandBus: Symbol('CommandBus'),
+    CommandHandler: Symbol('CommandHandler'),
+    DatacapAllocatorEventStore: Symbol('DatacapAllocatorEventStore'),
+    DatacapAllocatorRepository: Symbol('DatacapAllocatorRepository'),
+    Db: Symbol('Db'),
+    Event: Symbol('Event'),
+    EventBus: Symbol('EventBus'),
+    GithubClient: Symbol('GithubClient'),
+    GithubClientConfig: Symbol('GithubClientConfig'),
+    QueryBus: Symbol('QueryBus'),
+    QueryHandler: Symbol('QueryHandler'),
+    RabbitMQConfig: Symbol('RabbitMQConfig'),
+};

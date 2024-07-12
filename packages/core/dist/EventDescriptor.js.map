@@ -1,0 +1,1 @@
+{"version":3,"file":"EventDescriptor.js","sourceRoot":"","sources":["../src/EventDescriptor.ts"],"names":[],"mappings":";;;AAEA;IACE,yBACkB,aAAqB,EACrB,aAAqB,EACrB,SAAiB,EACjB,OAAqB,EACrB,OAAe;QAJf,kBAAa,GAAb,aAAa,CAAQ;QACrB,kBAAa,GAAb,aAAa,CAAQ;QACrB,cAAS,GAAT,SAAS,CAAQ;QACjB,YAAO,GAAP,OAAO,CAAc;QACrB,YAAO,GAAP,OAAO,CAAQ;IAC9B,CAAC;IACN,sBAAC;AAAD,CAAC,AARD,IAQC;AARY,0CAAe"}

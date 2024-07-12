@@ -1,0 +1,23 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "target": "ESNext",
+    "module": "ESNext",
+    "lib": ["ESNext", "dom"],
+    "composite": true,
+    "rootDir": "src",
+    "baseUrl": "src",
+    "outDir": "dist",
+    "paths": {
+      "@src/*": ["*"]
+    },
+    "types": ["reflect-metadata"]
+  },
+  "tsc-alias": {
+    "resolveFullPaths": true,
+    "verbose": false
+  },
+  "include": ["src"],
+  "exclude": ["node_modules"],
+  "references": [{ "path": "../core" }],
+}

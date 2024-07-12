@@ -1,0 +1,16 @@
+{
+  "name": "filecoin-plus",
+  "version": "1.0.0",
+  "private": true,
+  "repository": "git@github.com:threesigmaxyz/filecoin-plus.git",
+  "author": "Afonso Oliveira <afonso.oliveira@threesigma.xyz>",
+  "license": "MIT",
+  "workspaces": [
+    "packages/application",
+    "packages/core"
+  ],
+  "scripts": {
+    "application": "npx -w @filecoin-plus/application",
+    "core": "npx -w @filecoin-plus/core"
+  }
+}

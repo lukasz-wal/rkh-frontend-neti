@@ -1,0 +1,70 @@
+version: "3.9"
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        BUILD_CONTEXT: application
+    ports:
+      - 3000:3000
+    environment:
+      - NODE_ENV=dev
+      - API_PORT=3000
+      - MONGODB_URI=mongodb://mongodb:27017/
+      - RABBITMQ_URL=rabbitmq:5672
+      - RABBITMQ_USERNAME=admin
+      - RABBITMQ_PASSWORD=admin
+      - RABBITMQ_EXCHANGE_NAME=filecoin-plus
+      - RABBITMQ_EXCHANGE_TYPE=topic
+      - RABBITMQ_QUEUE_NAME=allocator
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+
+  mongodb:
+    container_name: filecoin-plus-mongodb
+    image: mongo:latest
+    restart: unless-stopped
+    ports:
+      - 27017:27017
+    volumes:
+      - mongo_data:/data/db
+
+  rabbitmq:
+    container_name: filecoin-plus-rabbitmq
+    image: rabbitmq:3-management
+    restart: unless-stopped
+    ports:
+      - 5672:5672 # AMQP protocol port
+      - 15672:15672 # Management UI port
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    environment:
+      - RABBITMQ_DEFAULT_USER=admin
+      - RABBITMQ_DEFAULT_PASS=admin
+    healthcheck:
+      test: rabbitmq-diagnostics -q ping
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 10s
+
+  toggle:
+    image: wiremock/wiremock:3.8.0
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./.docker/wiremock:/home/wiremock
+    entrypoint:
+      [
+        "/docker-entrypoint.sh",
+        "--global-response-templating",
+        "--local-response-templating",
+        "--verbose",
+      ]
+
+volumes:
+  mongo_data:
+  rabbitmq_data:

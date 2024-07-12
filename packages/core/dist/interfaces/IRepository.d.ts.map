@@ -1,0 +1,1 @@
+{"version":3,"file":"IRepository.d.ts","sourceRoot":"","sources":["../../src/interfaces/IRepository.ts"],"names":[],"mappings":"AAAA,MAAM,WAAW,WAAW,CAAC,CAAC;IAC5B,IAAI,CAAC,aAAa,EAAE,CAAC,EAAE,eAAe,EAAE,MAAM,GAAG,IAAI,CAAC;IACtD,OAAO,CAAC,IAAI,EAAE,MAAM,GAAG,OAAO,CAAC,CAAC,CAAC,CAAC;CACnC"}
