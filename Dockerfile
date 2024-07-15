@@ -1,4 +1,4 @@
-FROM node:22
+FROM node:22-alpine3.19
 
 # Define arguments for the build context and run command
 ARG BUILD_CONTEXT

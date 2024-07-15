@@ -28,6 +28,7 @@ import {
   AirtableClientConfig,
   IAirtableClient,
 } from "./clients/airtable";
+import { ILotusClient, LotusClient, LotusClientConfig } from "./clients/lotus";
 
 export const infrastructureModule = new AsyncContainerModule(
   async (bind: interfaces.Bind) => {
@@ -69,6 +70,16 @@ export const infrastructureModule = new AsyncContainerModule(
       airtableClientConfig
     );
     bind<IAirtableClient>(TYPES.AirtableClient).to(AirtableClient);
+
+    // Lotus client configuration
+    const lotusClientConfig: LotusClientConfig = {
+      rpcUrl: config.LOTUS_RPC_URL,
+      authToken: config.LOTUS_AUTH_TOKEN,
+    };
+    bind<LotusClientConfig>(TYPES.LotusClientConfig).toConstantValue(
+      lotusClientConfig
+    );
+    bind<ILotusClient>(TYPES.LotusClient).to(LotusClient);
 
     // Bindings
     bind<IDatacapAllocatorEventStore>(TYPES.DatacapAllocatorEventStore)

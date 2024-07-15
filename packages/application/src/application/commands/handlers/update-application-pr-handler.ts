@@ -24,6 +24,7 @@ export class UpdateApplicationPullRequestCommandHandler
   ) {}
 
   async handle(command: UpdateApplicationPullRequestCommand): Promise<void> {
+    console.log(command);
     // Get the allocator from the repository
     const allocator = await this._repository.getById(command.allocatorId);
     if (!allocator) {
@@ -31,16 +32,16 @@ export class UpdateApplicationPullRequestCommandHandler
     }
 
     if (!allocator.applicationPullRequest) {
+      console.log("Creating new pull request");
       // Create a pull request for the allocator
       const pullRequest = await this.createPullRequest(allocator);
 
       // Update the allocator with the pull request information
-      allocator.createApplicationPullRequest(
-        pullRequest.number,
-        pullRequest.html_url
-      );
+      allocator.completeSubmission(pullRequest.number, pullRequest.url);
       this._repository.save(allocator, allocator.version);
     } else {
+      console.log("Updating existing pull request");
+      console.log(allocator.status);
       await this.updatePullRequestMessage(allocator);
     }
   }
@@ -50,6 +51,7 @@ export class UpdateApplicationPullRequestCommandHandler
   ): Promise<PullRequest> {
     // Create a new branch for the allocator
     const branchName = `filecoin-plus-bot/allocator/${allocator.guid}`;
+    console.log(`Creating branch ${branchName}`);
     await this._githubClient.createBranch(
       "asynctomatic",
       "Allocator-Registry",
@@ -61,7 +63,7 @@ export class UpdateApplicationPullRequestCommandHandler
     const pullRequest = await this._githubClient.createPullRequest(
       "asynctomatic",
       "Allocator-Registry",
-      `Add new allocator: ${allocator.firstname} ${allocator.lastname}`,
+      `Add new allocator: ${allocator.firstname}`,
       this.generateCommentMessage(allocator),
       branchName,
       "main",
@@ -92,7 +94,7 @@ export class UpdateApplicationPullRequestCommandHandler
       "asynctomatic",
       "Allocator-Registry",
       allocator.applicationPullRequest.prNumber,
-      `Add new allocator: ${allocator.firstname} ${allocator.lastname}`,
+      `Add new allocator: ${allocator.firstname}`,
       this.generateCommentMessage(allocator)
     );
   }
@@ -135,7 +137,8 @@ ${statusEmoji[allocator.status.phaseStatus] || "❓"} \`${
     phaseStatus: DatacapAllocatorPhaseStatus
   ): string {
     switch (phaseStatus) {
-      case DatacapAllocatorPhaseStatus.NOT_STARTED:
+      case DatacapAllocatorPhaseStatus.NOT_STARTED ||
+        DatacapAllocatorPhaseStatus.IN_PROGRESS:
         return `
 ### Next Steps
 1. Complete the KYC process at [our secure portal](https://kyc.filecoinplus.io)
@@ -145,6 +148,13 @@ ${statusEmoji[allocator.status.phaseStatus] || "❓"} \`${
 `;
 
       case DatacapAllocatorPhaseStatus.IN_PROGRESS:
+        return `
+### Next Steps
+1. Complete the KYC process at [our secure portal](https://kyc.filecoinplus.io)
+2. Your application will be automatically updated once submitted
+
+> ℹ️ KYC completion is required to proceed with your application
+`;
         return `
 ### Current Status
 - Your KYC submission is under review

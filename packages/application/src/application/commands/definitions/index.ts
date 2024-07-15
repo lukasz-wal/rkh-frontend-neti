@@ -1,33 +1,8 @@
 import { Command } from "@filecoin-plus/core";
 import { DatacapAllocatorPhase } from "@src/domain/datacap-allocator";
+import { KYCApprovedData, KYCRejectedData } from "@src/domain/kyc";
 
-/**
-  {
-    result_id: 'f49d3a83-3dac-464a-b97a-bd8f7f1fa9b9',
-    event: 'success',
-    data: {
-      kyc: {
-        id: 'f49d3a83-3dac-464a-b97a-bd8f7f1fa9b9',
-        kycInquiryId: 'ABBB',
-        createdAt: '2023-10-03T10:31:51.303476Z',
-        tenantId: '6098ca37-d11e-4b66-9344-3837dd3852f9',
-        status: 'success',
-        documentId: 'f915626947e64baf9a1454c6e662ecd1',
-        documentType: 'GB_DrivingLicense_2015',
-        platform: 'iOS',
-        browser: 'Mozilla/5.0',
-        scoreDocumentTotal: 0.9968421,
-        scoreBiometricLifeProof: 0.90229774,
-        scoreBiometricSelfie: 0.99972534,
-        scoreBiometricPhotoId: 0.99972534,
-        scoreBiometricDuplicateAttack: 0.55731136,
-        processCode: 'ProcessCompleted',
-        processMessage: 'The process has been successfully completed',
-        identityId: 'user@gmail.com'
-      }
-    }
-  }
- */
+
 
 type PhaseResult<A, R> =
   | { status: "approved"; data: A }
@@ -42,33 +17,6 @@ export class SubmitPhaseResultCommand<A, R> extends Command {
     super();
   }
 }
-
-type KYCResultData = {
-  // IDs
-  id: string;
-  kycInquiryId: string;
-
-  // Metadata
-  createdAt: string;
-  documentId: string;
-  documentType: string;
-  platform: string;
-  browser: string;
-
-  // Scores
-  scoreDocumentTotal: number;
-  scoreBiometricLifeProof: number;
-  scoreBiometricSelfie: number;
-  scoreBiometricPhotoId: number;
-  scoreBiometricDuplicateAttack: number;
-
-  // Other
-  processCode: string;
-  processMessage: string;
-};
-
-type KYCApprovedData = KYCResultData;
-type KYCRejectedData = KYCApprovedData;
 
 // V3
 
@@ -114,22 +62,6 @@ export class CompletePhaseCommand extends Command {
 // StartKYCCommand
 // POST /api/v1/applications/{applicationId}/kyc
 export class StartKYCCommand extends Command {
-  constructor(public readonly applicationId: string) {
-    super();
-  }
-}
-
-// ApproveKYCCommand
-// POST /api/v1/applications/{applicationId}/kyc/approve
-export class ApproveKYCCommand extends Command {
-  constructor(public readonly applicationId: string) {
-    super();
-  }
-}
-
-// RejectKYCCommand
-// POST /api/v1/applications/{applicationId}/kyc/reject
-export class RejectKYCCommand extends Command {
   constructor(public readonly applicationId: string) {
     super();
   }

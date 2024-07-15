@@ -2,9 +2,7 @@ import { ICommandHandler } from "@filecoin-plus/core";
 import { inject, injectable } from "inversify";
 
 import {
-  ApproveKYCCommand,
   CompletePhaseCommand,
-  RejectKYCCommand,
   StartKYCCommand,
   StartPhaseCommand,
   SubmitKYCResultCommand,
@@ -28,16 +26,14 @@ export class SubmitKYCResultCommandHandler
   ) {}
 
   async handle(command: SubmitKYCResultCommand): Promise<void> {
-    console.log("SubmitKYCResultCommandHandler", command);
-    
     const allocator = await this._repository.getById(command.allocatorId);
     if (!allocator) {
       throw new Error(`Allocator with id ${command.allocatorId} not found`);
     }
 
     command.result.status === "approved"
-      ? allocator.approveKYC()
-      : allocator.rejectKYC();
+      ? allocator.approveKYC(command.result.data)
+      : allocator.rejectKYC(command.result.data);
 
     this._repository.save(allocator, allocator.version);
   }
@@ -110,9 +106,23 @@ export class CompletePhaseCommandHandler
 
     switch (command.phase) {
       case DatacapAllocatorPhase.KYC:
-        command.data.result === "approved"
-          ? allocator.approveKYC()
-          : allocator.rejectKYC();
+        allocator.approveKYC({
+          id: "f49d3a83-3dac-464a-b97a-bd8f7f1fa9b9",
+          kycInquiryId: allocator.guid,
+          createdAt: "2023-10-03T10:31:51.303476Z",
+          tenantId: "6098ca37-d11e-4b66-9344-3837dd3852f9",
+          documentId: "f915626947e64baf9a1454c6e662ecd1",
+          documentType: "GB_DrivingLicense_2015",
+          platform: "iOS",
+          browser: "Mozilla/5.0",
+          scoreDocumentTotal: 0.9968421,
+          scoreBiometricLifeProof: 0.90229774,
+          scoreBiometricSelfie: 0.99972534,
+          scoreBiometricPhotoId: 0.99972534,
+          scoreBiometricDuplicateAttack: 0.55731136,
+          processCode: "ProcessCompleted",
+          processMessage: "The process has been successfully completed",
+        });
         break;
 
       case DatacapAllocatorPhase.GOVERNANCE_REVIEW:
@@ -149,50 +159,6 @@ export class StartKYCCommandHandler
     }
 
     application.startKYC();
-    this._repository.save(application, application.version);
-  }
-}
-
-@injectable()
-export class ApproveKYCCommandHandler
-  implements ICommandHandler<ApproveKYCCommand>
-{
-  commandToHandle: string = ApproveKYCCommand.name;
-
-  constructor(
-    @inject(TYPES.DatacapAllocatorRepository)
-    private readonly _repository: IDatacapAllocatorRepository
-  ) {}
-
-  async handle(command: ApproveKYCCommand): Promise<void> {
-    const application = await this._repository.getById(command.applicationId);
-    if (!application) {
-      throw new Error(`Application with id ${command.applicationId} not found`);
-    }
-
-    application.approveKYC();
-    this._repository.save(application, application.version);
-  }
-}
-
-@injectable()
-export class RejectKYCCommandHandler
-  implements ICommandHandler<RejectKYCCommand>
-{
-  commandToHandle: string = RejectKYCCommand.name;
-
-  constructor(
-    @inject(TYPES.DatacapAllocatorRepository)
-    private readonly _repository: IDatacapAllocatorRepository
-  ) {}
-
-  async handle(command: RejectKYCCommand): Promise<void> {
-    const application = await this._repository.getById(command.applicationId);
-    if (!application) {
-      throw new Error(`Application with id ${command.applicationId} not found`);
-    }
-
-    application.rejectKYC();
     this._repository.save(application, application.version);
   }
 }

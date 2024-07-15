@@ -8,7 +8,6 @@ import { StatusCodes } from "http-status-codes";
 
 import {
   AllocatorApplied,
-  ApplicationPullRequestCreated,
   DatacapGranted,
   GovernanceReviewStarted,
   KYCStarted,
@@ -16,7 +15,13 @@ import {
   KYCRejected,
   GovernanceReviewApproved,
   GovernanceReviewRejected,
+  ApplicationSubmitted,
+  RKHApprovalStarted,
+  RKHSignatureSubmitted,
+  RKHApprovalApproved,
+  RKHApprovalRejected,
 } from "./events";
+import { KYCApprovedData, KYCRejectedData } from "./kyc";
 
 export interface IDatacapAllocatorRepository
   extends IRepository<DatacapAllocator> {}
@@ -95,6 +100,17 @@ export class DatacapAllocator extends AggregateRoot {
     }
   }
 
+  completeSubmission(pullRequestNumber: number, pullRequestUrl: string) {
+    this.ensureValidPhaseStatus(DatacapAllocatorPhase.SUBMISSION, [
+      DatacapAllocatorPhaseStatus.IN_PROGRESS,
+    ]);
+
+    this.applyChange(
+      new ApplicationSubmitted(this.guid, pullRequestNumber, pullRequestUrl)
+    );
+    this.applyChange(new KYCStarted(this.guid));
+  }
+
   startKYC() {
     if (
       this.status.phase !== DatacapAllocatorPhase.KYC ||
@@ -107,55 +123,30 @@ export class DatacapAllocator extends AggregateRoot {
       );
     }
 
-    this.applyChange(new KYCStarted(this.guid, new Date()));
+    this.applyChange(new KYCStarted(this.guid));
   }
 
-  approveKYC() {
-    if (this.status.phase !== DatacapAllocatorPhase.KYC) {
-      throw new ApplicationError(
-        StatusCodes.BAD_REQUEST,
-        "5309",
-        "Not in KYC phase"
-      );
-    }
+  approveKYC(data: KYCApprovedData) {
+    this.ensureValidPhaseStatus(DatacapAllocatorPhase.KYC, [
+      DatacapAllocatorPhaseStatus.NOT_STARTED,
+      DatacapAllocatorPhaseStatus.IN_PROGRESS,
+    ]);
 
-    if (
-      this.status.phaseStatus === DatacapAllocatorPhaseStatus.COMPLETED ||
-      this.status.phaseStatus === DatacapAllocatorPhaseStatus.FAILED
-    ) {
-      throw new ApplicationError(
-        StatusCodes.BAD_REQUEST,
-        "5310",
-        "KYC is already finished"
-      );
-    }
-
-    this.applyChange(new KYCApproved(this.guid, new Date()));
+    this.applyChange(new KYCApproved(this.guid, data));
+    this.applyChange(new GovernanceReviewStarted(this.guid));
   }
 
-  rejectKYC() {
-    if (this.status.phase !== DatacapAllocatorPhase.KYC) {
-      throw new ApplicationError(
-        StatusCodes.BAD_REQUEST,
-        "5309",
-        "Not in KYC phase"
-      );
-    }
+  rejectKYC(data: KYCRejectedData) {
+    this.ensureValidPhaseStatus(DatacapAllocatorPhase.KYC, [
+      DatacapAllocatorPhaseStatus.NOT_STARTED,
+      DatacapAllocatorPhaseStatus.IN_PROGRESS,
+    ]);
 
-    if (
-      this.status.phaseStatus === DatacapAllocatorPhaseStatus.COMPLETED ||
-      this.status.phaseStatus === DatacapAllocatorPhaseStatus.FAILED
-    ) {
-      throw new ApplicationError(
-        StatusCodes.BAD_REQUEST,
-        "5310",
-        "KYC is already finished"
-      );
-    }
-
-    this.applyChange(new KYCRejected(this.guid, new Date()));
+    this.applyChange(new KYCRejected(this.guid, data));
+    // TODO: Reject application
   }
 
+  // TODO: Deprecate this method
   startGovernanceReview() {
     if (
       this.status.phase !== DatacapAllocatorPhase.GOVERNANCE_REVIEW &&
@@ -168,37 +159,29 @@ export class DatacapAllocator extends AggregateRoot {
       );
     }
 
-    this.applyChange(new GovernanceReviewStarted(this.guid, new Date()));
+    this.applyChange(new GovernanceReviewStarted(this.guid));
   }
 
   approveGovernanceReview() {
-    if (
-      this.status.phase !== DatacapAllocatorPhase.GOVERNANCE_REVIEW ||
-      this.status.phaseStatus !== DatacapAllocatorPhaseStatus.IN_PROGRESS
-    ) {
-      throw new ApplicationError(
-        StatusCodes.BAD_REQUEST,
-        "5312",
-        "Governance review is not started"
-      );
-    }
+    this.ensureValidPhaseStatus(DatacapAllocatorPhase.GOVERNANCE_REVIEW, [
+      DatacapAllocatorPhaseStatus.IN_PROGRESS,
+    ]);
 
-    this.applyChange(new GovernanceReviewApproved(this.guid, new Date()));
+    this.applyChange(new GovernanceReviewApproved(this.guid));
+    this.applyChange(new RKHApprovalStarted(this.guid, 2)); // TODO: Hardcoded 2 for multisig threshold
   }
 
   rejectGovernanceReview() {
-    if (
-      this.status.phase !== DatacapAllocatorPhase.GOVERNANCE_REVIEW ||
-      this.status.phaseStatus !== DatacapAllocatorPhaseStatus.IN_PROGRESS
-    ) {
-      throw new ApplicationError(
-        StatusCodes.BAD_REQUEST,
-        "5312",
-        "Governance review is not started"
-      );
-    }
+    this.ensureValidPhaseStatus(DatacapAllocatorPhase.GOVERNANCE_REVIEW, [
+      DatacapAllocatorPhaseStatus.IN_PROGRESS,
+    ]);
 
-    this.applyChange(new GovernanceReviewRejected(this.guid, new Date()));
+    this.applyChange(new GovernanceReviewRejected(this.guid));
+    // TODO: Reject application
+  }
+
+  submitRKHSignature() {
+
   }
 
   grantDatacap(datacapAmount: number, grantedBy: string, timestamp: Date) {
@@ -213,20 +196,6 @@ export class DatacapAllocator extends AggregateRoot {
     );
   }
 
-  createApplicationPullRequest(
-    pullRequestNumber: number,
-    pullRequestUrl: string
-  ) {
-    this.applyChange(
-      new ApplicationPullRequestCreated(
-        this.guid,
-        pullRequestNumber,
-        pullRequestUrl,
-        new Date()
-      )
-    );
-  }
-
   applyAllocatorApplied(event: AllocatorApplied) {
     this.guid = event.guid;
     this.firstname = event.firstname;
@@ -236,8 +205,16 @@ export class DatacapAllocator extends AggregateRoot {
     this.currentPosition = event.currentPosition;
 
     this.status = {
-      phase: DatacapAllocatorPhase.KYC,
-      phaseStatus: DatacapAllocatorPhaseStatus.NOT_STARTED,
+      phase: DatacapAllocatorPhase.SUBMISSION,
+      phaseStatus: DatacapAllocatorPhaseStatus.IN_PROGRESS,
+    };
+  }
+
+  applyApplicationSubmitted(event: ApplicationSubmitted) {
+    this.applicationPullRequest = {
+      prNumber: event.prNumber,
+      prUrl: event.prUrl,
+      timestamp: event.timestamp,
     };
   }
 
@@ -250,8 +227,8 @@ export class DatacapAllocator extends AggregateRoot {
 
   applyKYCApproved(event: KYCApproved) {
     this.status = {
-      phase: DatacapAllocatorPhase.GOVERNANCE_REVIEW,
-      phaseStatus: DatacapAllocatorPhaseStatus.NOT_STARTED,
+      phase: DatacapAllocatorPhase.KYC,
+      phaseStatus: DatacapAllocatorPhaseStatus.COMPLETED,
     };
   }
 
@@ -262,7 +239,7 @@ export class DatacapAllocator extends AggregateRoot {
     };
   }
 
-  public applyGovernanceReviewStarted(event: GovernanceReviewStarted) {
+  applyGovernanceReviewStarted(event: GovernanceReviewStarted) {
     this.status = {
       phase: DatacapAllocatorPhase.GOVERNANCE_REVIEW,
       phaseStatus: DatacapAllocatorPhaseStatus.IN_PROGRESS,
@@ -271,8 +248,8 @@ export class DatacapAllocator extends AggregateRoot {
 
   applyGovernanceReviewApproved(event: GovernanceReviewApproved) {
     this.status = {
-      phase: DatacapAllocatorPhase.RKH_APPROVAL,
-      phaseStatus: DatacapAllocatorPhaseStatus.NOT_STARTED,
+      phase: DatacapAllocatorPhase.GOVERNANCE_REVIEW,
+      phaseStatus: DatacapAllocatorPhaseStatus.COMPLETED,
     };
   }
 
@@ -283,15 +260,50 @@ export class DatacapAllocator extends AggregateRoot {
     };
   }
 
+  applyRKHApprovalStarted(event: RKHApprovalStarted) {
+    this.status = {
+      phase: DatacapAllocatorPhase.RKH_APPROVAL,
+      phaseStatus: DatacapAllocatorPhaseStatus.IN_PROGRESS,
+    };
+  }
+
+  applyRKHSignatureSubmitted(event: RKHSignatureSubmitted) {
+    throw new Error("Method not implemented.");
+  }
+
+  applyRKHApprovalApproved(event: RKHApprovalApproved) {
+    this.status = {
+      phase: DatacapAllocatorPhase.RKH_APPROVAL,
+      phaseStatus: DatacapAllocatorPhaseStatus.COMPLETED,
+    };
+  }
+
+  applyRKHApprovalRejected(event: RKHApprovalRejected) {
+    this.status = {
+      phase: DatacapAllocatorPhase.RKH_APPROVAL,
+      phaseStatus: DatacapAllocatorPhaseStatus.FAILED,
+    };
+  }
+
   applyDatacapGranted(event: DatacapGranted) {
     this.datacapAmount = event.datacapAmount;
   }
 
-  applyApplicationPullRequestCreated(event: ApplicationPullRequestCreated) {
-    this.applicationPullRequest = {
-      prNumber: event.prNumber,
-      prUrl: event.prUrl,
-      timestamp: event.timestamp,
-    };
+  private ensureValidPhaseStatus(
+    expectedPhase: DatacapAllocatorPhase,
+    validStatuses: DatacapAllocatorPhaseStatus[],
+    errorCode: string = "5308",
+    errorMessage: string = "Invalid operation for the current phase"
+  ): void {
+    if (
+      this.status.phase !== expectedPhase ||
+      !validStatuses.includes(this.status.phaseStatus)
+    ) {
+      throw new ApplicationError(
+        StatusCodes.BAD_REQUEST,
+        errorCode,
+        errorMessage
+      );
+    }
   }
 }

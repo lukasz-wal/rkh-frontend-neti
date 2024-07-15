@@ -17,7 +17,12 @@ export default {
   // GitHub client configuration
   GITHUB_AUTH_TOKEN: process.env.GITHUB_AUTH_TOKEN || 'your-github-auth-token',
 
+  // Airtable client configuration
   AIRTABLE_API_KEY: process.env.AIRTABLE_API_KEY || 'your-airtable-api-key',
   AIRTABLE_BASE_ID: process.env.AIRTABLE_BASE_ID || 'app99ksFs7kqCrBZ2',
-  AIRTABLE_TABLE_NAME: process.env.AIRTABLE_TABLE_NAME || 'tblAGAD0kgWxy5kwq'
+  AIRTABLE_TABLE_NAME: process.env.AIRTABLE_TABLE_NAME || 'tblAGAD0kgWxy5kwq',
+
+  // Lotus client configuration
+  LOTUS_RPC_URL: process.env.LOTUS_RPC_URL || 'https://api.node.glif.io/rpc/v1',
+  LOTUS_AUTH_TOKEN: process.env.LOTUS_AUTH_TOKEN || 'your-lotus-auth-token'
 };

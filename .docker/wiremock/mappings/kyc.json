@@ -15,7 +15,7 @@
       "name": "webhook",
       "parameters": {
         "method": "POST",
-        "url": "http://app:3000/api/v1/allocators/{{originalRequest.path.[0]}}/kyc/result",
+        "url": "http://app:3001/api/v1/allocators/{{originalRequest.path.[0]}}/kyc/result",
         "headers": {
           "Content-Type": "application/json"
         },

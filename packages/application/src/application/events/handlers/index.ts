@@ -59,6 +59,7 @@ export class KYCApprovedEventHandler implements IEventHandler<KYCApproved> {
             phase: DatacapAllocatorPhase.GOVERNANCE_REVIEW,
             phaseStatus: DatacapAllocatorPhaseStatus.NOT_STARTED,
           },
+          kycData: event.data,
         },
       }
     );
@@ -88,11 +89,12 @@ export class KYCRejectedEventHandler implements IEventHandler<KYCRejected> {
             phase: DatacapAllocatorPhase.KYC,
             phaseStatus: DatacapAllocatorPhaseStatus.FAILED,
           },
+          kycData: event.data,
         },
       }
     );
 
-    const result = await this._commandBus.send(
+    await this._commandBus.send(
       new UpdateApplicationPullRequestCommand(event.aggregateId)
     );
   }

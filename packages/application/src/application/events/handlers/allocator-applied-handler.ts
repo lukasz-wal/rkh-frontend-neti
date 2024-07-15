@@ -21,7 +21,7 @@ export class AllocatorAppliedEventHandler
 
   async handle(event: AllocatorApplied) {
     // Insert allocator data into the database
-    const allocatorId = event.aggregateId;
+    const allocatorId = event.guid;
     await this._db.collection("datacapAllocators").insertOne({
       id: allocatorId,
       firstName: event.firstname,

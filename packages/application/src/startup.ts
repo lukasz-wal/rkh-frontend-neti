@@ -27,9 +27,7 @@ import { UpdateApplicationPullRequestCommandHandler } from "./application/comman
 import { GetDatacapAllocatorsQueryHandler } from "./application/queries/handlers/get-datacap-allocators-query-handler";
 import { SetGovernanceReviewStatusCommandHandler } from "./application/commands/handlers/set-governance-review-status-handler";
 import {
-  ApproveKYCCommandHandler,
   CompletePhaseCommandHandler,
-  RejectKYCCommandHandler,
   StartKYCCommandHandler,
   StartPhaseCommandHandler,
   SubmitKYCResultCommandHandler,
@@ -103,13 +101,7 @@ export const initialize = async (): Promise<Container> => {
   container
     .bind<ICommandHandler<ICommand>>(TYPES.CommandHandler)
     .to(StartKYCCommandHandler);
-  container
-    .bind<ICommandHandler<ICommand>>(TYPES.CommandHandler)
-    .to(ApproveKYCCommandHandler);
-  container
-    .bind<ICommandHandler<ICommand>>(TYPES.CommandHandler)
-    .to(RejectKYCCommandHandler);
-
+  
   container
     .bind<ICommandHandler<ICommand>>(TYPES.CommandHandler)
     .to(SetGovernanceReviewStatusCommandHandler);
