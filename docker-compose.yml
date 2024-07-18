@@ -9,6 +9,7 @@ services:
         BUILD_CONTEXT: application
     ports:
       - 3000:3001
+
     environment:
       - NODE_ENV=dev
       - API_PORT=3000

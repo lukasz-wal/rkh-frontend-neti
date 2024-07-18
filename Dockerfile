@@ -21,6 +21,9 @@ COPY packages/${BUILD_CONTEXT} ./packages/${BUILD_CONTEXT}
 RUN npm ci
 
 # Build the specific package using the argument
+RUN npm -w @filecoin-plus/${BUILD_CONTEXT} install
+
+# Build the specific package using the argument
 RUN npm -w @filecoin-plus/${BUILD_CONTEXT} run build 
 
 # Expose the port the app runs on
