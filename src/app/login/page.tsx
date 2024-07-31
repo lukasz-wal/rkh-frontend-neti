@@ -6,7 +6,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 
-import LoginButton from "@/components/login/LoginButton";
+import { ConnectWalletButton } from "@/components/ConnectWalletButton";
 
 function LoginForm() {
   return (
@@ -18,7 +18,7 @@ function LoginForm() {
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <LoginButton />
+        <ConnectWalletButton />
       </CardContent>
     </Card>
   );
