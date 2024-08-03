@@ -1,8 +1,8 @@
-import { createLogger, transports, format } from 'winston';
+import { createLogger, transports, format, Logger as WinstonLogger } from 'winston';
 
 export function createWinstonLogger(service: string) {
   return createLogger({
-    level: 'info',
+    level: 'debug',
     defaultMeta: { service },
     format: format.combine(
       format.simple(),
@@ -17,3 +17,5 @@ export function createWinstonLogger(service: string) {
     transports: [new transports.Console()],
   });
 }
+
+export type Logger = WinstonLogger

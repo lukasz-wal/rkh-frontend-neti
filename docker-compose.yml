@@ -9,10 +9,30 @@ services:
         BUILD_CONTEXT: application
     ports:
       - 3000:3001
-
     environment:
       - NODE_ENV=dev
       - API_PORT=3000
+      - MONGODB_URI=mongodb://mongodb:27017/
+      - RABBITMQ_URL=rabbitmq:5672
+      - RABBITMQ_USERNAME=admin
+      - RABBITMQ_PASSWORD=admin
+      - RABBITMQ_EXCHANGE_NAME=filecoin-plus
+      - RABBITMQ_EXCHANGE_TYPE=topic
+      - RABBITMQ_QUEUE_NAME=allocator
+      - GITHUB_AUTH_TOKEN=github_pat
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+
+  worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        BUILD_CONTEXT: worker
+    command: npm -w @filecoin-plus/application run start:worker
+    environment:
+      - NODE_ENV=dev
       - MONGODB_URI=mongodb://mongodb:27017/
       - RABBITMQ_URL=rabbitmq:5672
       - RABBITMQ_USERNAME=admin

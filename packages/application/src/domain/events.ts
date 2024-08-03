@@ -7,11 +7,15 @@ export class AllocatorApplied extends Event {
 
   constructor(
     public guid: string,
-    public firstname: string,
-    public lastname: string,
-    public email: string,
-    public githubId: string,
-    public currentPosition: string
+    public number: number,
+    public name: string,
+    public organization: string,
+    public address: string,
+    public githubUsername: string,
+    public country: string,
+    public region: string,
+    public type: string,
+    public datacap: number
   ) {
     super(guid);
   }
@@ -26,7 +30,8 @@ export class ApplicationSubmitted extends Event {
   constructor(
     allocatorId: string,
     public prNumber: number,
-    public prUrl: string
+    public prUrl: string,
+    public commentId: number
   ) {
     super(allocatorId);
     this.timestamp = new Date();
@@ -182,21 +187,6 @@ export class RKHActionConfirmed extends Event {
     public transactionId: string,
     public allocatorId: string,
     public confirmedBy: string,
-    public timestamp: Date
-  ) {
-    super(guid);
-  }
-}
-
-export class DatacapGranted extends Event {
-  eventName = DatacapGranted.name;
-  aggregateName = "allocator";
-
-  constructor(
-    public guid: string,
-    public allocatorId: string,
-    public datacapAmount: number,
-    public grantedBy: string,
     public timestamp: Date
   ) {
     super(guid);

@@ -6,13 +6,15 @@ import {
   IQuery,
   IQueryBus,
   IQueryHandler,
+  Logger,
+  createWinstonLogger,
 } from "@filecoin-plus/core";
 import { Container } from "inversify";
 
 import { infrastructureModule } from "@src/infrastructure/module";
-import { CreateDatacapAllocatorCommandHandler } from "@src/application/commands/handlers/create-datacap-allocator-handler";
 import {
   AllocatorApplied,
+  ApplicationSubmitted,
   GovernanceReviewApproved,
   GovernanceReviewRejected,
   GovernanceReviewStarted,
@@ -22,17 +24,8 @@ import {
 } from "@src/domain/events";
 import { AllocatorAppliedEventHandler } from "@src/application/events/handlers/allocator-applied-handler";
 import { TYPES } from "@src/types";
-import { SetDatacapAllocatorKycStatusCommandHandler } from "./application/commands/handlers/set-datacap-allocator-kyc-status-handler";
-import { UpdateApplicationPullRequestCommandHandler } from "./application/commands/handlers/update-application-pr-handler";
-import { GetDatacapAllocatorsQueryHandler } from "./application/queries/handlers/get-datacap-allocators-query-handler";
-import { SetGovernanceReviewStatusCommandHandler } from "./application/commands/handlers/set-governance-review-status-handler";
 import {
-  CompletePhaseCommandHandler,
-  StartKYCCommandHandler,
-  StartPhaseCommandHandler,
-  SubmitKYCResultCommandHandler,
-} from "./application/commands/handlers";
-import {
+  ApplicationSubmittedEventHandler,
   GovernanceReviewApprovedEventHandler,
   GovernanceReviewRejectedEventHandler,
   GovernanceReviewStartedEventHandler,
@@ -40,21 +33,26 @@ import {
   KYCRejectedEventHandler,
   KYCStartedEventHandler,
 } from "./application/events/handlers";
-import {
-  CompletePhaseCommand,
-  StartPhaseCommand,
-} from "./application/commands/definitions";
+import { UpdateRKHApprovalsCommandHandler } from "./application/commands/update-rkh-approvals";
+import { CreateApplicationCommandHandler, SubmitKYCResultCommandHandler, UpdateGithubBranchCommandHandler } from "./application/commands";
+import { GetDatacapAllocatorsQueryHandler } from "./application/queries/get-datacap-allocators";
 
 export const initialize = async (): Promise<Container> => {
   const container = new Container();
 
   await container.loadAsync(infrastructureModule);
 
-  // const logger = createWinstonLogger('filecoin-plus-datacap-allocator');
+  // Logger
+  const logger = createWinstonLogger("filecoin-plus-backend");
+  container.bind<Logger>(TYPES.Logger).toConstantValue(logger);
 
   container
     .bind<IEventHandler<AllocatorApplied>>(TYPES.Event)
     .to(AllocatorAppliedEventHandler);
+
+  container
+    .bind<IEventHandler<ApplicationSubmitted>>(TYPES.Event)
+    .to(ApplicationSubmittedEventHandler);
 
   // TODO: V1 Bind KYC events to their handlers
   container
@@ -78,37 +76,22 @@ export const initialize = async (): Promise<Container> => {
     .bind<IEventHandler<GovernanceReviewRejected>>(TYPES.Event)
     .to(GovernanceReviewRejectedEventHandler);
 
+  // Commands
   container
     .bind<ICommandHandler<ICommand>>(TYPES.CommandHandler)
-    .to(CreateDatacapAllocatorCommandHandler);
-
-    container
+    .to(CreateApplicationCommandHandler);
+  container
     .bind<ICommandHandler<ICommand>>(TYPES.CommandHandler)
     .to(SubmitKYCResultCommandHandler);
-
-  container
-    .bind<ICommandHandler<StartPhaseCommand>>(TYPES.CommandHandler)
-    .to(StartPhaseCommandHandler);
-  container
-    .bind<ICommandHandler<CompletePhaseCommand>>(TYPES.CommandHandler)
-    .to(CompletePhaseCommandHandler);
-
-  // TODO: REMOVE THIS
+  // container
+  //   .bind<ICommandHandler<StartPhaseCommand>>(TYPES.CommandHandler)
+  //   .to(SubmitGovernanceReviewResultCommandHandler);
   container
     .bind<ICommandHandler<ICommand>>(TYPES.CommandHandler)
-    .to(SetDatacapAllocatorKycStatusCommandHandler);
-  // TODO: KEEP THIS
+    .to(UpdateRKHApprovalsCommandHandler);
   container
     .bind<ICommandHandler<ICommand>>(TYPES.CommandHandler)
-    .to(StartKYCCommandHandler);
-  
-  container
-    .bind<ICommandHandler<ICommand>>(TYPES.CommandHandler)
-    .to(SetGovernanceReviewStatusCommandHandler);
-
-  container
-    .bind<ICommandHandler<ICommand>>(TYPES.CommandHandler)
-    .to(UpdateApplicationPullRequestCommandHandler);
+    .to(UpdateGithubBranchCommandHandler);
 
   const commandBus = container.get<ICommandBus>(TYPES.CommandBus);
   container

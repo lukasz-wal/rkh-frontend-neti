@@ -2,14 +2,62 @@ import { IEventHandler } from "@filecoin-plus/core";
 import { inject, injectable } from "inversify";
 import { Db } from "mongodb";
 
-import { GovernanceReviewApproved, GovernanceReviewRejected, GovernanceReviewStarted, KYCApproved, KYCRejected, KYCStarted } from "@src/domain/events";
+import {
+  ApplicationSubmitted,
+  GovernanceReviewApproved,
+  GovernanceReviewRejected,
+  GovernanceReviewStarted,
+  KYCApproved,
+  KYCRejected,
+  KYCStarted,
+} from "@src/domain/events";
 import { CommandBus } from "@src/infrastructure/command-bus";
 import { TYPES } from "@src/types";
-import { UpdateApplicationPullRequestCommand } from "@src/application/commands/definitions/update-application-pr";
 import {
   DatacapAllocatorPhase,
   DatacapAllocatorPhaseStatus,
 } from "@src/domain/datacap-allocator";
+import { UpdateGithubBranchCommand } from "@src/application/commands";
+
+@injectable()
+export class ApplicationSubmittedEventHandler
+  implements IEventHandler<ApplicationSubmitted>
+{
+  public event = ApplicationSubmitted.name;
+
+  constructor(
+    @inject(TYPES.CommandBus) private readonly _commandBus: CommandBus,
+    @inject(TYPES.Db) private readonly _db: Db
+  ) {}
+
+  async handle(event: ApplicationSubmitted): Promise<void> {
+    console.log("ApplicationSubmittedEventHandler", event);
+    // Update allocator status in the database
+    await this._db.collection("datacapAllocators").updateOne(
+      { id: event.aggregateId },
+      {
+        $set: {
+          status: {
+            phase: DatacapAllocatorPhase.SUBMISSION,
+            phaseStatus: DatacapAllocatorPhaseStatus.COMPLETED,
+          },
+          phases: {
+            submission: {
+              pullRequestUrl: event.prUrl,
+              pullRequestNumber: event.prNumber,
+              pullRequestCommentId: event.commentId,
+              timestamp: event.timestamp,
+            },
+          },
+        },
+      }
+    );
+
+    const result = await this._commandBus.send(
+      new UpdateGithubBranchCommand(event.aggregateId)
+    );
+  }
+}
 
 @injectable()
 export class KYCStartedEventHandler implements IEventHandler<KYCStarted> {
@@ -35,7 +83,7 @@ export class KYCStartedEventHandler implements IEventHandler<KYCStarted> {
     );
 
     const result = await this._commandBus.send(
-      new UpdateApplicationPullRequestCommand(event.aggregateId)
+      new UpdateGithubBranchCommand(event.aggregateId)
     );
   }
 }
@@ -65,7 +113,7 @@ export class KYCApprovedEventHandler implements IEventHandler<KYCApproved> {
     );
 
     const result = await this._commandBus.send(
-      new UpdateApplicationPullRequestCommand(event.aggregateId)
+      new UpdateGithubBranchCommand(event.aggregateId)
     );
   }
 }
@@ -95,7 +143,7 @@ export class KYCRejectedEventHandler implements IEventHandler<KYCRejected> {
     );
 
     await this._commandBus.send(
-      new UpdateApplicationPullRequestCommand(event.aggregateId)
+      new UpdateGithubBranchCommand(event.aggregateId)
     );
   }
 }
@@ -126,7 +174,7 @@ export class GovernanceReviewStartedEventHandler
     );
 
     const result = await this._commandBus.send(
-      new UpdateApplicationPullRequestCommand(event.aggregateId)
+      new UpdateGithubBranchCommand(event.aggregateId)
     );
   }
 }
@@ -157,7 +205,7 @@ export class GovernanceReviewApprovedEventHandler
     );
 
     const result = await this._commandBus.send(
-      new UpdateApplicationPullRequestCommand(event.aggregateId)
+      new UpdateGithubBranchCommand(event.aggregateId)
     );
   }
 }
@@ -188,7 +236,7 @@ export class GovernanceReviewRejectedEventHandler
     );
 
     const result = await this._commandBus.send(
-      new UpdateApplicationPullRequestCommand(event.aggregateId)
+      new UpdateGithubBranchCommand(event.aggregateId)
     );
   }
 }

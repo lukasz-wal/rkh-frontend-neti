@@ -1,7 +1,10 @@
 import { Octokit } from "@octokit/rest";
+import { throttling } from "@octokit/plugin-throttling";
 import { components } from "@octokit/openapi-types";
 import { inject, injectable } from "inversify";
 import { TYPES } from "@src/types";
+
+const ThrottledOctokit = Octokit.plugin(throttling);
 
 export type Branch = components["schemas"]["git-ref"];
 export type PullRequest = components["schemas"]["pull-request"];
@@ -33,12 +36,26 @@ export interface IGithubClient {
     body?: string
   ): Promise<PullRequest>;
 
-  replyToPullRequest(
+  createPullRequestComment(
     owner: string,
     repo: string,
     pullNumber: number,
     body: string
   ): Promise<PullRequestReview>;
+
+  updatePullRequestComment(
+    owner: string,
+    repo: string,
+    pullNumber: number,
+    commentId: number,
+    body: string
+  ): Promise<PullRequestReview>;
+
+  getPullRequestReviews(
+    owner: string,
+    repo: string,
+    pullNumber: number
+  ): Promise<PullRequestReview[]>;
 }
 
 /**
@@ -57,9 +74,33 @@ export class GithubClient implements IGithubClient {
 
   constructor(
     @inject(TYPES.GithubClientConfig)
-    private readonly config: GithubClientConfig
+    config: GithubClientConfig
   ) {
-    this.octokit = new Octokit({ auth: config.authToken });
+    this.octokit = new ThrottledOctokit({
+      auth: config.authToken,
+      throttle: {
+        onRateLimit: (retryAfter, options, octokit, retryCount) => {
+          octokit.log.warn(
+            `Request quota exhausted for request ${options.method} ${options.url}`
+          );
+          console.log("Rate limit exceeded");
+
+          if (retryCount < 1) {
+            // only retries once
+            octokit.log.info(`Retrying after ${retryAfter} seconds!`);
+            return true;
+          }
+        },
+        onSecondaryRateLimit: (retryAfter, options, octokit) => {
+          // does not retry, only logs a warning
+          octokit.log.warn(
+            `SecondaryRateLimit detected for request ${options.method} ${options.url}`
+          );
+          console.log("SecondaryRateLimit detected");
+          console.log(retryAfter, options);
+        },
+      },
+    });
   }
 
   async createBranch(
@@ -142,7 +183,7 @@ export class GithubClient implements IGithubClient {
     return data;
   }
 
-  async replyToPullRequest(
+  async createPullRequestComment(
     owner: string,
     repo: string,
     pullNumber: number,
@@ -154,6 +195,38 @@ export class GithubClient implements IGithubClient {
       pull_number: pullNumber,
       body,
       event: "COMMENT",
+    });
+
+    return data;
+  }
+
+  async updatePullRequestComment(
+    owner: string,
+    repo: string,
+    pullNumber: number,
+    commentId: number,
+    body: string
+  ): Promise<PullRequestReview> {
+    const { data } = await this.octokit.pulls.updateReview({
+      owner,
+      repo,
+      pull_number: pullNumber,
+      review_id: commentId,
+      body,
+    });
+
+    return data;
+  }
+
+  async getPullRequestReviews(
+    owner: string,
+    repo: string,
+    pullNumber: number
+  ): Promise<PullRequestReview[]> {
+    const { data } = await this.octokit.pulls.listReviews({
+      owner,
+      repo,
+      pull_number: pullNumber,
     });
 
     return data;

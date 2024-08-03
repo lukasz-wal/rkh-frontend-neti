@@ -5,8 +5,8 @@ import { Db } from "mongodb";
 import { AllocatorApplied } from "@src/domain/events";
 import { TYPES } from "@src/types";
 import { CommandBus } from "@src/infrastructure/command-bus";
-import { UpdateApplicationPullRequestCommand } from "@src/application/commands/definitions/update-application-pr";
 import { DatacapAllocatorPhase, DatacapAllocatorPhaseStatus } from "@src/domain/datacap-allocator";
+import { UpdateGithubBranchCommand } from "@src/application/commands";
 
 @injectable()
 export class AllocatorAppliedEventHandler
@@ -24,19 +24,28 @@ export class AllocatorAppliedEventHandler
     const allocatorId = event.guid;
     await this._db.collection("datacapAllocators").insertOne({
       id: allocatorId,
-      firstName: event.firstname,
-      lastName: event.lastname,
-      email: event.email,
-      githubId: event.githubId,
-      currentPosition: event.currentPosition,
+      number: event.number,
+      name: event.name,
+      organization: event.organization,
+      address: event.address,
+      github: event.githubUsername,
+      country: event.country,
+      region: event.region,
+      type: event.type,
+      datacap: event.datacap,
       status: {
         phase: DatacapAllocatorPhase.KYC,
         phaseStatus: DatacapAllocatorPhaseStatus.NOT_STARTED,
+      },
+      phases: {
+        application: {
+          number: event.number,
+        },
       }
     });
 
     const result = await this._commandBus.send(
-      new UpdateApplicationPullRequestCommand(allocatorId)
+      new UpdateGithubBranchCommand(allocatorId)
     );
     console.log(`Created PR for allocator ${allocatorId}: ${result}`);
   }

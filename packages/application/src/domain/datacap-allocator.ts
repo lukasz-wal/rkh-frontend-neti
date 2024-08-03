@@ -8,7 +8,6 @@ import { StatusCodes } from "http-status-codes";
 
 import {
   AllocatorApplied,
-  DatacapGranted,
   GovernanceReviewStarted,
   KYCStarted,
   KYCApproved,
@@ -52,15 +51,21 @@ export type DatacapAllocatorStatus = {
 export type ApplicationPullRequest = {
   prNumber: number;
   prUrl: string;
+  commentId: number;
   timestamp: Date;
 };
 
 export class DatacapAllocator extends AggregateRoot {
-  public firstname: string;
-  public lastname: string;
-  public email: string;
-  public githubId: string;
-  public currentPosition: string;
+  public number: number;
+  public name: string;
+  public organization: string;
+  public address: string;
+  public githubUsername: string;
+  public country: string;
+  public region: string;
+  public type: string;
+  public datacap: number;
+
   public status: DatacapAllocatorStatus;
   public datacapAmount: number;
   public applicationPullRequest: ApplicationPullRequest;
@@ -69,44 +74,67 @@ export class DatacapAllocator extends AggregateRoot {
 
   constructor(
     guid: string,
-    firstname: string,
-    lastname: string,
-    email: string,
-    githubId: string,
-    currentPosition: string
+    number: number,
+    name: string,
+    organization: string,
+    address: string,
+    githubUsername: string,
+    country: string,
+    region: string,
+    type: string,
+    datacap: number
   );
 
   constructor(
     guid?: string,
-    firstname?: string,
-    lastname?: string,
-    email?: string,
-    githubId?: string,
-    currentPosition?: string
+    number?: number,
+    name?: string,
+    organization?: string,
+    address?: string,
+    githubUsername?: string,
+    country?: string,
+    region?: string,
+    type?: string,
+    datacap?: number
   ) {
     super(guid);
 
-    if (guid && firstname && lastname && email && githubId && currentPosition) {
+    if (
+      guid &&
+      number &&
+      name &&
+      organization &&
+      address &&
+      githubUsername &&
+      country &&
+      region &&
+      type &&
+      datacap
+    ) {
       this.applyChange(
         new AllocatorApplied(
           guid,
-          firstname,
-          lastname,
-          email,
-          githubId,
-          currentPosition
+          number,
+          name,
+          organization,
+          address,
+          githubUsername,
+          country,
+          region,
+          type,
+          datacap
         )
       );
     }
   }
 
-  completeSubmission(pullRequestNumber: number, pullRequestUrl: string) {
+  completeSubmission(pullRequestNumber: number, pullRequestUrl: string, commentId: number) {
     this.ensureValidPhaseStatus(DatacapAllocatorPhase.SUBMISSION, [
       DatacapAllocatorPhaseStatus.IN_PROGRESS,
     ]);
 
     this.applyChange(
-      new ApplicationSubmitted(this.guid, pullRequestNumber, pullRequestUrl)
+      new ApplicationSubmitted(this.guid, pullRequestNumber, pullRequestUrl, commentId)
     );
     this.applyChange(new KYCStarted(this.guid));
   }
@@ -180,29 +208,19 @@ export class DatacapAllocator extends AggregateRoot {
     // TODO: Reject application
   }
 
-  submitRKHSignature() {
-
-  }
-
-  grantDatacap(datacapAmount: number, grantedBy: string, timestamp: Date) {
-    this.applyChange(
-      new DatacapGranted(
-        this.guid,
-        this.allocatorId,
-        datacapAmount,
-        grantedBy,
-        timestamp
-      )
-    );
-  }
+  submitRKHSignature() {}
 
   applyAllocatorApplied(event: AllocatorApplied) {
     this.guid = event.guid;
-    this.firstname = event.firstname;
-    this.lastname = event.lastname;
-    this.email = event.email;
-    this.githubId = event.githubId;
-    this.currentPosition = event.currentPosition;
+    this.number = event.number;
+    this.name = event.name;
+    this.organization = event.organization;
+    this.address = event.address;
+    this.githubUsername = event.githubUsername;
+    this.country = event.country;
+    this.region = event.region;
+    this.type = event.type;
+    this.datacap = event.datacap;
 
     this.status = {
       phase: DatacapAllocatorPhase.SUBMISSION,
@@ -214,6 +232,7 @@ export class DatacapAllocator extends AggregateRoot {
     this.applicationPullRequest = {
       prNumber: event.prNumber,
       prUrl: event.prUrl,
+      commentId: event.commentId,
       timestamp: event.timestamp,
     };
   }
@@ -283,10 +302,6 @@ export class DatacapAllocator extends AggregateRoot {
       phase: DatacapAllocatorPhase.RKH_APPROVAL,
       phaseStatus: DatacapAllocatorPhaseStatus.FAILED,
     };
-  }
-
-  applyDatacapGranted(event: DatacapGranted) {
-    this.datacapAmount = event.datacapAmount;
   }
 
   private ensureValidPhaseStatus(

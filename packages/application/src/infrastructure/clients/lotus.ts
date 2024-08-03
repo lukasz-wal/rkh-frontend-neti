@@ -1,3 +1,5 @@
+import { Logger } from "@filecoin-plus/core";
+
 import axios from "axios";
 import { inject, injectable } from "inversify";
 import { nanoid } from "nanoid";
@@ -5,13 +7,13 @@ import { nanoid } from "nanoid";
 import { TYPES } from "@src/types";
 
 type PendingTx = {
-    id: number;
-    to: string;
-    method: string;
-    params: string;
-    value: string;
-    approved: string[];
-}
+  id: number;
+  to: string;
+  method: number;
+  params: string;
+  value: string;
+  approved: string[];
+};
 
 type Multisig = {
   address: string;
@@ -20,7 +22,9 @@ type Multisig = {
   pendingTxs: PendingTx[];
 };
 
-export interface ILotusClient {}
+export interface ILotusClient {
+  getMultisig(id: string): Promise<Multisig>;
+}
 
 export interface LotusClientConfig {
   rpcUrl: string;
@@ -30,11 +34,14 @@ export interface LotusClientConfig {
 @injectable()
 export class LotusClient implements ILotusClient {
   constructor(
+    @inject(TYPES.Logger)
+    private readonly logger: Logger,
     @inject(TYPES.LotusClientConfig)
     private readonly config: LotusClientConfig
   ) {}
 
   async getMultisig(id: string): Promise<Multisig> {
+    this.logger.debug(`Fetching multisig: ${id}`);
     const multisigState = await this.request("Filecoin.StateReadState", [
       id,
       null,
@@ -47,9 +54,12 @@ export class LotusClient implements ILotusClient {
       })
     );
 
-    const pendingTxs = await this.request("Filecoin.MsigGetPending", [id, null]);
+    const pendingTxs = await this.request("Filecoin.MsigGetPending", [
+      id,
+      null,
+    ]);
 
-    return {
+    const multisig = {
       address: id,
       threshold: multisigState.State.NumApprovalsThreshold,
       signers: signers.map((signer) => signer.State.Address),
@@ -62,16 +72,21 @@ export class LotusClient implements ILotusClient {
         approved: tx.Approved,
       })),
     };
+    this.logger.debug(`Multisig ${id}: ${JSON.stringify(multisig)}`);
+
+    return multisig;
   }
 
   private async request(method: string, params: any[]) {
+    const requestId = nanoid();
     const requestBody = JSON.stringify({
       method,
       params,
-      id: nanoid(),
+      id: requestId,
       jsonrpc: "2.0",
     });
 
+    this.logger.debug(`Executing Lotus RPC request: ${method} ${requestBody}`);
     const response = await axios.post(this.config.rpcUrl, requestBody, {
       headers: {
         Authorization: `Bearer ${this.config.authToken}`,
@@ -81,12 +96,21 @@ export class LotusClient implements ILotusClient {
 
     const responseData = response.data;
     if (responseData.error) {
+      this.logger.error(
+        `Lotus RPC request failed: ${requestId} ${responseData.error.message}`
+      );
       throw new Error(responseData.error.message);
     }
     if (responseData.result === undefined) {
+      this.logger.error(
+        `Lotus RPC request failed: ${requestId} Missing result`
+      );
       throw new Error("Missing result");
     }
 
+    this.logger.debug(
+      `Lotus RPC request successful: ${requestId} ${JSON.stringify(responseData.result)}`
+    );
     return responseData.result;
   }
 }

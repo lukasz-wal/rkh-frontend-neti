@@ -11,6 +11,7 @@ export const TYPES = {
   EventBus: Symbol("EventBus"),
   GithubClient: Symbol("GithubClient"),
   GithubClientConfig: Symbol("GithubClientConfig"),
+  Logger: Symbol("Logger"),
   LotusClient: Symbol("LotusClient"),
   LotusClientConfig: Symbol("LotusClientConfig"),
   QueryBus: Symbol("QueryBus"),
