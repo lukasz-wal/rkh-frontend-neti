@@ -1,4 +1,4 @@
-import React from 'react'
+/*import React from 'react'
 import { Wallet } from './Index'
 import { LedgerWallet } from './LedgerWallet'
 import { BurnerWallet } from './BurnerWallet'
@@ -307,4 +307,4 @@ class WalletProvider extends React.Component<WalletProviderProps, WalletProvider
     }
 }
 
-export default withCookies(WalletProvider)
+export default withCookies(WalletProvider)*/

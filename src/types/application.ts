@@ -8,13 +8,20 @@ export type ApplicationStatus = {
 
 export interface Application {
   id: string;
+  number: number;
   name: string;
-  email: string;
-  githubId: string;
-  createdAt: string;
+  organization: string;
+  address: string;
+  github: string;
+  country: string;
+  region: string;
+  type: string;
+  datacap: string;
 
   // STATUS
   status: ApplicationStatus;
+
+  phases: any; // TODO: Type this
 
   // SUBMISSION PHASE
   githubPrNumber: string;

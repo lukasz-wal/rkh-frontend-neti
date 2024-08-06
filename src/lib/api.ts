@@ -1,17 +1,22 @@
 import { ApplicationPhase, ApplicationsResponse } from "@/types/application";
 
-const API_BASE_URL = "http://localhost:3001/api/v1"  // process.env.API_URL || "https://filecoin-plus-backend-x5dlwms4sq-ew.a.run.app/api/v1";
+const API_BASE_URL = "http://localhost:3001/api/v1"; // process.env.API_URL || "https://filecoin-plus-backend-x5dlwms4sq-ew.a.run.app/api/v1";
 
 export async function fetchApplications(
+  searchTerm: string,
+  filters: string[],
   page: number,
-  limit: number,
-  sort: string,
-  filter: string
+  pageLimit: number
 ): Promise<ApplicationsResponse> {
-  const response = await fetch(
-    `${API_BASE_URL}/allocators?page=${page}&limit=${limit}`
-  );
+  let url = `${API_BASE_URL}/allocators?page=${page}&limit=${pageLimit}`;
+  for (const filter of filters) {
+    url += `&phase[]=${filter}`;
+  }
+  if (searchTerm) {
+    url += `&search=${searchTerm}`;
+  }
 
+  const response = await fetch(url);
   if (!response.ok) {
     throw new Error("Failed to fetch applications");
   }
@@ -24,16 +29,24 @@ export async function fetchApplications(
   return {
     applications: result.data.allocators.map((allocator: any) => ({
       id: allocator.id,
-      name: allocator.firstName,
-      email: allocator.email,
-      createdAt: allocator.currentPosition,
+      number: allocator.number,
+      name: allocator.name,
+      organization: allocator.organization,
+      address: allocator.address,
+      github: allocator.github,
+      country: allocator.country,
+      region: allocator.region,
+      type: allocator.type,
+      datacap: allocator.datacap,
+      createdAt: "2021-09-01T00:00:00.000Z",
 
+      phases: allocator.phases,
       status: {
         phase: allocator.status.phase,
         phaseStatus: allocator.status.phaseStatus,
       },
     })),
-    totalCount: result.totalCount,
+    totalCount: result.data.pagination.totalItems,
   };
 }
 

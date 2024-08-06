@@ -1,41 +1,41 @@
-'use client'
+"use client";
 
-import React, { useState } from 'react'
-import { useAccount } from '../hooks/useAccount'
-import { Button } from "@/components/ui/button"
+import React, { useState } from "react";
+import { useAccount } from "../hooks/useAccount";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog"
-import { useToast } from "@/components/ui/use-toast"
-import { Loader2 } from "lucide-react"
-import { useDisconnect } from 'wagmi'
+} from "@/components/ui/dialog";
+import { useToast } from "@/components/ui/use-toast";
+import { Loader2 } from "lucide-react";
+import { useDisconnect } from "wagmi";
 
-type ConnectionMethod = 'wagmi' | 'ledger'
+type ConnectionMethod = "wagmi" | "ledger";
 
 const ConnectionStages = {
-  wagmi: ['Initializing', 'Connecting', 'Confirming'],
-  ledger: ['Initializing', 'Waiting for Device', 'Confirming Address'],
-}
+  wagmi: ["Initializing", "Connecting", "Confirming"],
+  ledger: ["Initializing", "Waiting for Device", "Confirming Address"],
+};
 
 export default function ConnectWalletButton() {
-  const { account, connect } = useAccount()
-  const [isOpen, setIsOpen] = useState(false)
-  const [connectionMethod, setConnectionMethod] = useState<ConnectionMethod | null>(null)
-  const [stage, setStage] = useState(0)
-  const [isConnecting, setIsConnecting] = useState(false)
-  const { toast } = useToast()
+  const { account, connect } = useAccount();
+  const [isOpen, setIsOpen] = useState(false);
+  const [connectionMethod, setConnectionMethod] =
+    useState<ConnectionMethod | null>(null);
+  const [stage, setStage] = useState(0);
+  const [isConnecting, setIsConnecting] = useState(false);
+  const { toast } = useToast();
 
-  const {disconnect: wagmiDisconnect} = useDisconnect()
+  const { disconnect: wagmiDisconnect } = useDisconnect();
 
   const handleConnect = async (method: ConnectionMethod) => {
-    setConnectionMethod(method)
-    setIsConnecting(true)
-    setStage(0)
+    setConnectionMethod(method);
+    setIsConnecting(true);
+    setStage(0);
 
     try {
       // for (let i = 0; i < ConnectionStages[method].length; i++) {
@@ -44,32 +44,33 @@ export default function ConnectWalletButton() {
       //   await new Promise(resolve => setTimeout(resolve, 1000))
       // }
 
-      await connect(method)
-      toast({
-        title: "Wallet Connected",
-        description: "Your wallet has been successfully connected.",
-      })
-      setIsOpen(false)
+      await connect(method);
+      // toast({
+      //   title: "Wallet Connected",
+      //   description: "Your wallet has been successfully connected.",
+      // });
+      setIsOpen(false);
     } catch (error) {
-      console.error('Connection error:', error)
+      console.error("Connection error:", error);
       toast({
         title: "Connection Failed",
-        description: "There was an error connecting your wallet. Please try again.",
+        description:
+          "There was an error connecting your wallet. Please try again.",
         variant: "destructive",
-      })
+      });
     } finally {
-      setIsConnecting(false)
-      setConnectionMethod(null)
-      setStage(0)
+      setIsConnecting(false);
+      setConnectionMethod(null);
+      setStage(0);
     }
-  }
+  };
 
   if (account) {
     return (
       <Button onClick={() => wagmiDisconnect()}>
         Connected: {account.address.slice(0, 6)}...{account.address.slice(-4)}
       </Button>
-    )
+    );
   }
 
   return (
@@ -84,10 +85,16 @@ export default function ConnectWalletButton() {
         </DialogHeader>
         {!connectionMethod ? (
           <div className="flex flex-col space-y-4">
-            <Button onClick={() => handleConnect('wagmi')} disabled={isConnecting}>
+            <Button
+              onClick={() => handleConnect("wagmi")}
+              disabled={isConnecting}
+            >
               Connect with Metamask
             </Button>
-            <Button onClick={() => handleConnect('ledger')} disabled={isConnecting}>
+            <Button
+              onClick={() => handleConnect("ledger")}
+              disabled={isConnecting}
+            >
               Connect with Ledger
             </Button>
           </div>
@@ -99,5 +106,5 @@ export default function ConnectWalletButton() {
         )}
       </DialogContent>
     </Dialog>
-  )
+  );
 }

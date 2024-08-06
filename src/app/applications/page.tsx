@@ -16,7 +16,7 @@ export default function DashboardPage() {
   const sort = searchParams.get("sort") || "createdAt:desc";
 
   const fetchData = useCallback(async () => {
-    return await fetchApplications(page, ITEMS_PER_PAGE, sort, filter);
+    return await fetchApplications("", [], page, ITEMS_PER_PAGE);
   }, [page, sort, filter]);
   
   const { applications, totalCount, isLoading, error, refetch } =
