@@ -1,8 +1,10 @@
 "use client";
 
 import TransportWebUSB from "@ledgerhq/hw-transport-webusb";
+import { VerifyAPI } from '@keyko-io/filecoin-verifier-tools';
 // @ts-ignore
 import FilecoinApp from "@zondax/ledger-filecoin";
+import signer from "@zondax/filecoin-signing-tools/js";
 import React, { useState, useCallback, useEffect } from "react";
 import {
   WagmiProvider,
@@ -15,6 +17,10 @@ import { AccountContext } from "@/contexts/AccountContext";
 import { wagmiConfig } from "@/lib/wagmi";
 import { Account } from "@/types/account";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+
+type MetamaskWallet = {}
+type LedgerWallet = {}
+type AccountWallet = MetamaskWallet | LedgerWallet;
 
 const queryClient = new QueryClient();
 
@@ -92,6 +98,25 @@ const AccountProviderInner: React.FC<{ children: React.ReactNode }> = ({
                 `m/44'/${lotusNodeCode}'/0'/0/${pathIndex}`
               )
             );
+
+            // TODO: Refactor ths out of here...
+            const api = new VerifyAPI(
+              VerifyAPI.browserProvider("https://api.node.glif.io/rpc/v1", {
+                token: async () => {
+                  return "UXggx8DyJeaIIIe1cJZdnDk4sIiTc0uF3vYJXlRsZEQ=";
+                },
+              }),
+              { sign: () => "", getAccounts: () => [ledgerAddress] },
+              false // this.lotusNode.name !== "Mainnet" // if node != Mainnet => testnet = true
+            );
+            const messageID = await api.multisigVerifyClient(
+              "f080",
+              "",
+              BigInt(200),  // datacap
+              0,             // wallet index,
+              null          // wallet: this is passed in the VerifyAPI context.
+            ); 
+
             setAccount({
               address: ledgerAddress,
               isConnected: true,

@@ -57,13 +57,16 @@ export function DashboardApplicationsPanel({
     switch (application.status.phase) {
       case "SUBMISSION":
         return (
-          <Button>
+          <SignTransactionButton text="Approve" />
+          /*<Button>
             View
-          </Button>
+          </Button>*/
         );
 
       case "KYC":
         return (
+          <SignTransactionButton text="Approve" />
+          /*
           <Button>
             <Link
               href={`https://flow-dev.togggle.io/fidl/kyc?q=${application.id}`}
@@ -72,6 +75,7 @@ export function DashboardApplicationsPanel({
               Submit KYC
             </Link>
           </Button>
+          */
         );
 
       case "GOVERNANCE_REVIEW":
