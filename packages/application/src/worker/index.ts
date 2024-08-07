@@ -29,7 +29,7 @@ async function main() {
   }
 
   // Start the subscriptions
-  // await subscribeApplicationSubmissions(container);
+  await subscribeApplicationSubmissions(container);
   // await subscribeGovernanceReviews(container);
   // await subscribeRkhProposals(container);
   // await subscribeRkhApprovals(container);

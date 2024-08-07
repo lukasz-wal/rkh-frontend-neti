@@ -30,7 +30,8 @@ services:
       dockerfile: Dockerfile
       args:
         BUILD_CONTEXT: worker
-    command: npm -w @filecoin-plus/application run start:worker
+    command:
+      npm -w @filecoin-plus/application run start:worker
     environment:
       - NODE_ENV=dev
       - MONGODB_URI=mongodb://mongodb:27017/

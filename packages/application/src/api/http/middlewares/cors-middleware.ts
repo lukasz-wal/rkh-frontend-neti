@@ -1,6 +1,9 @@
 import cors, { CorsOptions } from 'cors';
 
-const whitelist = ["http://localhost:3000"];
+const whitelist = [
+  "http://localhost:3000",
+  "https://filecoin-plus-frontend-git-master-three-sigma.vercel.app"
+];
 
 const corsOptions: CorsOptions = {
   origin: function (origin: any, callback: any) {

@@ -16,7 +16,7 @@ export async function subscribeApplicationSubmissions(
   const commandBus = container.get<ICommandBus>(TYPES.CommandBus);
 
   setInterval(async () => {
-    const newRecords = await client.getTableRecords();
+    const newRecords = await client.getTableRecords(1093);
     for (const record of newRecords) {
       if (!record.fields["1. Notary Allocator Pathway Name"]) {
         continue;
@@ -42,5 +42,5 @@ export async function subscribeApplicationSubmissions(
         })
       );
     }
-  }, 60000);
+  }, 1000);
 }

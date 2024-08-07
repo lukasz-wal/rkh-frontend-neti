@@ -155,10 +155,11 @@ export class DatacapAllocator extends AggregateRoot {
   }
 
   approveKYC(data: KYCApprovedData) {
-    this.ensureValidPhaseStatus(DatacapAllocatorPhase.KYC, [
-      DatacapAllocatorPhaseStatus.NOT_STARTED,
-      DatacapAllocatorPhaseStatus.IN_PROGRESS,
-    ]);
+    // TODO
+    // this.ensureValidPhaseStatus(DatacapAllocatorPhase.KYC, [
+    //   DatacapAllocatorPhaseStatus.NOT_STARTED,
+    //   DatacapAllocatorPhaseStatus.IN_PROGRESS,
+    // ]);
 
     this.applyChange(new KYCApproved(this.guid, data));
     this.applyChange(new GovernanceReviewStarted(this.guid));
@@ -235,6 +236,11 @@ export class DatacapAllocator extends AggregateRoot {
       commentId: event.commentId,
       timestamp: event.timestamp,
     };
+
+    this.status = {
+      phase: DatacapAllocatorPhase.KYC,
+      phaseStatus: DatacapAllocatorPhaseStatus.NOT_STARTED
+    }
   }
 
   applyKYCStarted(event: KYCStarted) {
