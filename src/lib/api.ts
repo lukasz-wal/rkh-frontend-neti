@@ -1,6 +1,8 @@
 import { ApplicationPhase, ApplicationsResponse } from "@/types/application";
 
-const API_BASE_URL = "http://localhost:3001/api/v1"; // process.env.API_URL || "https://filecoin-plus-backend-x5dlwms4sq-ew.a.run.app/api/v1";
+// "http://localhost:3001/api/v1";
+// "https://filecoin-plus-backend-x5dlwms4sq-ew.a.run.app/api/v1";
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL
 
 export async function fetchApplications(
   searchTerm: string,

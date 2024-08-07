@@ -4,7 +4,12 @@ import { metaMask } from "wagmi/connectors";
 
 export const wagmiConfig = createConfig({
   chains: [mainnet, sepolia],
-  connectors: [metaMask({ extensionOnly: true })],
+  connectors: [metaMask({
+    extensionOnly: true,
+    dappMetadata: {
+      // TODO: TBD
+    }
+  })],
   transports: {
     [mainnet.id]: http(),
     [sepolia.id]: http(),
