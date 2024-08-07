@@ -1,6 +1,6 @@
 "use client";
 
-import TransportWebUSB from '@ledgerhq/hw-transport-webusb';
+import TransportWebUSB from "@ledgerhq/hw-transport-webusb";
 // @ts-ignore
 import FilecoinApp from "@zondax/ledger-filecoin";
 import React, { useState, useCallback, useEffect } from "react";
@@ -40,6 +40,26 @@ const AccountProviderInner: React.FC<{ children: React.ReactNode }> = ({
     }
   }, [wagmiAddress, wagmiIsConnected]);
 
+  function handleLedgerErrors(response: any) {
+    if (
+      response.error_message &&
+      response.error_message.toLowerCase().includes("no errors")
+    ) {
+      return response;
+    }
+    if (
+      response.error_message &&
+      response.error_message
+        .toLowerCase()
+        .includes("transporterror: invalild channel")
+    ) {
+      throw new Error(
+        "Lost connection with Ledger. Please unplug and replug device."
+      );
+    }
+    throw new Error(response.error_message);
+  }
+
   const connect = useCallback(
     async (connector: "wagmi" | "ledger") => {
       if (connector === "wagmi") {
@@ -51,6 +71,7 @@ const AccountProviderInner: React.FC<{ children: React.ReactNode }> = ({
           try {
             const ledgerApp = new FilecoinApp(transport);
             const version = await ledgerApp.getVersion();
+            console.log(version);
             if (version.device_locked) {
               throw new Error("Ledger locked.");
             }
@@ -63,19 +84,25 @@ const AccountProviderInner: React.FC<{ children: React.ReactNode }> = ({
             if (version.minor < 18 && version.patch < 2) {
               throw new Error("Please update Filecoin app on Ledger.");
             }
+
+            const lotusNodeCode = 461; // TODO: Config based on environment
+            const pathIndex = 0;
+            const { addrString: ledgerAddress } = handleLedgerErrors(
+              await ledgerApp.getAddressAndPubKey(
+                `m/44'/${lotusNodeCode}'/0'/0/${pathIndex}`
+              )
+            );
+            setAccount({
+              address: ledgerAddress,
+              isConnected: true,
+              connector: "ledger",
+            });
           } catch (e: any) {
             throw new Error(e.message);
           }
         } else {
           console.log("device not found");
         }
-
-        // const ledgerAddress = await connectLedger();
-        // setAccount({
-        //   address: ledgerAddress,
-        //   isConnected: true,
-        //   connector: "ledger",
-        // });
       }
     },
     [wagmiConnect]

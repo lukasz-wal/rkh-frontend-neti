@@ -1,18 +1,7 @@
-import {
-  Application,
-  ApplicationPhase,
-  ApplicationStatus,
-} from "@/types/application";
+import { Application, ApplicationStatus } from "@/types/application";
 import { Button } from "./ui/button";
 import Link from "next/link";
 import { AlertCircle, CheckCircle, PlusCircle, XCircle } from "lucide-react";
-import {
-  completeApplicationPhase,
-  startApplicationPhase,
-  startKYC,
-  submitGovernanceReview,
-  submitKYC,
-} from "@/lib/api";
 import { useToast } from "./ui/use-toast";
 
 interface ActionConfig {
@@ -28,9 +17,7 @@ function getActionConfig(status: ApplicationStatus): ActionConfig {
       return {
         label: `Start ${status.phase}`,
         icon: XCircle,
-        action: async (id: string) => {
-          await startApplicationPhase(id, status.phase);
-        },
+        action: async (id: string) => {},
         disabled: false,
       };
 
@@ -38,9 +25,7 @@ function getActionConfig(status: ApplicationStatus): ActionConfig {
       return {
         label: `Complete ${status.phase}`,
         icon: AlertCircle,
-        action: async (id: string) => {
-          await completeApplicationPhase(id, status.phase);
-        },
+        action: async (id: string) => {},
         disabled: false,
       };
 
@@ -73,7 +58,7 @@ export function ApplicationActionButton({
           action(id);
           toast({
             title: "Success",
-          })
+          });
         }}
         disabled={disabled}
         variant={disabled ? "outline" : "default"}
