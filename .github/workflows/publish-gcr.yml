@@ -8,10 +8,12 @@ on:
 env:
   PROJECT_ID: filecoin-plus-429823
   IMAGE_NAME: filecoin-plus-backend
+  CLOUD_RUN_SERVICE: filecoin-plus-backend
+  CLOUD_RUN_REGION: europe-west1
 
 jobs:
-  build-and-push:
-    name: Build and Push Docker Image
+  build-push-and-deploy:
+    name: Build, Push and Deploy Docker Image
     runs-on: ubuntu-latest
 
     steps:
@@ -51,3 +53,11 @@ jobs:
         if: github.ref == 'refs/heads/master'
         run: |
           gcloud container images add-tag gcr.io/${{ env.PROJECT_ID }}/${{ env.IMAGE_NAME }}:${{ github.sha }} gcr.io/${{ env.PROJECT_ID }}/${{ env.IMAGE_NAME }}:latest
+
+      - name: Deploy to Cloud Run
+        run: |
+          gcloud run deploy ${{ env.CLOUD_RUN_SERVICE }} \
+            --image gcr.io/${{ env.PROJECT_ID }}/${{ env.IMAGE_NAME }}:latest \
+            --region ${{ env.CLOUD_RUN_REGION }} \
+            --platform managed \
+            --project ${{ env.PROJECT_ID }}
