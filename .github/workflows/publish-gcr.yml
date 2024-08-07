@@ -54,10 +54,11 @@ jobs:
         run: |
           gcloud container images add-tag gcr.io/${{ env.PROJECT_ID }}/${{ env.IMAGE_NAME }}:${{ github.sha }} gcr.io/${{ env.PROJECT_ID }}/${{ env.IMAGE_NAME }}:latest
 
-      - name: Deploy to Cloud Run
-        run: |
-          gcloud run deploy ${{ env.CLOUD_RUN_SERVICE }} \
-            --image gcr.io/${{ env.PROJECT_ID }}/${{ env.IMAGE_NAME }}:latest \
-            --region ${{ env.CLOUD_RUN_REGION }} \
-            --platform managed \
-            --project ${{ env.PROJECT_ID }}
+      # TODO: Manual for now
+      # - name: Deploy to Cloud Run
+      #   run: |
+      #     gcloud run deploy ${{ env.CLOUD_RUN_SERVICE }} \
+      #       --image gcr.io/${{ env.PROJECT_ID }}/${{ env.IMAGE_NAME }}:latest \
+      #       --region ${{ env.CLOUD_RUN_REGION }} \
+      #       --platform managed \
+      #       --project ${{ env.PROJECT_ID }}
