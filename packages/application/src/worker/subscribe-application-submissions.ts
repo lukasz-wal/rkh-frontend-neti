@@ -5,10 +5,9 @@ import { CreateApplicationCommand } from "@src/application/commands";
 import { IAirtableClient } from "@src/infrastructure/clients/airtable";
 import { TYPES } from "@src/types";
 
+const START_INDEX = 1098;
 
-export async function subscribeApplicationSubmissions(
-  container: Container
-) {
+export async function subscribeApplicationSubmissions(container: Container) {
   // Get the Airtable client from the container
   const client = container.get<IAirtableClient>(TYPES.AirtableClient);
 
@@ -16,7 +15,7 @@ export async function subscribeApplicationSubmissions(
   const commandBus = container.get<ICommandBus>(TYPES.CommandBus);
 
   setInterval(async () => {
-    const newRecords = await client.getTableRecords(1093);
+    const newRecords = await client.getTableRecords(START_INDEX);
     for (const record of newRecords) {
       if (!record.fields["1. Notary Allocator Pathway Name"]) {
         continue;
@@ -39,8 +38,23 @@ export async function subscribeApplicationSubmissions(
           datacap: record.fields[
             "7. DataCap requested for allocator for 12 months of activity"
           ] as number,
+          targetClients: record.fields[
+            "10. Who are your target clients?"
+          ] as string[],
+          dataTypes: record.fields[
+            "17. What type(s) of data would be applicable for your pathway?"
+          ] as string[],
+          requiredReplicas: record.fields[
+            "22. How many replicas will you require to meet programmatic requirements for distribution?"
+          ] as string,
+          requiredOperators: record.fields[
+            "24. How many Storage Provider owner/operators will you require to meet programmatic requirements for distribution?"
+          ] as string,
+          standardizedAllocations: record.fields[
+            "29. Will you use standardized DataCap allocations to clients?"
+          ] as string,
         })
       );
     }
-  }, 1000);
+  }, 10000);
 }

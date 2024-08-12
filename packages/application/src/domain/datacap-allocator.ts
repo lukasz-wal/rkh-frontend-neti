@@ -16,9 +16,8 @@ import {
   GovernanceReviewRejected,
   ApplicationSubmitted,
   RKHApprovalStarted,
-  RKHSignatureSubmitted,
-  RKHApprovalApproved,
-  RKHApprovalRejected,
+  DatacapAllocationUpdated,
+  RKHApprovalsUpdated,
 } from "./events";
 import { KYCApprovedData, KYCRejectedData } from "./kyc";
 
@@ -33,7 +32,6 @@ export enum DatacapAllocatorPhase {
   KYC = "KYC",
   GOVERNANCE_REVIEW = "GOVERNANCE_REVIEW",
   RKH_APPROVAL = "RKH_APPROVAL",
-  DATA_CAP_GRANT = "DATA_CAP_GRANT",
 }
 
 export enum DatacapAllocatorPhaseStatus {
@@ -66,9 +64,18 @@ export class DatacapAllocator extends AggregateRoot {
   public type: string;
   public datacap: number;
 
+  public targetClients: string[];
+  public dataTypes: string[];
+  public requiredReplicas: string;
+  public requiredOperators: string;
+  public standardizedAllocations: string;
+
   public status: DatacapAllocatorStatus;
   public datacapAmount: number;
   public applicationPullRequest: ApplicationPullRequest;
+
+  public rkhApprovalThreshold: number = 2;
+  public rkhApprovals: string[] = [];
 
   constructor();
 
@@ -82,7 +89,12 @@ export class DatacapAllocator extends AggregateRoot {
     country: string,
     region: string,
     type: string,
-    datacap: number
+    datacap: number,
+    targetClients: string[],
+    dataTypes: string[],
+    requiredReplicas: string,
+    requiredOperators: string,
+    standardizedAllocations: string
   );
 
   constructor(
@@ -95,7 +107,12 @@ export class DatacapAllocator extends AggregateRoot {
     country?: string,
     region?: string,
     type?: string,
-    datacap?: number
+    datacap?: number,
+    targetClients?: string[],
+    dataTypes?: string[],
+    requiredReplicas?: string,
+    requiredOperators?: string,
+    standardizedAllocations?: string
   ) {
     super(guid);
 
@@ -109,7 +126,12 @@ export class DatacapAllocator extends AggregateRoot {
       country &&
       region &&
       type &&
-      datacap
+      datacap &&
+      targetClients &&
+      dataTypes &&
+      requiredReplicas &&
+      requiredOperators &&
+      standardizedAllocations
     ) {
       this.applyChange(
         new AllocatorApplied(
@@ -122,19 +144,33 @@ export class DatacapAllocator extends AggregateRoot {
           country,
           region,
           type,
-          datacap
+          datacap,
+          targetClients,
+          dataTypes,
+          requiredReplicas,
+          requiredOperators,
+          standardizedAllocations
         )
       );
     }
   }
 
-  completeSubmission(pullRequestNumber: number, pullRequestUrl: string, commentId: number) {
+  completeSubmission(
+    pullRequestNumber: number,
+    pullRequestUrl: string,
+    commentId: number
+  ) {
     this.ensureValidPhaseStatus(DatacapAllocatorPhase.SUBMISSION, [
       DatacapAllocatorPhaseStatus.IN_PROGRESS,
     ]);
 
     this.applyChange(
-      new ApplicationSubmitted(this.guid, pullRequestNumber, pullRequestUrl, commentId)
+      new ApplicationSubmitted(
+        this.guid,
+        pullRequestNumber,
+        pullRequestUrl,
+        commentId
+      )
     );
     this.applyChange(new KYCStarted(this.guid));
   }
@@ -209,7 +245,18 @@ export class DatacapAllocator extends AggregateRoot {
     // TODO: Reject application
   }
 
-  submitRKHSignature() {}
+  updateRKHApprovals(approvals: string[]) {
+    this.ensureValidPhaseStatus(DatacapAllocatorPhase.RKH_APPROVAL, [
+      DatacapAllocatorPhaseStatus.NOT_STARTED,
+      DatacapAllocatorPhaseStatus.IN_PROGRESS,
+    ]);
+
+    this.applyChange(new RKHApprovalsUpdated(this.guid, approvals));
+  }
+
+  updateDatacapAllocation(datacap: number) {
+    this.applyChange(new DatacapAllocationUpdated(this.guid, datacap));
+  }
 
   applyAllocatorApplied(event: AllocatorApplied) {
     this.guid = event.guid;
@@ -222,6 +269,11 @@ export class DatacapAllocator extends AggregateRoot {
     this.region = event.region;
     this.type = event.type;
     this.datacap = event.datacap;
+    this.targetClients = event.targetClients;
+    this.dataTypes = event.dataTypes;
+    this.requiredReplicas = event.requiredReplicas;
+    this.requiredOperators = event.requiredOperators;
+    this.standardizedAllocations = event.standardizedAllocations;
 
     this.status = {
       phase: DatacapAllocatorPhase.SUBMISSION,
@@ -239,8 +291,8 @@ export class DatacapAllocator extends AggregateRoot {
 
     this.status = {
       phase: DatacapAllocatorPhase.KYC,
-      phaseStatus: DatacapAllocatorPhaseStatus.NOT_STARTED
-    }
+      phaseStatus: DatacapAllocatorPhaseStatus.NOT_STARTED,
+    };
   }
 
   applyKYCStarted(event: KYCStarted) {
@@ -290,24 +342,26 @@ export class DatacapAllocator extends AggregateRoot {
       phase: DatacapAllocatorPhase.RKH_APPROVAL,
       phaseStatus: DatacapAllocatorPhaseStatus.IN_PROGRESS,
     };
+    this.rkhApprovalThreshold = event.approvalThreshold;
   }
 
-  applyRKHSignatureSubmitted(event: RKHSignatureSubmitted) {
-    throw new Error("Method not implemented.");
+  applyRKHApprovalsUpdated(event: RKHApprovalsUpdated) {
+    this.status = {
+      phase: DatacapAllocatorPhase.RKH_APPROVAL,
+      phaseStatus:
+        event.approvals.length < 2
+          ? DatacapAllocatorPhaseStatus.IN_PROGRESS
+          : DatacapAllocatorPhaseStatus.COMPLETED,
+    };
+    this.rkhApprovals = event.approvals;
   }
 
-  applyRKHApprovalApproved(event: RKHApprovalApproved) {
+  applyDatacapAllocationUpdated(event: DatacapAllocationUpdated) {
     this.status = {
       phase: DatacapAllocatorPhase.RKH_APPROVAL,
       phaseStatus: DatacapAllocatorPhaseStatus.COMPLETED,
     };
-  }
-
-  applyRKHApprovalRejected(event: RKHApprovalRejected) {
-    this.status = {
-      phase: DatacapAllocatorPhase.RKH_APPROVAL,
-      phaseStatus: DatacapAllocatorPhaseStatus.FAILED,
-    };
+    this.datacapAmount = event.datacap;
   }
 
   private ensureValidPhaseStatus(

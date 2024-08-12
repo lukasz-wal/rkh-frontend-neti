@@ -38,8 +38,8 @@ export class ApplicationSubmittedEventHandler
       {
         $set: {
           status: {
-            phase: DatacapAllocatorPhase.SUBMISSION,
-            phaseStatus: DatacapAllocatorPhaseStatus.COMPLETED,
+            phase: DatacapAllocatorPhase.KYC,
+            phaseStatus: DatacapAllocatorPhaseStatus.NOT_STARTED,
           },
           phases: {
             submission: {
@@ -69,6 +69,8 @@ export class KYCStartedEventHandler implements IEventHandler<KYCStarted> {
   ) {}
 
   async handle(event: KYCStarted): Promise<void> {
+    console.log("KYCStartedEventHandler", event);
+
     // Update allocator status in the database
     await this._db.collection("datacapAllocators").updateOne(
       { id: event.aggregateId },

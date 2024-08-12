@@ -24,7 +24,7 @@ export async function subscribeRkhProposals(container: Container) {
   // Start the application
   setInterval(async () => {
     const multisig = await client.getMultisig("f080");
-    // console.log("Multisig", multisig);
+    console.log("Multisig", multisig);
 
     for (const pendingTx of multisig.pendingTxs) {
       if (
@@ -41,7 +41,6 @@ export async function subscribeRkhProposals(container: Container) {
 
         const result = await commandBus.send(
           new UpdateRKHApprovalsCommand(
-            pendingTx.id,
             address,
             pendingTx.approved.map((a) => a.toString())
           )

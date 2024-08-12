@@ -23,7 +23,6 @@ export class GetDatacapAllocatorsQueryHandler
   constructor(@inject(TYPES.Db) private readonly db: Db) {}
 
   async execute(query: GetDatacapAllocatorsQuery) {
-    console.log("Executing query", query);
     const { page, limit, phases, search } = query;
     const skip = (page - 1) * limit;
 

@@ -79,7 +79,7 @@ export class AirtableClient implements IAirtableClient {
 
       return this.mapAirtableRecords(records);
     } catch (error) {
-      console.error("Error fetching records from Airtable:", error);
+      this.logger.error("Error fetching records from Airtable:", error);
       throw new Error("Failed to fetch records from Airtable");
     }
   }

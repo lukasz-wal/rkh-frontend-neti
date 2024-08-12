@@ -28,7 +28,7 @@ export class SubmitGovernanceReviewResultCommand extends SubmitPhaseResultComman
 }
 
 @injectable()
-export class SubmitGovernanceReviewCResultCommandHandler
+export class SubmitGovernanceReviewResultCommandHandler
   implements ICommandHandler<SubmitGovernanceReviewResultCommand>
 {
   commandToHandle: string = SubmitGovernanceReviewResultCommand.name;

@@ -1,20 +1,25 @@
 import { ICommandBus, Logger } from "@filecoin-plus/core";
-import dotenv from 'dotenv';
+import dotenv from "dotenv";
 import { Container } from "inversify";
 import { Db } from "mongodb";
 
 import { SubmitGovernanceReviewResultCommand } from "@src/application/commands/submit-governance-review";
+import config from "@src/config";
 import { IGithubClient } from "@src/infrastructure/clients/github";
 import { TYPES } from "@src/types";
 
 // Load environment variables
 dotenv.config();
 
-const GOVERNANCE_REVIEWERS = process.env.GOVERNANCE_REVIEWERS?.split(',') || ["asynctomatic"];
-const POLL_INTERVAL = parseInt(process.env.POLL_INTERVAL || '10000', 10);
-const GITHUB_OWNER = process.env.GITHUB_OWNER || "threesigmaxyz";
-const GITHUB_REPO = process.env.GITHUB_REPO || "zksync-oauth-contracts";
-const GITHUB_PR_NUMBER = parseInt(process.env.GITHUB_PR_NUMBER || '44', 10);
+type GovernanceReviewer = {
+  githubHandle: string;
+  address?: string;
+}
+
+const GOVERNANCE_REVIEWERS = process.env.GOVERNANCE_REVIEWERS?.split(",") || [
+  "asynctomatic",
+];
+const POLL_INTERVAL = parseInt(process.env.POLL_INTERVAL || "5000", 10);
 
 export async function subscribeGovernanceReviews(container: Container) {
   const client = container.get<IGithubClient>(TYPES.GithubClient);
@@ -22,8 +27,11 @@ export async function subscribeGovernanceReviews(container: Container) {
   const commandBus = container.get<ICommandBus>(TYPES.CommandBus);
   const logger = container.get<Logger>(TYPES.Logger);
 
-  try {    
-    setInterval(() => processApplications(db, client, commandBus, logger), POLL_INTERVAL);
+  try {
+    setInterval(
+      () => processApplications(db, client, commandBus, logger),
+      POLL_INTERVAL
+    );
   } catch (error) {
     logger.error("Failed to initialize the application", { error });
     process.exit(1);
@@ -37,10 +45,15 @@ export async function subscribeGovernanceReviews(container: Container) {
  * @param {ICommandBus} commandBus - Command bus instance
  * @param {Logger} logger - Logger instance
  */
-async function processApplications(db: Db, client: IGithubClient, commandBus: ICommandBus, logger: Logger) {
+async function processApplications(
+  db: Db,
+  client: IGithubClient,
+  commandBus: ICommandBus,
+  logger: Logger
+) {
   try {
     const applications = await fetchApplications(db, logger);
-    
+
     for (const application of applications) {
       await processApplication(application, client, commandBus, logger);
     }
@@ -57,9 +70,12 @@ async function processApplications(db: Db, client: IGithubClient, commandBus: IC
  */
 async function fetchApplications(db: Db, logger: Logger): Promise<any[]> {
   logger.info("Fetching applications in GOVERNANCE_REVIEW phase");
-  const applications = await db.collection("datacapAllocators").find({
-    "status.phase": "KYC",
-  }).toArray();
+  const applications = await db
+    .collection("datacapAllocators")
+    .find({
+      "status.phase": "GOVERNANCE_REVIEW",
+    })
+    .toArray();
   logger.info("Applications fetched", { count: applications.length });
   return applications;
 }
@@ -71,21 +87,36 @@ async function fetchApplications(db: Db, logger: Logger): Promise<any[]> {
  * @param {ICommandBus} commandBus - Command bus instance
  * @param {Logger} logger - Logger instance
  */
-async function processApplication(application: any, client: IGithubClient, commandBus: ICommandBus, logger: Logger) {
+async function processApplication(
+  application: any,
+  client: IGithubClient,
+  commandBus: ICommandBus,
+  logger: Logger
+) {
   if (!application?.phases?.submission?.pullRequestCommentId) {
-    logger.debug("Skipping application due to missing pullRequestCommentId", { applicationId: application.id });
+    logger.debug("Skipping application due to missing pullRequestCommentId", {
+      applicationId: application.id,
+    });
     return;
   }
 
   try {
-    const reviews = await fetchReviews(client, logger, application.id);
+    const reviews = await fetchReviews(client, logger, application);
     const approvedReview = findApprovedReview(reviews, logger, application.id);
-    
+
     if (approvedReview) {
-      await submitGovernanceReview(commandBus, application.id, approvedReview, logger);
+      await submitGovernanceReview(
+        commandBus,
+        application.id,
+        approvedReview,
+        logger
+      );
     }
   } catch (error) {
-    logger.error("Error processing application", { applicationId: application.id, error });
+    logger.error("Error processing application", {
+      applicationId: application.id,
+      error,
+    });
   }
 }
 
@@ -96,9 +127,17 @@ async function processApplication(application: any, client: IGithubClient, comma
  * @param {string} applicationId - The ID of the application being processed
  * @returns {Promise<any[]>} Array of reviews
  */
-async function fetchReviews(client: IGithubClient, logger: Logger, applicationId: string): Promise<any[]> {
+async function fetchReviews(
+  client: IGithubClient,
+  logger: Logger,
+  applicationId: string
+): Promise<any[]> {
   logger.info("Fetching reviews", { applicationId });
-  const reviews = await client.getPullRequestReviews(GITHUB_OWNER, GITHUB_REPO, GITHUB_PR_NUMBER);
+  const reviews = await client.getPullRequestReviews(
+    config.GITHUB_OWNER,
+    config.GITHUB_REPO,
+    6,  // TODO
+  );
   logger.info("Reviews fetched", { applicationId, count: reviews.length });
   return reviews;
 }
@@ -110,9 +149,15 @@ async function fetchReviews(client: IGithubClient, logger: Logger, applicationId
  * @param {string} applicationId - The ID of the application being processed
  * @returns {any | undefined} The approved review, or undefined if not found
  */
-function findApprovedReview(reviews: any[], logger: Logger, applicationId: string): any | undefined {
-  const approvedReview = reviews.find((review) => 
-    review.state === "APPROVED" && GOVERNANCE_REVIEWERS.includes(review?.user?.login as string)
+function findApprovedReview(
+  reviews: any[],
+  logger: Logger,
+  applicationId: string
+): any | undefined {
+  const approvedReview = reviews.find(
+    (review) =>
+      review.state === "APPROVED" &&
+      GOVERNANCE_REVIEWERS.includes(review?.user?.login as string)
   );
 
   if (approvedReview) {
@@ -131,7 +176,12 @@ function findApprovedReview(reviews: any[], logger: Logger, applicationId: strin
  * @param {any} review - The approved review to submit
  * @param {Logger} logger - Logger instance
  */
-async function submitGovernanceReview(commandBus: ICommandBus, applicationId: string, review: any, logger: Logger) {
+async function submitGovernanceReview(
+  commandBus: ICommandBus,
+  applicationId: string,
+  review: any,
+  logger: Logger
+) {
   logger.info("Submitting governance review result", { applicationId });
   await commandBus.send(
     new SubmitGovernanceReviewResultCommand(applicationId, {

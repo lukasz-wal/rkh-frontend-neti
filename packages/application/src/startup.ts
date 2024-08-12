@@ -34,8 +34,14 @@ import {
   KYCStartedEventHandler,
 } from "./application/events/handlers";
 import { UpdateRKHApprovalsCommandHandler } from "./application/commands/update-rkh-approvals";
-import { CreateApplicationCommandHandler, SubmitKYCResultCommandHandler, UpdateGithubBranchCommandHandler } from "./application/commands";
+import {
+  CreateApplicationCommandHandler,
+  SubmitKYCResultCommandHandler,
+  UpdateDatacapAllocationCommandHandler,
+  UpdateGithubBranchCommandHandler,
+} from "./application/commands";
 import { GetDatacapAllocatorsQueryHandler } from "./application/queries/get-datacap-allocators";
+import { SubmitGovernanceReviewResultCommandHandler } from "./application/commands/submit-governance-review";
 
 export const initialize = async (): Promise<Container> => {
   const container = new Container();
@@ -83,12 +89,15 @@ export const initialize = async (): Promise<Container> => {
   container
     .bind<ICommandHandler<ICommand>>(TYPES.CommandHandler)
     .to(SubmitKYCResultCommandHandler);
-  // container
-  //   .bind<ICommandHandler<StartPhaseCommand>>(TYPES.CommandHandler)
-  //   .to(SubmitGovernanceReviewResultCommandHandler);
+  container
+    .bind<ICommandHandler<ICommand>>(TYPES.CommandHandler)
+    .to(SubmitGovernanceReviewResultCommandHandler);
   container
     .bind<ICommandHandler<ICommand>>(TYPES.CommandHandler)
     .to(UpdateRKHApprovalsCommandHandler);
+  container
+    .bind<ICommandHandler<ICommand>>(TYPES.CommandHandler)
+    .to(UpdateDatacapAllocationCommandHandler);
   container
     .bind<ICommandHandler<ICommand>>(TYPES.CommandHandler)
     .to(UpdateGithubBranchCommandHandler);

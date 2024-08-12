@@ -15,6 +15,8 @@ export default {
   RABBITMQ_QUEUE_NAME: process.env.RABBITMQ_QUEUE_NAME || 'filecoin-plus',
 
   // GitHub client configuration
+  GITHUB_OWNER: process.env.GITHUB_OWNER || 'threesigmaxyz',
+  GITHUB_REPO: process.env.GITHUB_REPO || 'Allocator-Registry',
   GITHUB_AUTH_TOKEN: process.env.GITHUB_AUTH_TOKEN || 'your-github-auth-token',
 
   // Airtable client configuration

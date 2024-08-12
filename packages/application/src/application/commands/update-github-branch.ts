@@ -1,11 +1,11 @@
-import { Command, ICommandHandler } from "@filecoin-plus/core";
+import { Command, ICommandHandler, Logger } from "@filecoin-plus/core";
 import { inject, injectable } from "inversify";
 
+import config from "@src/config";
 import {
   DatacapAllocator,
   DatacapAllocatorPhase,
   DatacapAllocatorPhaseStatus,
-  DatacapAllocatorStatus,
   IDatacapAllocatorRepository,
 } from "@src/domain/datacap-allocator";
 import { IGithubClient, PullRequest } from "@src/infrastructure/clients/github";
@@ -24,6 +24,8 @@ export class UpdateGithubBranchCommandHandler
   commandToHandle: string = UpdateGithubBranchCommand.name;
 
   constructor(
+    @inject(TYPES.Logger)
+    private readonly _logger: Logger,
     @inject(TYPES.DatacapAllocatorRepository)
     private readonly _repository: IDatacapAllocatorRepository,
     @inject(TYPES.GithubClient) private readonly _githubClient: IGithubClient
@@ -37,18 +39,34 @@ export class UpdateGithubBranchCommandHandler
       throw new Error(`Allocator with ID ${command.allocatorId} not found`);
     }
 
+    if (
+      allocator.status.phase === DatacapAllocatorPhase.GOVERNANCE_REVIEW &&
+      allocator.status.phaseStatus === DatacapAllocatorPhaseStatus.IN_PROGRESS
+    ) {
+      // Add reviewers to the pull request
+      await this._githubClient.updatePullRequestReviewers(
+        config.GITHUB_OWNER,
+        config.GITHUB_REPO,
+        allocator.applicationPullRequest.prNumber,
+        ["asynctomatic"]
+      );
+    }
+
     if (!allocator.applicationPullRequest) {
-      console.log("Creating new pull request");
       // Create a pull request for the allocator
+      this._logger.info("Creating new pull request");
       const pullRequest = await this.createPullRequest(allocator);
+      this._logger.info(`Pull request created: ${pullRequest.url}`);
 
       // Comment on the pull request with the status of the application
+      this._logger.info("Creating pull request comment");
       const prComment = await this._githubClient.createPullRequestComment(
-        "asynctomatic",
-        "Allocator-Registry",
+        config.GITHUB_OWNER,
+        config.GITHUB_REPO,
         pullRequest.number,
         this.generateCommentMessage(allocator)
       );
+      this._logger.info(`Pull request comment created: ${prComment.id}`);
 
       // Update the allocator with the pull request information
       allocator.completeSubmission(
@@ -68,11 +86,11 @@ export class UpdateGithubBranchCommandHandler
     allocator: DatacapAllocator
   ): Promise<PullRequest> {
     // Create a new branch for the allocator
-    const branchName = `filecoin-plus-bot/allocator/${allocator.guid}`;
+    const branchName = `filecoin-plus-bot/allocator/${allocator.number}`;
     console.log(`Creating branch ${branchName}`);
     await this._githubClient.createBranch(
-      "asynctomatic",
-      "Allocator-Registry",
+      config.GITHUB_OWNER,
+      config.GITHUB_REPO,
       branchName,
       "main"
     );
@@ -80,23 +98,47 @@ export class UpdateGithubBranchCommandHandler
 
     // Create a pull request for the new allocator
     const pullRequest = await this._githubClient.createPullRequest(
-      "asynctomatic",
-      "Allocator-Registry",
-      `Add new allocator: ${allocator.firstname}`,
+      config.GITHUB_OWNER,
+      config.GITHUB_REPO,
+      `Add new allocator: ${allocator.number}`,
       this.generatePullRequestMessage(allocator),
       branchName,
       "main",
       [
         {
-          path: `allocators/${allocator.guid}.json`,
+          path: `allocators/${allocator.number}.json`,
           content: JSON.stringify(
             {
-              firstName: allocator.firstname,
-              lastName: allocator.lastname,
-              email: allocator.email,
-              githubId: allocator.githubId,
-              currentPosition: allocator.currentPosition,
-              status: allocator.kycStatus,
+              application_number: allocator.number,
+              address: allocator.address,
+              name: allocator.name,
+              organization: allocator.organization,
+              location: allocator.country,
+              status: "Active",
+              metapathway_type: "Automatic",
+              associated_org_addresses: allocator.address,
+              application: {
+                allocations: {
+                  standardized: allocator.standardizedAllocations,
+                },
+                target_clients: allocator.targetClients,
+                required_sps: allocator.requiredOperators,
+                required_replicas: allocator.requiredReplicas,
+                tooling: [],
+                data_types: allocator.dataTypes,
+                "12m_requested": 10,
+                github_handles: [allocator.githubUsername],
+                allocation_bookkeeping:
+                  "https://github.com/CloudX-Lab/filecion",
+              },
+              poc: {
+                slack: "CloudX Lab",
+                github_user: "CloudX-Lab",
+              },
+              pathway_addresses: {
+                msig: "f2o2obeorcnu4zp6zbs6i2pxkzqppxyxommqpsefi",
+                signer: ["f1mkrrydd5xdjgtpnlsljkmdy5w3tphzz3orb32di"],
+              },
             },
             null,
             2
@@ -110,8 +152,8 @@ export class UpdateGithubBranchCommandHandler
   private async updatePullRequestMessage(allocator: DatacapAllocator) {
     // Update the message on the existing pull request
     await this._githubClient.updatePullRequestComment(
-      "asynctomatic",
-      "Allocator-Registry",
+      config.GITHUB_OWNER,
+      config.GITHUB_REPO,
       allocator.applicationPullRequest.prNumber,
       allocator.applicationPullRequest.commentId,
       this.generateCommentMessage(allocator)
@@ -172,7 +214,7 @@ ${statusEmoji[allocator.status.phaseStatus] || "❓"} \`${
 
 `;
 
-    message += this.getStatusSpecificMessage(allocator.status);
+    message += this.getStatusSpecificMessage(allocator);
 
     message += `
 ---
@@ -182,15 +224,13 @@ ${statusEmoji[allocator.status.phaseStatus] || "❓"} \`${
     return message;
   }
 
-  private getKYCStatusMessage(
-    phaseStatus: DatacapAllocatorPhaseStatus
-  ): string {
-    switch (phaseStatus) {
+  private getKYCStatusMessage(allocator: DatacapAllocator): string {
+    switch (allocator.status.phaseStatus) {
       case DatacapAllocatorPhaseStatus.NOT_STARTED ||
         DatacapAllocatorPhaseStatus.IN_PROGRESS:
         return `
 ### Next Steps
-1. Complete the KYC process at [our secure portal](https://flow-dev.togggle.io/fidl/kyc)
+1. Complete the KYC process at [our secure portal](https://flow-dev.togggle.io/fidl/kyc?q=${allocator.guid})
 2. Your application will be automatically updated once submitted
 
 > ℹ️ KYC completion is required to proceed with your application
@@ -298,14 +338,14 @@ ${statusEmoji[allocator.status.phaseStatus] || "❓"} \`${
     }
   }
 
-  private getStatusSpecificMessage(status: DatacapAllocatorStatus): string {
-    switch (status.phase) {
+  private getStatusSpecificMessage(allocator: DatacapAllocator): string {
+    switch (allocator.status.phase) {
       case DatacapAllocatorPhase.KYC:
-        return this.getKYCStatusMessage(status.phaseStatus);
+        return this.getKYCStatusMessage(allocator);
       case DatacapAllocatorPhase.GOVERNANCE_REVIEW:
-        return this.getDiscussionStatusMessage(status.phaseStatus);
+        return this.getDiscussionStatusMessage(allocator.status.phaseStatus);
       case DatacapAllocatorPhase.RKH_APPROVAL:
-        return this.getRKHApprovalStatusMessage(status.phaseStatus);
+        return this.getRKHApprovalStatusMessage(allocator.status.phaseStatus);
       default:
         return `
 ### Need Assistance?

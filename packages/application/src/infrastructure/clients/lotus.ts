@@ -1,5 +1,5 @@
 import { Logger } from "@filecoin-plus/core";
-
+import { VerifyAPI } from "@keyko-io/filecoin-verifier-tools";
 import axios from "axios";
 import { inject, injectable } from "inversify";
 import { nanoid } from "nanoid";
@@ -24,6 +24,8 @@ type Multisig = {
 
 export interface ILotusClient {
   getMultisig(id: string): Promise<Multisig>;
+  getActorId(address: string): Promise<string>;
+  getDatacapAllocations(): Promise<{ allocatorId: string; datacap: number }[]>;
 }
 
 export interface LotusClientConfig {
@@ -33,12 +35,38 @@ export interface LotusClientConfig {
 
 @injectable()
 export class LotusClient implements ILotusClient {
+  private readonly api: VerifyAPI;
+
   constructor(
     @inject(TYPES.Logger)
     private readonly logger: Logger,
     @inject(TYPES.LotusClientConfig)
     private readonly config: LotusClientConfig
-  ) {}
+  ) {
+    this.api = new VerifyAPI(
+      VerifyAPI.standAloneProvider(config.rpcUrl, {
+        token: async () => {
+          return config.authToken;
+        },
+      }),
+      {},
+      false // if node != Mainnet => testnet = true
+    );
+  }
+
+  async getActorId(address: string): Promise<string> {
+    return await this.api.cachedActorAddress(address);
+  }
+
+  async getDatacapAllocations(): Promise<
+    { allocatorId: string; datacap: number }[]
+  > {
+    const verifiers = await this.api.listVerifiers();
+    return verifiers.map((verifier) => ({
+      allocatorId: verifier.verifier as string,
+      datacap: verifier.datacap as number,
+    }));
+  }
 
   async getMultisig(id: string): Promise<Multisig> {
     this.logger.debug(`Fetching multisig: ${id}`);
@@ -109,7 +137,9 @@ export class LotusClient implements ILotusClient {
     }
 
     this.logger.debug(
-      `Lotus RPC request successful: ${requestId} ${JSON.stringify(responseData.result)}`
+      `Lotus RPC request successful: ${requestId} ${JSON.stringify(
+        responseData.result
+      )}`
     );
     return responseData.result;
   }

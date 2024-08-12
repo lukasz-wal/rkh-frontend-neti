@@ -1,11 +1,18 @@
-import { Command, ICommandHandler } from "@filecoin-plus/core";
+import { Command, ICommandHandler, Logger } from "@filecoin-plus/core";
 import { inject, injectable } from "inversify";
 
+import { ILotusClient } from "@src/infrastructure/clients/lotus";
 import {
   DatacapAllocator,
   IDatacapAllocatorRepository,
 } from "@src/domain/datacap-allocator";
 import { TYPES } from "@src/types";
+
+type Result<T> = {
+  success: boolean;
+  data?: T;
+  error?: Error;
+};
 
 export class CreateApplicationCommand extends Command {
   public readonly applicationNumber: number;
@@ -17,6 +24,11 @@ export class CreateApplicationCommand extends Command {
   public readonly region: string;
   public readonly type: string;
   public readonly datacap: number;
+  public readonly targetClients: string[];
+  public readonly dataTypes: string[];
+  public readonly requiredReplicas: string;
+  public readonly requiredOperators: string;
+  public readonly standardizedAllocations: string;
 
   /**
    * Creates a new CreateApplicationCommand instance.
@@ -35,26 +47,57 @@ export class CreateApplicationCommandHandler
   commandToHandle: string = CreateApplicationCommand.name;
 
   constructor(
+    @inject(TYPES.Logger)
+    private readonly logger: Logger,
     @inject(TYPES.DatacapAllocatorRepository)
-    private readonly _repository: IDatacapAllocatorRepository
+    private readonly repository: IDatacapAllocatorRepository,
+    @inject(TYPES.LotusClient)
+    private readonly lotusClient: ILotusClient
   ) {}
 
-  async handle(command: CreateApplicationCommand): Promise<{ guid: string }> {
-    const allocator: DatacapAllocator = new DatacapAllocator(
-      command.guid,
-      command.applicationNumber,
-      command.allocatorPathwayName,
-      command.organizationName,
-      command.onChainAddress,
-      command.githubUsername,
-      command.country,
-      command.region,
-      command.type,
-      command.datacap
-    );
+  async handle(
+    command: CreateApplicationCommand
+  ): Promise<Result<{ guid: string }>> {
+    try {
+      // Convert the on-chain address to an actor ID
+      const allocatorId = await this.lotusClient.getActorId(
+        command.onChainAddress
+      );
 
-    this._repository.save(allocator, -1);
+      // Create a new datacap allocator
+      const allocator: DatacapAllocator = new DatacapAllocator(
+        allocatorId,
+        command.applicationNumber,
+        command.allocatorPathwayName,
+        command.organizationName,
+        command.onChainAddress,
+        command.githubUsername,
+        command.country,
+        command.region,
+        command.type,
+        command.datacap,
+        command.targetClients,
+        command.dataTypes,
+        command.requiredReplicas,
+        command.requiredOperators,
+        command.standardizedAllocations
+      );
 
-    return { guid: command.guid };
+      this.repository.save(allocator, -1);
+
+      return {
+        success: true,
+        data: { guid: command.guid },
+      };
+    } catch (error: any) {
+      this.logger.error(
+        "Error in CreateApplicationCommandHandler:",
+        error.message
+      );
+      return {
+        success: false,
+        error: error instanceof Error ? error : new Error(String(error)),
+      };
+    }
   }
 }

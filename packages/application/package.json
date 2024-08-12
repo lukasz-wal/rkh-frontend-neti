@@ -6,7 +6,6 @@
   "scripts": {
     "build": "tsc --build --force && tsc-alias",
     "start": "TS_NODE_BASEURL=dist node -r tsconfig-paths/register dist/api/index.js",
-    "start:worker": "TS_NODE_BASEURL=dist node -r tsconfig-paths/register dist/worker/index.js",
     "start:worker:governance-review": "TS_NODE_BASEURL=dist node -r tsconfig-paths/register dist/worker/subscribe-governance-review-status.js",
     "start:worker:rkh": "TS_NODE_BASEURL=dist node -r tsconfig-paths/register dist/worker/subscribe-rkh.js"
   },
@@ -23,10 +22,12 @@
   "dependencies": {
     "@filecoin-plus/core": "^1.0.0",
     "@ipld/dag-cbor": "^9.2.1",
+    "@keyko-io/filecoin-verifier-tools": "^2.2.4",
     "@octokit/core": "^6.1.2",
     "@octokit/plugin-throttling": "^9.3.1",
     "@octokit/rest": "^21.0.0",
     "@types/mongodb": "^4.0.7",
+    "@wtfcode/byte-converter": "^2.0.8",
     "airtable": "^0.12.2",
     "amqplib": "^0.10.4",
     "axios": "^1.7.2",

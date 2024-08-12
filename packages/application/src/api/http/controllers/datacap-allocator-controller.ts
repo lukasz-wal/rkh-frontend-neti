@@ -1,5 +1,6 @@
 import { IQueryBus } from "@filecoin-plus/core";
 import { Request, Response } from "express";
+import { query, validationResult } from "express-validator";
 import { inject } from "inversify";
 import {
   controller,
@@ -9,11 +10,10 @@ import {
   response,
 } from "inversify-express-utils";
 
-import { badRequest, ok } from "@src/api/http/processors/response";
-import { TYPES } from "@src/types";
-import { query, validationResult } from "express-validator";
-import { DatacapAllocatorPhase } from "@src/domain/datacap-allocator";
 import { GetDatacapAllocatorsQuery } from "@src/application/queries/get-datacap-allocators";
+import { badRequest, ok } from "@src/api/http/processors/response";
+import { DatacapAllocatorPhase } from "@src/domain/datacap-allocator";
+import { TYPES } from "@src/types";
 
 @controller("/api/v1/allocators")
 export class DatacapAllocatorController {

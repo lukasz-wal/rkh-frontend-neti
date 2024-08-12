@@ -1,10 +1,12 @@
 import { Command, ICommandHandler } from "@filecoin-plus/core";
-import { injectable } from "inversify";
+import { inject, injectable } from "inversify";
+
+import { IDatacapAllocatorRepository } from "@src/domain/datacap-allocator";
+import { TYPES } from "@src/types";
 
 export class UpdateRKHApprovalsCommand extends Command {
   constructor(
-    public readonly txId: number,
-    public readonly address: string,
+    public readonly allocatorId: string,
     public readonly approvals: string[]
   ) {
     super();
@@ -17,9 +19,17 @@ export class UpdateRKHApprovalsCommandHandler
 {
   commandToHandle: string = UpdateRKHApprovalsCommand.name;
 
-  constructor() {}
+  constructor(
+    @inject(TYPES.DatacapAllocatorRepository)
+    private readonly _repository: IDatacapAllocatorRepository
+  ) {}
 
   async handle(command: UpdateRKHApprovalsCommand): Promise<void> {
-    console.log("UpdateRKHApprovalsCommand", command);
+    const allocator = await this._repository.getById(command.allocatorId);
+    if (!allocator) {
+      throw new Error(`Allocator with id ${command.allocatorId} not found`);
+    }
+
+    allocator.updateRKHApprovals(command.approvals);
   }
 }

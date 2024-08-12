@@ -51,6 +51,13 @@ export interface IGithubClient {
     body: string
   ): Promise<PullRequestReview>;
 
+  updatePullRequestReviewers(
+    owner: string,
+    repo: string,
+    pullNumber: number,
+    reviewers: string[]
+  ): Promise<void>;
+
   getPullRequestReviews(
     owner: string,
     repo: string,
@@ -216,6 +223,20 @@ export class GithubClient implements IGithubClient {
     });
 
     return data;
+  }
+
+  async updatePullRequestReviewers(
+    owner: string,
+    repo: string,
+    pullNumber: number,
+    reviewers: string[]
+  ): Promise<void> {
+    await this.octokit.pulls.requestReviewers({
+      owner,
+      repo,
+      pull_number: pullNumber,
+      reviewers,
+    });
   }
 
   async getPullRequestReviews(

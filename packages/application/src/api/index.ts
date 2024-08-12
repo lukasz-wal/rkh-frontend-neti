@@ -17,8 +17,8 @@ import { corsMiddleware } from "./http/middlewares/cors-middleware";
 import {
   subscribeApplicationSubmissions,
   subscribeGovernanceReviews,
-  subscribeRkhApprovals,
-  subscribeRkhProposals,
+  subscribeRKHApprovals,
+  subscribeDatacapAllocations,
 } from "@src/worker";
 
 async function main() {
@@ -58,8 +58,8 @@ async function main() {
   // TODO: Move this to application startup
   await subscribeApplicationSubmissions(container);
   await subscribeGovernanceReviews(container);
-  // await subscribeRkhProposals(container);
-  // await subscribeRkhApprovals(container);
+  // await subscribeRKHApprovals(container);
+  // await subscribeDatacapAllocations(container);
 
   // Start the API server
   apiServer.listen(config.API_PORT, () =>

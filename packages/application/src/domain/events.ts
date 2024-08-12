@@ -15,7 +15,12 @@ export class AllocatorApplied extends Event {
     public country: string,
     public region: string,
     public type: string,
-    public datacap: number
+    public datacap: number,
+    public targetClients: string[],
+    public dataTypes: string[],
+    public requiredReplicas: string,
+    public requiredOperators: string,
+    public standardizedAllocations: string
   ) {
     super(guid);
   }
@@ -125,37 +130,25 @@ export class RKHApprovalStarted extends Event {
   }
 }
 
-export class RKHSignatureSubmitted extends Event {
-  eventName = RKHSignatureSubmitted.name;
+export class RKHApprovalsUpdated extends Event {
+  eventName = RKHApprovalsUpdated.name;
   aggregateName = "allocator";
 
   public timestamp: Date;
 
-  constructor(allocatorId: string, public readonly signer: string) {
+  constructor(allocatorId: string, public approvals: string[]) {
     super(allocatorId);
     this.timestamp = new Date();
   }
 }
 
-export class RKHApprovalApproved extends Event {
-  eventName = RKHApprovalApproved.name;
+export class DatacapAllocationUpdated extends Event {
+  eventName = DatacapAllocationUpdated.name;
   aggregateName = "allocator";
 
   public timestamp: Date;
 
-  constructor(allocatorId: string) {
-    super(allocatorId);
-    this.timestamp = new Date();
-  }
-}
-
-export class RKHApprovalRejected extends Event {
-  eventName = RKHApprovalRejected.name;
-  aggregateName = "allocator";
-
-  public timestamp: Date;
-
-  constructor(allocatorId: string) {
+  constructor(allocatorId: string, public datacap: number) {
     super(allocatorId);
     this.timestamp = new Date();
   }
