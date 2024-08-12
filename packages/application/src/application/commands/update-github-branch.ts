@@ -239,7 +239,7 @@ ${statusEmoji[allocator.status.phaseStatus] || "❓"} \`${
       case DatacapAllocatorPhaseStatus.IN_PROGRESS:
         return `
 ### Next Steps
-1. Complete the KYC process at [our secure portal](https://flow-dev.togggle.io/fidl/kyc)
+1. Complete the KYC process at [our secure portal](https://flow-dev.togggle.io/fidl/kyc?q=${allocator.guid})
 2. Your application will be automatically updated once submitted
 
 > ℹ️ KYC completion is required to proceed with your application

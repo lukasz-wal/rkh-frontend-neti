@@ -7,6 +7,7 @@ import { SubmitGovernanceReviewResultCommand } from "@src/application/commands/s
 import config from "@src/config";
 import { IGithubClient } from "@src/infrastructure/clients/github";
 import { TYPES } from "@src/types";
+import { DatacapAllocator } from "@src/domain/datacap-allocator";
 
 // Load environment variables
 dotenv.config();
@@ -124,21 +125,22 @@ async function processApplication(
  * Fetches reviews for a pull request from GitHub.
  * @param {IGithubClient} client - GitHub client instance
  * @param {Logger} logger - Logger instance
- * @param {string} applicationId - The ID of the application being processed
+ * @param {any} application - The ID of the application being processed
  * @returns {Promise<any[]>} Array of reviews
  */
 async function fetchReviews(
   client: IGithubClient,
   logger: Logger,
-  applicationId: string
+  application: any
 ): Promise<any[]> {
-  logger.info("Fetching reviews", { applicationId });
+  logger.info("Fetching reviews", { application });
+  
   const reviews = await client.getPullRequestReviews(
     config.GITHUB_OWNER,
     config.GITHUB_REPO,
-    6,  // TODO
+    application.phases.submission.pullRequestNumber
   );
-  logger.info("Reviews fetched", { applicationId, count: reviews.length });
+  logger.info("Reviews fetched", { application, count: reviews.length });
   return reviews;
 }
 
