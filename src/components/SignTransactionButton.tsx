@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import ScaleLoader from "react-spinners/ScaleLoader";
 import { useSignTypedData } from "wagmi";
 
@@ -11,17 +11,41 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 import { useToast } from "@/components/ui/use-toast";
+import {
+  Table,
+  TableBody,
+  TableCaption,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { useAccount } from "@/hooks/useAccount";
+import { Application } from "@/types/application";
+import { VerifyAPI } from "@keyko-io/filecoin-verifier-tools";
 
-export default function SignTransactionButton({ text }: { text: string }) {
+interface Wallet {
+  getAccounts: () => Promise<string[]>;
+  sign: (message: any) => Promise<any>;
+}
+
+interface SignTransactionButtonProps {
+  application: Application;
+  text: string;
+}
+
+export default function SignTransactionButton({
+  application,
+  text,
+}: SignTransactionButtonProps) {
   const [isOpen, setIsOpen] = useState(false);
-
+  const { account } = useAccount();
   const { toast } = useToast();
 
-  const { account } = useAccount();
+  // Function to sign a transaction
+
   const { data, isPending, isError, isSuccess, signTypedData } =
     useSignTypedData({
       mutation: {
@@ -39,34 +63,41 @@ export default function SignTransactionButton({ text }: { text: string }) {
     });
 
   const signTransaction = async () => {
-    
+    // const signer = await WebAssembly.instantiate(FilecoinSigner);
+    // console.log(signer);
 
-    /*signTypedData({
-      types: {
-        Person: [
-          { name: "name", type: "string" },
-          { name: "wallet", type: "address" },
-        ],
-        Mail: [
-          { name: "from", type: "Person" },
-          { name: "to", type: "Person" },
-          { name: "contents", type: "string" },
-        ],
+    // Ledger wallet implementation
+    const ledgerWallet: Wallet = {
+      getAccounts: async () => {
+        return ["f1utmsqqeigfrvup3jrhy3gwlffi6aganuh2gu4tq"];
       },
-      primaryType: "Mail",
-      message: {
-        from: {
-          name: "Cow",
-          wallet: "0xCD2a3d9F938E13CD947Ec05AbC7FE734Df8DD826",
-        },
-        to: {
-          name: "Bob",
-          wallet: "0xbBbBBBBbbBBBbbbBbbBbbbbBBbBbbbbBbBbbBBbB",
-        },
-        contents: "Hello, Bob!",
+      sign: async (message) => {
+        // const serializedMessage = signer.exports.transactionSerialize(message)
+        // alert(serializedMessage);
+
+        return {}
       },
-    });
-    */
+    };
+
+    const api = new VerifyAPI(
+      VerifyAPI.browserProvider("https://api.node.glif.io/rpc/v1", {
+        token: async () => {
+          return "UXggx8DyJeaIIIe1cJZdnDk4sIiTc0uF3vYJXlRsZEQ=";
+        },
+      }),
+      ledgerWallet,
+      true
+    );
+
+    // alert(application.address);
+    // const messageId = await api.multisigVerifyClient(
+    //   "f080",
+    //   application.address,
+    //   BigInt(application.datacap),
+    //   0,
+    //   ledgerWallet
+    // );
+    // alert(messageId);
   };
 
   return (
@@ -85,10 +116,32 @@ export default function SignTransactionButton({ text }: { text: string }) {
           </DialogDescription>
         </DialogHeader>
         <div className="flex justify-center items-center p-8">
-          <ScaleLoader />
+          {isPending && <ScaleLoader />}
+          {!isPending && (
+            <Table>
+              <TableCaption>Payload: ...</TableCaption>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Field</TableHead>
+                  <TableHead>Value</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                <TableRow key="address">
+                  <TableCell>{"Address"}</TableCell>
+                  <TableCell>{application.address}</TableCell>
+                </TableRow>
+                <TableRow key="datacap">
+                  <TableCell>{"DataCap"}</TableCell>
+                  <TableCell>{application.datacap} PB</TableCell>
+                </TableRow>
+              </TableBody>
+            </Table>
+          )}
         </div>
-        <button onClick={() => signTransaction()}>Sign message</button>
-        data: {JSON.stringify(data)}
+        <Button disabled={isPending} onClick={() => signTransaction()}>
+          {isPending ? <ScaleLoader color="#fff" /> : "Submit"}
+        </Button>
       </DialogContent>
     </Dialog>
   );

@@ -1,3 +1,4 @@
+import { AccountRole } from "@/types/account";
 import { ApplicationsResponse } from "@/types/application";
 
 /**
@@ -13,7 +14,7 @@ if (!API_BASE_URL) {
 
 /**
  * Fetches applications based on search criteria and pagination.
- * 
+ *
  * @param {string} searchTerm - The search term to filter applications
  * @param {string[]} filters - Array of phase filters to apply
  * @param {number} page - The page number for pagination
@@ -32,7 +33,7 @@ export async function fetchApplications(
     limit: pageLimit.toString(),
   });
 
-  filters.forEach(filter => params.append("phase[]", filter));
+  filters.forEach((filter) => params.append("phase[]", filter));
 
   if (searchTerm) {
     params.append("search", searchTerm);
@@ -72,5 +73,23 @@ export async function fetchApplications(
   } catch (error) {
     console.error("Failed to fetch applications:", error);
     throw new Error("Failed to fetch applications");
+  }
+}
+
+export async function fetchRole(address: string): Promise<AccountRole> {
+  const url = `${API_BASE_URL}/roles?address=${address}`;
+
+  try {
+    const response = await fetch(url);
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const result = await response.json();
+
+    return result.data.role;
+  } catch (error) {
+    console.error("Failed to fetch role:", error);
+    throw new Error("Failed to fetch role");
   }
 }

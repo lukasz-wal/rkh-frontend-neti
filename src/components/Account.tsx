@@ -9,7 +9,7 @@ export default function Account() {
 
   return account?.isConnected ? (
     <>
-      <Badge variant="outline">User</Badge>
+      <Badge variant="outline">{account.role}</Badge>
       <AccountDropdown account={account} onLogout={disconnect} />
     </>
   ) : (

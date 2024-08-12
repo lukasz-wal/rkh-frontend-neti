@@ -7,7 +7,7 @@ export const wagmiConfig = createConfig({
   connectors: [metaMask({
     extensionOnly: true,
     dappMetadata: {
-      // TODO: TBD
+      name: "Fil+ Dashboard",
     }
   })],
   transports: {

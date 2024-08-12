@@ -57,7 +57,7 @@ export function DashboardApplicationsPanel({
     switch (application.status.phase) {
       case "SUBMISSION":
         return (
-          <SignTransactionButton text="Approve" />
+          <SignTransactionButton application={application} text="Approve" />
           /*<Button>
             View
           </Button>*/
@@ -65,7 +65,7 @@ export function DashboardApplicationsPanel({
 
       case "KYC":
         return (
-          <SignTransactionButton text="Approve" />
+          <SignTransactionButton application={application} text="Approve" />
           /*
           <Button>
             <Link
@@ -82,7 +82,7 @@ export function DashboardApplicationsPanel({
         return (
           <Button>
             <Link
-              href={`https://github.com/asynctomatic/Allocator-Registry/pull/266`}
+              href={`https://github.com/threesigmaxyz/Allocator-Registry/pull/${application.phases.submission.pullRequestNumber}/files`}
               target="_blank"
             >
               Review
@@ -91,7 +91,7 @@ export function DashboardApplicationsPanel({
         );
 
       case "RKH_APPROVAL":
-        return <SignTransactionButton text="Approve" />;
+        return <SignTransactionButton application={application} text="Approve" />;
     }
   }
 
@@ -160,7 +160,7 @@ export function DashboardApplicationsPanel({
                         {application.phases?.submission?.pullRequestUrl && (
                           <DropdownMenuItem>
                             <Link
-                              href={`https://github.com/asynctomatic/Allocator-Registry/pull/${application.phases.submission.pullRequestNumber}`}
+                              href={`https://github.com/threesigmaxyz/Allocator-Registry/pull/${application.phases.submission.pullRequestNumber}`}
                               target="_blank"
                             >
                               Open PR

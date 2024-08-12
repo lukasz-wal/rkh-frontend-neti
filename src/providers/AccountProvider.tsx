@@ -1,10 +1,10 @@
 "use client";
 
 import TransportWebUSB from "@ledgerhq/hw-transport-webusb";
-import { VerifyAPI } from '@keyko-io/filecoin-verifier-tools';
+import { VerifyAPI } from "@keyko-io/filecoin-verifier-tools";
 // @ts-ignore
 import FilecoinApp from "@zondax/ledger-filecoin";
-import signer from "@zondax/filecoin-signing-tools/js";
+// import signer from "@zondax/filecoin-signing-tools/js";
 import React, { useState, useCallback, useEffect } from "react";
 import {
   WagmiProvider,
@@ -15,11 +15,12 @@ import {
 
 import { AccountContext } from "@/contexts/AccountContext";
 import { wagmiConfig } from "@/lib/wagmi";
-import { Account } from "@/types/account";
+import { Account, AccountRole } from "@/types/account";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { fetchRole } from "@/lib/api";
 
-type MetamaskWallet = {}
-type LedgerWallet = {}
+type MetamaskWallet = {};
+type LedgerWallet = {};
 type AccountWallet = MetamaskWallet | LedgerWallet;
 
 const queryClient = new QueryClient();
@@ -34,17 +35,30 @@ const AccountProviderInner: React.FC<{ children: React.ReactNode }> = ({
     useWagmiConnect();
   const { disconnectAsync: wagmiDisconnect } = useWagmiDisconnect();
 
+  const fetchAccountRole = useCallback(
+    async (address: string): Promise<AccountRole> => {
+      return await fetchRole(address);
+    },
+    []
+  );
+
   useEffect(() => {
-    if (wagmiAddress && wagmiIsConnected) {
-      setAccount({
-        address: wagmiAddress,
-        isConnected: true,
-        connector: "wagmi",
-      });
-    } else {
-      setAccount(null);
-    }
-  }, [wagmiAddress, wagmiIsConnected]);
+    const updateAccount = async () => {
+      if (wagmiAddress && wagmiIsConnected) {
+        const role = await fetchAccountRole(wagmiAddress);
+        setAccount({
+          address: wagmiAddress,
+          isConnected: true,
+          connector: "wagmi",
+          role: role,
+        });
+      } else {
+        setAccount(null);
+      }
+    };
+
+    updateAccount();
+  }, [wagmiAddress, wagmiIsConnected, fetchAccountRole]);
 
   function handleLedgerErrors(response: any) {
     if (
@@ -112,15 +126,17 @@ const AccountProviderInner: React.FC<{ children: React.ReactNode }> = ({
             const messageID = await api.multisigVerifyClient(
               "f080",
               "",
-              BigInt(200),  // datacap
-              0,             // wallet index,
-              null          // wallet: this is passed in the VerifyAPI context.
-            ); 
+              BigInt(200), // datacap
+              0, // wallet index,
+              null // wallet: this is passed in the VerifyAPI context.
+            );
 
+            const role = await fetchAccountRole(ledgerAddress);
             setAccount({
               address: ledgerAddress,
               isConnected: true,
               connector: "ledger",
+              role: role,
             });
           } catch (e: any) {
             throw new Error(e.message);
