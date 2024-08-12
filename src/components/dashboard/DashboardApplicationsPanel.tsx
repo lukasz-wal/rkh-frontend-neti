@@ -29,6 +29,7 @@ import SignTransactionButton from "../SignTransactionButton";
 import Link from "next/link";
 import { useAccount } from "@/hooks/useAccount";
 import { useToast } from "../ui/use-toast";
+import { AccountRole } from "@/types/account";
 
 interface DashboardApplicationsPanelProps {
   applications: Application[];
@@ -57,17 +58,19 @@ export function DashboardApplicationsPanel({
     switch (application.status.phase) {
       case "SUBMISSION":
         return (
-          <SignTransactionButton application={application} text="Approve" />
-          /*<Button>
-            View
-          </Button>*/
+          <Button>
+            <Link
+              href={`https://github.com/threesigmaxyz/Allocator-Registry/pull/${application.phases.submission.pullRequestNumber}`}
+              target="_blank"
+            >
+              View
+            </Link>
+          </Button>
         );
 
       case "KYC":
         return (
-          <SignTransactionButton application={application} text="Approve" />
-          /*
-          <Button>
+          <Button disabled={account?.role !== AccountRole.USER}>
             <Link
               href={`https://flow-dev.togggle.io/fidl/kyc?q=${application.id}`}
               target="_blank"
@@ -75,14 +78,13 @@ export function DashboardApplicationsPanel({
               Submit KYC
             </Link>
           </Button>
-          */
         );
 
       case "GOVERNANCE_REVIEW":
         return (
-          <Button>
+          <Button disabled={account?.role !== AccountRole.GOVERNANCE_TEAM}>
             <Link
-              href={`https://github.com/threesigmaxyz/Allocator-Registry/pull/${application.phases.submission.pullRequestNumber}/files`}
+              href={`https://github.com/threesigmaxyz/Allocator-Registry/pull/${application.phases.submission.pullRequestNumber}`}
               target="_blank"
             >
               Review
@@ -91,7 +93,12 @@ export function DashboardApplicationsPanel({
         );
 
       case "RKH_APPROVAL":
-        return <SignTransactionButton application={application} text="Approve" />;
+        if (account?.role !== AccountRole.ROOT_KEY_HOLDER) {
+          return <Button disabled>Approve</Button>;
+        }
+        return (
+          <SignTransactionButton application={application} text="Approve" />
+        );
     }
   }
 
