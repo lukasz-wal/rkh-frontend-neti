@@ -63,6 +63,13 @@ export interface IGithubClient {
     repo: string,
     pullNumber: number
   ): Promise<PullRequestReview[]>;
+
+  mergePullRequest(
+    owner: string,
+    repo: string,
+    pullNumber: number,
+    commitMessage: string
+  ): Promise<void>;
 }
 
 /**
@@ -251,6 +258,20 @@ export class GithubClient implements IGithubClient {
     });
 
     return data;
+  }
+
+  async mergePullRequest(
+    owner: string,
+    repo: string,
+    pullNumber: number,
+    commitMessage: string
+  ): Promise<void> {
+    await this.octokit.pulls.merge({
+      owner,
+      repo,
+      pull_number: pullNumber,
+      commit_message: commitMessage,
+    });
   }
 
   private async getReferenceHash(

@@ -3,6 +3,7 @@ import { inject, injectable } from "inversify";
 
 import { IDatacapAllocatorRepository } from "@src/domain/datacap-allocator";
 import { TYPES } from "@src/types";
+import { RKHApprovalCompleted } from "@src/domain/events";
 
 export class UpdateRKHApprovalsCommand extends Command {
   constructor(
@@ -31,5 +32,12 @@ export class UpdateRKHApprovalsCommandHandler
     }
 
     allocator.updateRKHApprovals(command.approvals);
+
+    // Check if the approval threshold is met
+    if (command.approvals.length >= allocator.rkhApprovalThreshold) {
+      allocator.completeRKHApproval();
+    }
+
+    this._repository.save(allocator, allocator.version);
   }
 }
