@@ -142,6 +142,19 @@ export class RKHApprovalsUpdated extends Event {
   }
 }
 
+
+export class RKHApprovalCompleted extends Event {
+  eventName = RKHApprovalCompleted.name;
+  aggregateName = "allocator";
+
+  public timestamp: Date;
+
+  constructor(allocatorId: string) {
+    super(allocatorId);
+    this.timestamp = new Date();
+  }
+}
+
 export class DatacapAllocationUpdated extends Event {
   eventName = DatacapAllocationUpdated.name;
   aggregateName = "allocator";
@@ -151,37 +164,5 @@ export class DatacapAllocationUpdated extends Event {
   constructor(allocatorId: string, public datacap: number) {
     super(allocatorId);
     this.timestamp = new Date();
-  }
-}
-
-// OLD
-
-export class RKHActionProposed extends Event {
-  eventName = RKHActionProposed.name;
-  aggregateName = "rkh";
-
-  constructor(
-    public guid: string,
-    public transactionId: string,
-    public allocatorId: string,
-    public proposedBy: string,
-    public timestamp: Date
-  ) {
-    super(guid);
-  }
-}
-
-export class RKHActionConfirmed extends Event {
-  eventName = RKHActionConfirmed.name;
-  aggregateName = "rkh";
-
-  constructor(
-    public guid: string,
-    public transactionId: string,
-    public allocatorId: string,
-    public confirmedBy: string,
-    public timestamp: Date
-  ) {
-    super(guid);
   }
 }
