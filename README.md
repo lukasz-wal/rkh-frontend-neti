@@ -44,9 +44,13 @@ The Docker setup can be configured by setting the following environment variable
 | `RABBITMQ_EXCHANGE_TYPE` | Type of the RabbitMQ exchange                                            | `topic`                          |
 | `RABBITMQ_QUEUE_NAME`    | Name of the RabbitMQ queue                                               | `allocator`                      |
 | `GITHUB_AUTH_TOKEN`      | A PAT required to serve as authentication for read and write permissions | `github_pat_*******************` |
+| `GITHUB_OWNER`           | Owner of the GitHub repository                                           | `fidlabs`                        |
+| `GITHUB_REPO`            | Name of the GitHub repository                                            | `filecoin-plus-backend`          |
 | `AIRTABLE_API_KEY`       | API key for accessing the Airtable API                                   | `pat*******************`         |
 | `AIRTABLE_BASE_ID`       | ID of the Airtable base                                                  | `app*******************`         |
 | `AIRTABLE_TABLE_NAME`    | Name of the Airtable table                                               | `tbl*******************`         |
+| `LOTUS_RPC_URL`          | URL for connecting to the Lotus RPC API                                  | `http://localhost:1234/rpc/v0`   |
+| `LOTUS_AUTH_TOKEN`       | Token for authenticating with the Lotus RPC API                          | `lotus_token_*****************`  |
 
 #### Running
 
