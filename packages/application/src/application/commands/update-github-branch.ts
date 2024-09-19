@@ -98,14 +98,38 @@ export class UpdateGithubBranchCommandHandler
   ): Promise<PullRequest> {
     // Create a new branch for the allocator
     const branchName = `filecoin-plus-bot/allocator/${allocator.number}`;
-    console.log(`Creating branch ${branchName}`);
-    await this._githubClient.createBranch(
-      config.GITHUB_OWNER,
-      config.GITHUB_REPO,
-      branchName,
-      "main"
-    );
-    console.log("Branch created");
+    console.log(`Creating or updating branch ${branchName}`);
+    
+    try {
+      // Try to create the branch
+      await this._githubClient.createBranch(
+        config.GITHUB_OWNER,
+        config.GITHUB_REPO,
+        branchName,
+        "main"
+      );
+      console.log("Branch created");
+    } catch (error: any) {
+      // If the branch already exists, delete it and recreate
+      if (error.message.includes("Reference already exists")) {
+        console.log("Branch already exists, recreating...");
+        await this._githubClient.deleteBranch(
+          config.GITHUB_OWNER,
+          config.GITHUB_REPO,
+          branchName
+        );
+        await this._githubClient.createBranch(
+          config.GITHUB_OWNER,
+          config.GITHUB_REPO,
+          branchName,
+          "main"
+        );
+        console.log("Branch recreated");
+      } else {
+        // If it's a different error, rethrow it
+        throw error;
+      }
+    }
 
     // Create a pull request for the new allocator
     const pullRequest = await this._githubClient.createPullRequest(

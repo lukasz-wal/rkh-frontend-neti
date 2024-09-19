@@ -18,6 +18,12 @@ export interface IGithubClient {
     baseBranch: string
   ): Promise<Branch>;
 
+  deleteBranch(
+    owner: string,
+    repo: string,
+    branchName: string
+  ): Promise<void>;
+
   createPullRequest(
     owner: string,
     repo: string,
@@ -135,6 +141,18 @@ export class GithubClient implements IGithubClient {
     });
 
     return data;
+  }
+
+  async deleteBranch(
+    owner: string,
+    repo: string,
+    branchName: string
+  ): Promise<void> {
+    await this.octokit.git.deleteRef({
+      owner,
+      repo,
+      ref: `heads/${branchName}`,
+    });
   }
 
   async createPullRequest(
