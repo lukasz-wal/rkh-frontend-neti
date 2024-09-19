@@ -55,10 +55,10 @@ async function main() {
   }
 
   // Nuke the database
-  const db = await container.get<Db>(TYPES.Db);
-  await db.collection("airtable-client:records").deleteMany({});
-  await db.collection("datacap-allocator-events").deleteMany({});
-  await db.collection("datacapAllocators").deleteMany({});
+  // const db = await container.get<Db>(TYPES.Db);
+  // await db.collection("airtable-client:records").deleteMany({});
+  // await db.collection("datacap-allocator-events").deleteMany({});
+  // await db.collection("datacapAllocators").deleteMany({});
 
   // Start worker services
   // TODO: Move this to application startup
