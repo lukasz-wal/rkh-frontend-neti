@@ -20,7 +20,6 @@ import {
   subscribeRKHApprovals,
   subscribeDatacapAllocations,
 } from "@src/worker";
-import { Db } from "mongodb";
 
 async function main() {
   // Initialize the container
@@ -54,12 +53,6 @@ async function main() {
     logger.error("Failed to initialize event bus ", { error });
     process.exit(1);
   }
-
-  // Delete databse from mongo
-  const db = container.get<Db>(TYPES.Db);
-  await db.collection("airtable-client:records").deleteMany({});
-  await db.collection("datacap-allocator-events").deleteMany({});
-  await db.collection("datacapAllocators").deleteMany({});
 
   // Start worker services
   // TODO: Move this to application startup
