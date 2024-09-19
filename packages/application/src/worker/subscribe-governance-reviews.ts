@@ -17,9 +17,6 @@ type GovernanceReviewer = {
 }
 
 // TODO: Move this to a config file
-export const GOVERNANCE_REVIEWERS = process.env.GOVERNANCE_REVIEWERS?.split(",") || [
-  "galen-mcandrew", "Kevin-FF-USA"
-];
 const POLL_INTERVAL = parseInt(process.env.POLL_INTERVAL || "5000", 10);
 
 export async function subscribeGovernanceReviews(container: Container) {
@@ -159,7 +156,7 @@ function findApprovedReview(
   const approvedReview = reviews.find(
     (review) =>
       review.state === "APPROVED" &&
-      GOVERNANCE_REVIEWERS.includes(review?.user?.login as string)
+      config.GOVERNANCE_TEAM_GITHUB_HANDLES.includes(review?.user?.login as string)
   );
 
   if (approvedReview) {

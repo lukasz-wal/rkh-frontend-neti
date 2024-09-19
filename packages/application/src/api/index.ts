@@ -10,7 +10,6 @@ import config from "@src/config";
 import { TYPES } from "@src/types";
 import { initialize } from "@src/startup";
 import { IEventBus, Logger } from "@filecoin-plus/core";
-import { RabbitMQEventBus } from "@src/infrastructure/event-bus/rabbitmq-event-bus";
 import { InversifyExpressServer } from "inversify-express-utils";
 import { errorHandler } from "./http/middlewares/error-handler";
 import { corsMiddleware } from "./http/middlewares/cors-middleware";
