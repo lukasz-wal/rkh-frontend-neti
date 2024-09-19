@@ -21,6 +21,7 @@ import {
   KYCApproved,
   KYCRejected,
   KYCStarted,
+  RKHApprovalCompleted,
 } from "@src/domain/events";
 import { AllocatorAppliedEventHandler } from "@src/application/events/handlers/allocator-applied-handler";
 import { TYPES } from "@src/types";
@@ -32,6 +33,7 @@ import {
   KYCApprovedEventHandler,
   KYCRejectedEventHandler,
   KYCStartedEventHandler,
+  RKHApprovalCompletedEventHandler,
 } from "./application/events/handlers";
 import { UpdateRKHApprovalsCommandHandler } from "./application/commands/update-rkh-approvals";
 import {
@@ -81,6 +83,13 @@ export const initialize = async (): Promise<Container> => {
   container
     .bind<IEventHandler<GovernanceReviewRejected>>(TYPES.Event)
     .to(GovernanceReviewRejectedEventHandler);
+  container
+    .bind<IEventHandler<RKHApprovalCompleted>>(TYPES.Event)
+    .to(RKHApprovalCompletedEventHandler);
+
+  container
+    .bind<IEventHandler<RKHApprovalCompleted>>(TYPES.Event)
+    .to(RKHApprovalCompletedEventHandler);
 
   // Commands
   container
@@ -118,7 +127,7 @@ export const initialize = async (): Promise<Container> => {
     .getAll<IQueryHandler<IQuery>>(TYPES.QueryHandler)
     .forEach((handler: IQueryHandler<IQuery>) => {
       queryBus.registerHandler(handler);
-    });
+    });  
 
   return container;
 };

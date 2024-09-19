@@ -17,8 +17,11 @@ export async function subscribeDatacapAllocations(container: Container) {
 
     for (const datacapAllocation of datacapAllocations) {
       await commandBus.send(
-        new UpdateDatacapAllocationCommand(datacapAllocation.allocatorId, datacapAllocation.datacap)
+        new UpdateDatacapAllocationCommand(
+         datacapAllocation.allocatorId,
+          datacapAllocation.datacap)
       );
+      break;
     }
   }, 5000);
 }

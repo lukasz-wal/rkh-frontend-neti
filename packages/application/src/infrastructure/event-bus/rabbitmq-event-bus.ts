@@ -43,7 +43,6 @@ export class RabbitMQEventBus implements IEventBus {
   public async init(): Promise<void> {
     try {
       const connUrl = this.buildConnectionUrl();
-      console.log("Connecting to RabbitMQ at:", connUrl);
       this.connection = await amqp.connect(connUrl);
       this.channel = await this.connection.createChannel();
 
@@ -130,6 +129,7 @@ export class RabbitMQEventBus implements IEventBus {
    */
   private async processMessage(msg: amqp.ConsumeMessage): Promise<void> {
     const eventDescriptor = JSON.parse(msg.content.toString());
+    console.log("Processing message:", eventDescriptor);
     const matchedHandlers: IEventHandler<IEvent>[] = this.eventHandlers.filter(
       (handler) => handler.event === eventDescriptor.eventName
     );

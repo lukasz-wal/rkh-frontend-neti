@@ -10,6 +10,9 @@ import {
   KYCApproved,
   KYCRejected,
   KYCStarted,
+  RKHApprovalCompleted,
+  RKHApprovalStarted,
+  RKHApprovalsUpdated,
 } from "@src/domain/events";
 import { CommandBus } from "@src/infrastructure/command-bus";
 import { TYPES } from "@src/types";
@@ -232,6 +235,71 @@ export class GovernanceReviewRejectedEventHandler
           status: {
             phase: DatacapAllocatorPhase.GOVERNANCE_REVIEW,
             phaseStatus: DatacapAllocatorPhaseStatus.FAILED,
+          },
+        },
+      }
+    );
+
+    const result = await this._commandBus.send(
+      new UpdateGithubBranchCommand(event.aggregateId)
+    );
+  }
+}
+
+export class RKHApprovalStartedEventHandler implements IEventHandler<RKHApprovalStarted> {
+  public event = RKHApprovalStarted.name;
+
+  constructor(
+    @inject(TYPES.CommandBus) private readonly _commandBus: CommandBus,
+    @inject(TYPES.Db) private readonly _db: Db
+  ) {}
+
+  async handle(event: RKHApprovalStarted): Promise<void> {
+    // Update allocator status in the database
+    await this._db.collection("datacapAllocators").updateOne(
+      { id: event.aggregateId },
+      {
+        $set: {
+          status: {
+            phase: DatacapAllocatorPhase.RKH_APPROVAL,
+            phaseStatus: DatacapAllocatorPhaseStatus.IN_PROGRESS,
+          },
+        },
+      }
+    );
+
+    const result = await this._commandBus.send(
+      new UpdateGithubBranchCommand(event.aggregateId)
+    );
+  }
+}
+
+// TODO: Implement this
+// export class RKHApprovalsUpdatedEventHandler implements IEventHandler<RKHApprovalsUpdated> {
+//   
+// }
+
+@injectable()
+export class RKHApprovalCompletedEventHandler
+  implements IEventHandler<RKHApprovalCompleted>
+{
+  public event = RKHApprovalCompleted.name;
+
+  constructor(
+    @inject(TYPES.CommandBus) private readonly _commandBus: CommandBus,
+    @inject(TYPES.Db) private readonly _db: Db
+  ) {}
+
+  async handle(event: RKHApprovalCompleted) {
+    console.log("RKHApprovalCompletedEventHandler", event);
+    // Update allocator status in the database
+    await this._db.collection("datacapAllocators").updateOne(
+      { id: event.aggregateId },
+      {
+        $set: {
+          status: {
+            phase: DatacapAllocatorPhase.RKH_APPROVAL,
+            phaseStatus: DatacapAllocatorPhaseStatus.COMPLETED,
           },
         },
       }

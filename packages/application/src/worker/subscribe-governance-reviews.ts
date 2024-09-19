@@ -17,8 +17,9 @@ type GovernanceReviewer = {
   address?: string;
 }
 
-const GOVERNANCE_REVIEWERS = process.env.GOVERNANCE_REVIEWERS?.split(",") || [
-  "asynctomatic",
+// TODO: Move this to a config file
+export const GOVERNANCE_REVIEWERS = process.env.GOVERNANCE_REVIEWERS?.split(",") || [
+  "nikonikoxyz",
 ];
 const POLL_INTERVAL = parseInt(process.env.POLL_INTERVAL || "5000", 10);
 

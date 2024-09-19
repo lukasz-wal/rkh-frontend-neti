@@ -30,15 +30,20 @@ export abstract class EventStore implements IEventStore {
       i++;
       event.version = i;
       const eventDescriptor = createEventDescriptor(event);
-      this._eventBus.publish(event.aggregateName, eventDescriptor);
       operations.push({ insertOne: eventDescriptor });
     }
 
     await this.eventCollection.bulkWrite(operations);
+
+    // Publish events to the message bus after saving to the collection
+    for (const event of events) {
+      const eventDescriptor = createEventDescriptor(event);
+      this._eventBus.publish(event.aggregateName, eventDescriptor);
+    }
   }
 
   async getEventsForAggregate(aggregateGuid: string): Promise<IEvent[]> {
-    const events = await this.eventCollection.find({ aggregateGuid }).toArray();
+    const events = await this.eventCollection.find({ aggregateGuid }).sort({ version: 1 }).toArray();
     if (!events.length) {
       throw new NotFoundException('Aggregate with the requested Guid does not exist');
     }

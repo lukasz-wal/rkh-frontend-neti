@@ -29,6 +29,7 @@ import {
   IAirtableClient,
 } from "./clients/airtable";
 import { ILotusClient, LotusClient, LotusClientConfig } from "./clients/lotus";
+import { InMemoryEventBus } from "./event-bus/in-memory-event-bus";
 
 export const infrastructureModule = new AsyncContainerModule(
   async (bind: interfaces.Bind) => {
@@ -40,16 +41,17 @@ export const infrastructureModule = new AsyncContainerModule(
     bind<Db>(TYPES.Db).toConstantValue(db);
 
     // RabbitMQ configuration
-    const rabbitMQConfig: RabbitMQConfig = {
-      url: config.RABBITMQ_URL,
-      username: config.RABBITMQ_USERNAME,
-      password: config.RABBITMQ_PASSWORD,
-      exchangeName: config.RABBITMQ_EXCHANGE_NAME,
-      exchangeType: config.RABBITMQ_EXCHANGE_TYPE,
-      queueName: config.RABBITMQ_QUEUE_NAME,
-    };
-    bind<RabbitMQConfig>(TYPES.RabbitMQConfig).toConstantValue(rabbitMQConfig);
-    bind<IEventBus>(TYPES.EventBus).to(RabbitMQEventBus).inSingletonScope();
+    // const rabbitMQConfig: RabbitMQConfig = {
+    //   url: config.RABBITMQ_URL,
+    //   username: config.RABBITMQ_USERNAME,
+    //   password: config.RABBITMQ_PASSWORD,
+    //   exchangeName: config.RABBITMQ_EXCHANGE_NAME,
+    //   exchangeType: config.RABBITMQ_EXCHANGE_TYPE,
+    //   queueName: config.RABBITMQ_QUEUE_NAME,
+    // };
+    // bind<RabbitMQConfig>(TYPES.RabbitMQConfig).toConstantValue(rabbitMQConfig);
+    // bind<IEventBus>(TYPES.EventBus).to(RabbitMQEventBus).inSingletonScope();
+    bind<IEventBus>(TYPES.EventBus).to(InMemoryEventBus).inSingletonScope();
 
     // GitHub client configuration
     const githubClientConfig: GithubClientConfig = {

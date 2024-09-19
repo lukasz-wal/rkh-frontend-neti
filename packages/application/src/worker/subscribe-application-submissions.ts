@@ -4,6 +4,7 @@ import { Container } from "inversify";
 import { CreateApplicationCommand } from "@src/application/commands";
 import { IAirtableClient } from "@src/infrastructure/clients/airtable";
 import { TYPES } from "@src/types";
+import { Db } from "mongodb";
 
 const START_INDEX = 1098;
 
@@ -14,8 +15,15 @@ export async function subscribeApplicationSubmissions(container: Container) {
   // Get the command bus from the container
   const commandBus = container.get<ICommandBus>(TYPES.CommandBus);
 
+  // Get the db from the container
+  const db = container.get<Db>(TYPES.Db);
+
   setInterval(async () => {
-    const newRecords = await client.getTableRecords(START_INDEX);
+    // Get the current index from the event store
+    const maxDbEntry = await db.collection("datacapAllocators").find().sort({ applicationNumber: -1 }).limit(1).toArray();
+    const currentIndex = Math.max(START_INDEX, maxDbEntry.length > 0 ? maxDbEntry[0].number : START_INDEX);
+
+    const newRecords = await client.getTableRecords(currentIndex);
     for (const record of newRecords) {
       if (!record.fields["1. Notary Allocator Pathway Name"]) {
         continue;
