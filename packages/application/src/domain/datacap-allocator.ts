@@ -369,19 +369,19 @@ export class DatacapAllocator extends AggregateRoot {
     this.rkhApprovals = event.approvals;
   }
 
-  applyRKHApprovalCompleted(event: RKHApprovalCompleted) {
-    this.status = {
-      phase: DatacapAllocatorPhase.RKH_APPROVAL,
-      phaseStatus: DatacapAllocatorPhaseStatus.COMPLETED,
-    };
-  }
-
   applyDatacapAllocationUpdated(event: DatacapAllocationUpdated) {
     this.status = {
       phase: DatacapAllocatorPhase.RKH_APPROVAL,
       phaseStatus: DatacapAllocatorPhaseStatus.COMPLETED,
     };
     this.datacapAmount = event.datacap;
+  }
+
+  applyRKHApprovalCompleted(event: RKHApprovalCompleted) {
+    this.status = {
+      phase: DatacapAllocatorPhase.RKH_APPROVAL,
+      phaseStatus: DatacapAllocatorPhaseStatus.COMPLETED,
+    };
   }
 
   private ensureValidPhaseStatus(

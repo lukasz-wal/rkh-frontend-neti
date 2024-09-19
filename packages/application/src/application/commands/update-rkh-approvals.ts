@@ -3,6 +3,7 @@ import { inject, injectable } from "inversify";
 
 import { DatacapAllocator, IDatacapAllocatorRepository } from "@src/domain/datacap-allocator";
 import { TYPES } from "@src/types";
+import { RKHApprovalCompleted } from "@src/domain/events";
 
 export class UpdateRKHApprovalsCommand extends Command {
   constructor(

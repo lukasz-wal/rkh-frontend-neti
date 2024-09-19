@@ -87,6 +87,10 @@ export const initialize = async (): Promise<Container> => {
     .bind<IEventHandler<RKHApprovalCompleted>>(TYPES.Event)
     .to(RKHApprovalCompletedEventHandler);
 
+  container
+    .bind<IEventHandler<RKHApprovalCompleted>>(TYPES.Event)
+    .to(RKHApprovalCompletedEventHandler);
+
   // Commands
   container
     .bind<ICommandHandler<ICommand>>(TYPES.CommandHandler)
