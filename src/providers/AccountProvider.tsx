@@ -4,36 +4,28 @@ import TransportWebUSB from "@ledgerhq/hw-transport-webusb";
 import { VerifyAPI } from "@keyko-io/filecoin-verifier-tools";
 // @ts-ignore
 import FilecoinApp from "@zondax/ledger-filecoin";
-// import signer from "@zondax/filecoin-signing-tools/js";
 import React, { useState, useCallback, useEffect } from "react";
-import {
-  WagmiProvider,
-  useAccount as useWagmiAccount,
-  useConnect as useWagmiConnect,
-  useDisconnect as useWagmiDisconnect,
-} from "wagmi";
 
 import { AccountContext } from "@/contexts/AccountContext";
-import { wagmiConfig } from "@/lib/wagmi";
 import { Account, AccountRole } from "@/types/account";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { fetchRole } from "@/lib/api";
 
-type MetamaskWallet = {};
-type LedgerWallet = {};
-type AccountWallet = MetamaskWallet | LedgerWallet;
-
 const queryClient = new QueryClient();
+
+interface LedgerAccount {
+  address: string;
+  index: number;
+  path: string;
+}
 
 const AccountProviderInner: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
   const [account, setAccount] = useState<Account | null>(null);
-  const { address: wagmiAddress, isConnected: wagmiIsConnected } =
-    useWagmiAccount();
-  const { connect: wagmiConnect, connectors: wagmiConnectors } =
-    useWagmiConnect();
-  const { disconnectAsync: wagmiDisconnect } = useWagmiDisconnect();
+  const [accountIndex, setAccountIndex] = useState<number | null>(null);
+  const [transport, setTransport] = useState<any>(null);
+  const [filecoinApp, setFilecoinApp] = useState<any>(null);
 
   const fetchAccountRole = useCallback(
     async (address: string): Promise<AccountRole> => {
@@ -41,24 +33,6 @@ const AccountProviderInner: React.FC<{ children: React.ReactNode }> = ({
     },
     []
   );
-
-  useEffect(() => {
-    const updateAccount = async () => {
-      if (wagmiAddress && wagmiIsConnected) {
-        const role = await fetchAccountRole(wagmiAddress);
-        setAccount({
-          address: wagmiAddress,
-          isConnected: true,
-          connector: "wagmi",
-          role: role,
-        });
-      } else {
-        setAccount(null);
-      }
-    };
-
-    updateAccount();
-  }, [wagmiAddress, wagmiIsConnected, fetchAccountRole]);
 
   function handleLedgerErrors(response: any) {
     if (
@@ -71,7 +45,7 @@ const AccountProviderInner: React.FC<{ children: React.ReactNode }> = ({
       response.error_message &&
       response.error_message
         .toLowerCase()
-        .includes("transporterror: invalild channel")
+        .includes("transporterror: invalid channel")
     ) {
       throw new Error(
         "Lost connection with Ledger. Please unplug and replug device."
@@ -80,88 +54,133 @@ const AccountProviderInner: React.FC<{ children: React.ReactNode }> = ({
     throw new Error(response.error_message);
   }
 
+  const init = useCallback(async () => {
+    try {
+      const transport = await TransportWebUSB.create();
+      const app = new FilecoinApp(transport);
+      setTransport(transport);
+      setFilecoinApp(app);
+
+      const version = await app.getVersion();
+      console.log(version);
+      if (version.device_locked) {
+        throw new Error("Ledger locked.");
+      }
+      if (version.test_mode) {
+        throw new Error("Filecoin app in test mode.");
+      }
+      if (version.minor < 18 || (version.minor === 18 && version.patch < 2)) {
+        throw new Error("Please update Filecoin app on Ledger.");
+      }
+    } catch (e: any) {
+      throw new Error(e.message);
+    }
+  }, []);
+
+  const fetchLedgerAccounts = async (): Promise<LedgerAccount[]> => {
+    if (!filecoinApp) {
+      await init(); // Try to initialize if not already done
+    }
+    //if (!filecoinApp) {
+    //  throw new Error("Filecoin app is not initialized");
+    //}
+    const accounts: LedgerAccount[] = [];
+    for (let i = 0; i < 5; i++) {
+      const path = `m/44'/461'/0'/0/${i}`;
+      const { addrString } = await filecoinApp.getAddressAndPubKey(path);
+      accounts.push({ address: addrString, index: i, path });
+    }
+    return accounts;
+  }
+
   const connect = useCallback(
-    async (connector: "wagmi" | "ledger") => {
-      if (connector === "wagmi") {
-        wagmiConnect({ connector: wagmiConnectors[0] });
-      } else if (connector === "ledger") {
-        // TODO: what if this fails?
-        const transport = await TransportWebUSB.create();
-        if (transport) {
-          try {
-            const ledgerApp = new FilecoinApp(transport);
-            const version = await ledgerApp.getVersion();
-            console.log(version);
-            if (version.device_locked) {
-              throw new Error("Ledger locked.");
-            }
-            if (version.test_mode) {
-              throw new Error("Filecoin app in test mode.");
-            }
-            if (version.minor < 18) {
-              throw new Error("Please update Filecoin app on Ledger.");
-            }
-            if (version.minor < 18 && version.patch < 2) {
-              throw new Error("Please update Filecoin app on Ledger.");
-            }
-
-            const lotusNodeCode = 461; // TODO: Config based on environment
-            const pathIndex = 0;
-            const { addrString: ledgerAddress } = handleLedgerErrors(
-              await ledgerApp.getAddressAndPubKey(
-                `m/44'/${lotusNodeCode}'/0'/0/${pathIndex}`
-              )
-            );
-
-            // TODO: Refactor ths out of here...
-            const api = new VerifyAPI(
-              VerifyAPI.browserProvider("https://api.node.glif.io/rpc/v1", {
-                token: async () => {
-                  return "UXggx8DyJeaIIIe1cJZdnDk4sIiTc0uF3vYJXlRsZEQ=";
-                },
-              }),
-              { sign: () => "", getAccounts: () => [ledgerAddress] },
-              false // this.lotusNode.name !== "Mainnet" // if node != Mainnet => testnet = true
-            );
-            const messageID = await api.multisigVerifyClient(
-              "f080",
-              "",
-              BigInt(200), // datacap
-              0, // wallet index,
-              null // wallet: this is passed in the VerifyAPI context.
-            );
-
-            const role = await fetchAccountRole(ledgerAddress);
-            setAccount({
-              address: ledgerAddress,
-              isConnected: true,
-              connector: "ledger",
-              role: role,
-            });
-          } catch (e: any) {
-            throw new Error(e.message);
+    async (connector: "ledger", index?: number) => {
+      if (connector === "ledger") {
+        try {
+          if (!filecoinApp) {
+            await init();
           }
-        } else {
-          console.log("device not found");
+          const { addrString: ledgerAddress } = handleLedgerErrors(
+            await filecoinApp.getAddressAndPubKey(index ? `m/44'/461'/0'/0/${index}` : `m/44'/461'/0'/0/0`)
+          );
+
+          const role = await fetchAccountRole(ledgerAddress);
+          setAccount({
+            address: ledgerAddress,
+            isConnected: true,
+            connector: "ledger",
+            role: role,
+          });
+          setAccountIndex(index ?? 0);
+        } catch (e: any) {
+          throw new Error(e.message);
         }
       }
     },
-    [wagmiConnect]
+    [fetchAccountRole, filecoinApp, init]
   );
 
   const disconnect = useCallback(async () => {
-    if (account?.connector === "wagmi") {
-      await wagmiDisconnect();
+    if (transport) {
+      await transport.close();
     }
     setAccount(null);
-  }, [account, wagmiDisconnect]);
+    setTransport(null);
+    setFilecoinApp(null);
+  }, [transport]);
+
+  const proposeAddVerifier = useCallback(async (verifier: string, datacap: string) => {
+    if (!filecoinApp || !transport || !account) {
+      console.error('Ledger not connected or account not selected');
+      return "";
+    }
+
+    try {
+      const wallet = { 
+        sign: async (message: any) => {
+          // Implement Ledger signing logic here
+          const { signature } = await filecoinApp.sign(account.address, message);
+          return signature;
+        }, 
+        getAccounts: async () => {
+          const accounts = await fetchLedgerAccounts();
+          return accounts.map((account) => account.address);
+        }
+      }
+      const api = new VerifyAPI(
+        VerifyAPI.browserProvider("https://api.node.glif.io/rpc/v1", {
+          token: async () => {
+            return "UXggx8DyJeaIIIe1cJZdnDk4sIiTc0uF3vYJXlRsZEQ=";
+          },
+        }),
+        wallet,
+        false // this.lotusNode.name !== "Mainnet" // if node != Mainnet => testnet = true
+      );
+
+      const messageId = await api.proposeVerifier(
+        verifier,
+        BigInt(datacap),
+        accountIndex,
+        wallet
+      );
+      console.log("messageId", messageId);
+
+      return messageId;
+    } catch (error) {
+      console.error('Error proposing verifier:', error);
+      throw error;
+    }
+  }, [filecoinApp, transport, account, accountIndex]);
 
   return (
     <AccountContext.Provider
       value={{
         account,
+        init,
         connect,
         disconnect,
+        proposeAddVerifier,
+        fetchLedgerAccounts,
       }}
     >
       {children}
@@ -173,10 +192,8 @@ export const AccountProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
   return (
-    <WagmiProvider config={wagmiConfig}>
-      <QueryClientProvider client={queryClient}>
-        <AccountProviderInner>{children}</AccountProviderInner>
-      </QueryClientProvider>
-    </WagmiProvider>
+    <QueryClientProvider client={queryClient}>
+      <AccountProviderInner>{children}</AccountProviderInner>
+    </QueryClientProvider>
   );
 };

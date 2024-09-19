@@ -60,7 +60,7 @@ export function DashboardApplicationsPanel({
         return (
           <Button>
             <Link
-              href={`https://github.com/threesigmaxyz/Allocator-Registry/pull/${application.phases.submission.pullRequestNumber}`}
+              href={`https://github.com/filecoin-project/Allocator-Registry/pull/${application.phases.submission.pullRequestNumber}`}
               target="_blank"
             >
               View
@@ -70,34 +70,57 @@ export function DashboardApplicationsPanel({
 
       case "KYC":
         return (
-          <Button disabled={account?.role !== AccountRole.USER}>
+          <Button>
             <Link
-              href={`https://flow-dev.togggle.io/fidl/kyc?q=${application.id}`}
+              href={`https://github.com/filecoin-project/Allocator-Registry/pull/${application.phases.submission.pullRequestNumber}`}
               target="_blank"
             >
-              Submit KYC
+              View
             </Link>
           </Button>
         );
+        //return (
+        //  <Button disabled={account?.role !== AccountRole.USER}>
+        //    <Link
+        //      href={`https://flow-dev.togggle.io/fidl/kyc?allocatorId=${application.id}`}
+        //      target="_blank"
+        //    >
+        //      Submit KYC
+        //    </Link>
+        //  </Button>
+        //);
 
       case "GOVERNANCE_REVIEW":
         return (
-          <Button disabled={account?.role !== AccountRole.GOVERNANCE_TEAM}>
+          <Button>
             <Link
-              href={`https://github.com/threesigmaxyz/Allocator-Registry/pull/${application.phases.submission.pullRequestNumber}`}
+              href={`https://github.com/filecoin-project/Allocator-Registry/pull/${application.phases.submission.pullRequestNumber}`}
               target="_blank"
             >
-              Review
+              View
             </Link>
           </Button>
         );
+        //return (
+        //  <>
+        //  <SignTransactionButton application={application} text="Approve" />
+        //  <Button disabled={account?.role !== AccountRole.GOVERNANCE_TEAM}>
+        //    <Link
+        //      href={`https://github.com/threesigmaxyz/Allocator-Registry/pull/${application.phases.submission.pullRequestNumber}`}
+        //      target="_blank"
+        //    >
+        //      Review
+        //    </Link>
+        //  </Button>
+        //  </>
+        //);
 
       case "RKH_APPROVAL":
         if (account?.role !== AccountRole.ROOT_KEY_HOLDER) {
-          return <Button disabled>Approve</Button>;
+          return <Button disabled>(0/2) Approve</Button>;
         }
         return (
-          <SignTransactionButton application={application} text="Approve" />
+          <SignTransactionButton application={application} text="(0/2) Approve" />
         );
     }
   }
@@ -138,7 +161,7 @@ export function DashboardApplicationsPanel({
                     {application.country}
                   </TableCell>
                   <TableCell className="hidden md:table-cell">
-                    {application.datacap} PB
+                    {application.datacap} PiB
                   </TableCell>
                   <TableCell>
                     <Badge>{application.status.phase}</Badge>
@@ -167,7 +190,7 @@ export function DashboardApplicationsPanel({
                         {application.phases?.submission?.pullRequestUrl && (
                           <DropdownMenuItem>
                             <Link
-                              href={`https://github.com/threesigmaxyz/Allocator-Registry/pull/${application.phases.submission.pullRequestNumber}`}
+                              href={`https://github.com/filecoin-project/Allocator-Registry/pull/${application.phases.submission.pullRequestNumber}`}
                               target="_blank"
                             >
                               Open PR

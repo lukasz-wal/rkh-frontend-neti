@@ -38,13 +38,6 @@ export default function DashboardPage() {
     refetchInterval: 10 * 1000, // Refetch every 10 seconds
   });
 
-  // const { data, isLoading, error } = useQuery<Application[], Error>(
-  //   ["applications", searchTerm, activeFilters],
-  //   () => fetchApplications(searchTerm, activeFilters, currentPage, PAGE_SIZE),
-  //   refetchInterval: 60000, // Refetch every minute
-  //   keepPreviousData: true,
-  // );
-
   const applications = data?.applications || [];
   const totalCount = data?.totalCount || 0;
 

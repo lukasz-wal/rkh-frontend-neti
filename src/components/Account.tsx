@@ -13,6 +13,8 @@ export default function Account() {
       <AccountDropdown account={account} onLogout={disconnect} />
     </>
   ) : (
-    <ConnectWalletButton />
+    <>
+      <ConnectWalletButton />
+    </>
   );
 }
