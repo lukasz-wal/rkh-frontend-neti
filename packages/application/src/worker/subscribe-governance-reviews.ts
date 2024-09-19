@@ -7,7 +7,6 @@ import { SubmitGovernanceReviewResultCommand } from "@src/application/commands/s
 import config from "@src/config";
 import { IGithubClient } from "@src/infrastructure/clients/github";
 import { TYPES } from "@src/types";
-import { DatacapAllocator } from "@src/domain/datacap-allocator";
 
 // Load environment variables
 dotenv.config();

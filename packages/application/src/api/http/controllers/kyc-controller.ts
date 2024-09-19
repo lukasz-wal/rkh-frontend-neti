@@ -5,7 +5,6 @@ import {
   controller,
   httpPost,
   request,
-  requestParam,
   response,
 } from "inversify-express-utils";
 
@@ -14,18 +13,24 @@ import { TYPES } from "@src/types";
 
 import { ok } from "../processors/response";
 
-@controller("/api/v1/allocators")
+@controller("/api/v1/kyc")
 export class KycController {
   constructor(
     @inject(TYPES.CommandBus) private readonly _commandBus: ICommandBus
   ) {}
 
-  @httpPost("/kyc/result")
+  @httpPost("/result/:endpointSecret")
   async submitKYCResult(
-    @requestParam("id") id: string,
     @request() req: Request,
     @response() res: Response
   ) {
+    const { endpointSecret } = req.params;
+    const expectedSecret = process.env.KYC_ENDPOINT_SECRET;
+
+    if (endpointSecret !== expectedSecret) {
+      return res.status(404).json({ error: "Not Found" });
+    }
+
     const { event, data, custom } = req.body;
     const applicationId = custom.applicationId;
     console.log("applicationId", applicationId);
