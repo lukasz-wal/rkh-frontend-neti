@@ -26,5 +26,10 @@ export default {
 
   // Lotus client configuration
   LOTUS_RPC_URL: process.env.LOTUS_RPC_URL || 'https://api.node.glif.io/rpc/v1',
-  LOTUS_AUTH_TOKEN: process.env.LOTUS_AUTH_TOKEN || 'your-lotus-auth-token'
+  LOTUS_AUTH_TOKEN: process.env.LOTUS_AUTH_TOKEN || 'your-lotus-auth-token',
+
+  // GitHub handles for the governance team
+  GOVERNANCE_TEAM_GITHUB_HANDLES: process.env.GOVERNANCE_TEAM_GITHUB_HANDLES
+    ? process.env.GOVERNANCE_TEAM_GITHUB_HANDLES.split(',').map(handle => handle.trim())
+    : ['galen-mcandrew', 'Kevin-FF-USA'],
 };

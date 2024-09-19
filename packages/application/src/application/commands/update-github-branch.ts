@@ -10,7 +10,6 @@ import {
 } from "@src/domain/datacap-allocator";
 import { IGithubClient, PullRequest } from "@src/infrastructure/clients/github";
 import { TYPES } from "@src/types";
-import { GOVERNANCE_REVIEWERS } from "@src/worker/subscribe-governance-reviews";
 
 export class UpdateGithubBranchCommand extends Command {
   constructor(public readonly allocatorId: string) {
@@ -49,7 +48,7 @@ export class UpdateGithubBranchCommandHandler
         config.GITHUB_OWNER,
         config.GITHUB_REPO,
         allocator.applicationPullRequest.prNumber,
-        GOVERNANCE_REVIEWERS
+        config.GOVERNANCE_TEAM_GITHUB_HANDLES
       );
     }
 
