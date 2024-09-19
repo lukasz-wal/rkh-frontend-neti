@@ -12,8 +12,11 @@ export class EventSourcedRepository<T extends AggregateRoot> implements IReposit
   ) {}
 
   async save(aggregateRoot: T, expectedVersion: number) {
-    await this.eventStore.saveEvents(aggregateRoot.guid, aggregateRoot.getUncommittedEvents(), expectedVersion);
-    aggregateRoot.markChangesAsCommitted();
+    const uncommittedEvents = aggregateRoot.getUncommittedEvents();
+    if (uncommittedEvents.length > 0) {
+      await this.eventStore.saveEvents(aggregateRoot.guid, uncommittedEvents, expectedVersion);
+      aggregateRoot.markChangesAsCommitted();
+    }
   }
 
   async getById(guid: string) {

@@ -10,6 +10,7 @@ import {
 } from "@src/domain/datacap-allocator";
 import { IGithubClient, PullRequest } from "@src/infrastructure/clients/github";
 import { TYPES } from "@src/types";
+import { GOVERNANCE_REVIEWERS } from "@src/worker/subscribe-governance-reviews";
 
 export class UpdateGithubBranchCommand extends Command {
   constructor(public readonly allocatorId: string) {
@@ -48,7 +49,7 @@ export class UpdateGithubBranchCommandHandler
         config.GITHUB_OWNER,
         config.GITHUB_REPO,
         allocator.applicationPullRequest.prNumber,
-        ["asynctomatic"]
+        GOVERNANCE_REVIEWERS
       );
     }
 
@@ -79,6 +80,16 @@ export class UpdateGithubBranchCommandHandler
       console.log("Updating existing pull request");
       console.log(allocator.status);
       await this.updatePullRequestMessage(allocator);
+    }
+
+    this._logger.info("Checking if pull request should be merged");
+    if (
+      allocator.status.phase === DatacapAllocatorPhase.RKH_APPROVAL &&
+      allocator.status.phaseStatus === DatacapAllocatorPhaseStatus.COMPLETED
+    ) {
+      this._logger.info("Pull request should be merged");
+      await this.mergePullRequest(allocator);
+      this._logger.info("Pull request merged");
     }
   }
 
@@ -135,10 +146,12 @@ export class UpdateGithubBranchCommandHandler
                 slack: "CloudX Lab",
                 github_user: "CloudX-Lab",
               },
-              pathway_addresses: {
-                msig: "f2o2obeorcnu4zp6zbs6i2pxkzqppxyxommqpsefi",
-                signer: ["f1mkrrydd5xdjgtpnlsljkmdy5w3tphzz3orb32di"],
-              },
+              pathway_addresses: allocator.address.startsWith('f2') ? {
+                msig: allocator.address,
+                signer: [
+                  // TODO: This is populated by the github action
+                ],
+              } : undefined,
             },
             null,
             2
@@ -157,6 +170,15 @@ export class UpdateGithubBranchCommandHandler
       allocator.applicationPullRequest.prNumber,
       allocator.applicationPullRequest.commentId,
       this.generateCommentMessage(allocator)
+    );
+  }
+
+  private async mergePullRequest(allocator: DatacapAllocator) {
+    await this._githubClient.mergePullRequest(
+      config.GITHUB_OWNER,
+      config.GITHUB_REPO,
+      allocator.applicationPullRequest.prNumber,
+      "Automatically merged after RKH approval"
     );
   }
 
@@ -230,7 +252,7 @@ ${statusEmoji[allocator.status.phaseStatus] || "❓"} \`${
         DatacapAllocatorPhaseStatus.IN_PROGRESS:
         return `
 ### Next Steps
-1. Complete the KYC process at [our secure portal](https://flow-dev.togggle.io/fidl/kyc?q=${allocator.guid})
+1. Complete the KYC process at [our secure portal](https://flow-dev.togggle.io/fidl/kyc?applicationId=${allocator.guid})
 2. Your application will be automatically updated once submitted
 
 > ℹ️ KYC completion is required to proceed with your application
@@ -239,7 +261,7 @@ ${statusEmoji[allocator.status.phaseStatus] || "❓"} \`${
       case DatacapAllocatorPhaseStatus.IN_PROGRESS:
         return `
 ### Next Steps
-1. Complete the KYC process at [our secure portal](https://flow-dev.togggle.io/fidl/kyc?q=${allocator.guid})
+1. Complete the KYC process at [our secure portal](https://flow-dev.togggle.io/fidl/kyc?applicationId=${allocator.guid})
 2. Your application will be automatically updated once submitted
 
 > ℹ️ KYC completion is required to proceed with your application

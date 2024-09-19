@@ -257,6 +257,7 @@ export class DatacapAllocator extends AggregateRoot {
 
   completeRKHApproval() {
     this.ensureValidPhaseStatus(DatacapAllocatorPhase.RKH_APPROVAL, [
+      DatacapAllocatorPhaseStatus.NOT_STARTED,
       DatacapAllocatorPhaseStatus.IN_PROGRESS,
     ]);
 
@@ -264,10 +265,10 @@ export class DatacapAllocator extends AggregateRoot {
   }
 
   updateDatacapAllocation(datacap: number) {
-    if (this.status.phase === DatacapAllocatorPhase.RKH_APPROVAL) {
+    try {
       this.completeRKHApproval();
-    }
-    this.applyChange(new DatacapAllocationUpdated(this.guid, datacap));
+    } catch (error) {}
+    // TODO: this.applyChange(new DatacapAllocationUpdated(this.guid, datacap));
   }
 
   applyAllocatorApplied(event: AllocatorApplied) {
@@ -361,11 +362,18 @@ export class DatacapAllocator extends AggregateRoot {
     this.status = {
       phase: DatacapAllocatorPhase.RKH_APPROVAL,
       phaseStatus:
-        event.approvals.length < 2
+        event.approvals.length < 2  // TODO: this.rkhApprovalThreshold
           ? DatacapAllocatorPhaseStatus.IN_PROGRESS
           : DatacapAllocatorPhaseStatus.COMPLETED,
     };
     this.rkhApprovals = event.approvals;
+  }
+
+  applyRKHApprovalCompleted(event: RKHApprovalCompleted) {
+    this.status = {
+      phase: DatacapAllocatorPhase.RKH_APPROVAL,
+      phaseStatus: DatacapAllocatorPhaseStatus.COMPLETED,
+    };
   }
 
   applyDatacapAllocationUpdated(event: DatacapAllocationUpdated) {
@@ -374,13 +382,6 @@ export class DatacapAllocator extends AggregateRoot {
       phaseStatus: DatacapAllocatorPhaseStatus.COMPLETED,
     };
     this.datacapAmount = event.datacap;
-  }
-
-  applyRKHApprovalCompleted(event: RKHApprovalCompleted) {
-    this.status = {
-      phase: DatacapAllocatorPhase.RKH_APPROVAL,
-      phaseStatus: DatacapAllocatorPhaseStatus.COMPLETED,
-    };
   }
 
   private ensureValidPhaseStatus(

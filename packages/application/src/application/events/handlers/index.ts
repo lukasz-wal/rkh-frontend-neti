@@ -21,7 +21,6 @@ import {
   DatacapAllocatorPhaseStatus,
 } from "@src/domain/datacap-allocator";
 import { UpdateGithubBranchCommand } from "@src/application/commands";
-import { MergeApplicationPRCommand } from "@src/application/commands/merge-application-pr";
 
 @injectable()
 export class ApplicationSubmittedEventHandler
@@ -287,12 +286,27 @@ export class RKHApprovalCompletedEventHandler
   public event = RKHApprovalCompleted.name;
 
   constructor(
-    @inject(TYPES.CommandBus) private readonly _commandBus: CommandBus
+    @inject(TYPES.CommandBus) private readonly _commandBus: CommandBus,
+    @inject(TYPES.Db) private readonly _db: Db
   ) {}
 
   async handle(event: RKHApprovalCompleted) {
-    await this._commandBus.send(
-      new MergeApplicationPRCommand(event.aggregateId)
+    console.log("RKHApprovalCompletedEventHandler", event);
+    // Update allocator status in the database
+    await this._db.collection("datacapAllocators").updateOne(
+      { id: event.aggregateId },
+      {
+        $set: {
+          status: {
+            phase: DatacapAllocatorPhase.RKH_APPROVAL,
+            phaseStatus: DatacapAllocatorPhaseStatus.COMPLETED,
+          },
+        },
+      }
+    );
+
+    const result = await this._commandBus.send(
+      new UpdateGithubBranchCommand(event.aggregateId)
     );
   }
 }

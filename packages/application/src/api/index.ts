@@ -20,6 +20,7 @@ import {
   subscribeRKHApprovals,
   subscribeDatacapAllocations,
 } from "@src/worker";
+import { Db } from "mongodb";
 
 async function main() {
   // Initialize the container
@@ -44,22 +45,28 @@ async function main() {
   container.bind<Application>(TYPES.ApiServer).toConstantValue(apiServer);
 
   // Initialize RabbitMQ as subscribe to events
-  const eventBus = container.get<IEventBus>(TYPES.EventBus) as RabbitMQEventBus;
+  const eventBus = container.get<IEventBus>(TYPES.EventBus);
   try {
-    await eventBus.init();
+    // TODO: needed for RabbitMQ await eventBus.init();
     await eventBus.subscribeEvents();
-    logger.info("RabbitMQ initialized successfully");
+    logger.info("Event bus initialized successfully");
   } catch (error) {
-    logger.error("Failed to initialize RabbitMQ", { error });
+    logger.error("Failed to initialize event bus ", { error });
     process.exit(1);
   }
 
+  // Delete databse from mongo
+  const db = container.get<Db>(TYPES.Db);
+  await db.collection("airtable-client:records").deleteMany({});
+  await db.collection("datacap-allocator-events").deleteMany({});
+  await db.collection("datacapAllocators").deleteMany({});
+
   // Start worker services
   // TODO: Move this to application startup
-  // await subscribeApplicationSubmissions(container);
-  // await subscribeGovernanceReviews(container);
-  // await subscribeRKHApprovals(container);
-  // await subscribeDatacapAllocations(container);
+  await subscribeApplicationSubmissions(container);
+  await subscribeGovernanceReviews(container);
+  await subscribeRKHApprovals(container);
+  await subscribeDatacapAllocations(container);
 
   // Start the API server
   apiServer.listen(config.API_PORT, () =>

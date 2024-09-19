@@ -1,4 +1,4 @@
-import { Command, ICommandHandler, Logger } from "@filecoin-plus/core";
+import { Command, ICommandHandler, Logger, NotFoundException } from "@filecoin-plus/core";
 import { inject, injectable } from "inversify";
 
 import { DatacapAllocator, IDatacapAllocatorRepository } from "@src/domain/datacap-allocator";
@@ -29,13 +29,12 @@ export class UpdateDatacapAllocationCommandHandler
   async handle(command: UpdateDatacapAllocationCommand): Promise<void> {
     this.logger.info(command);
 
-    let allocator = await this._repository.getById(command.allocatorId);
-    if (!allocator) {
-      allocator = new DatacapAllocator();  
+    try {
+      const allocator = await this._repository.getById(command.allocatorId);
+      allocator.updateDatacapAllocation(command.datacap);
+      this._repository.save(allocator, allocator.version);
+    } catch (error) {
+      this.logger.error(`Error getting allocator ${command.allocatorId}`, error);
     }
-
-    allocator.updateDatacapAllocation(command.datacap);
-
-    this._repository.save(allocator, allocator.version);
   }
 }

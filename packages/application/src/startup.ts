@@ -33,6 +33,7 @@ import {
   KYCApprovedEventHandler,
   KYCRejectedEventHandler,
   KYCStartedEventHandler,
+  RKHApprovalCompletedEventHandler,
 } from "./application/events/handlers";
 import { UpdateRKHApprovalsCommandHandler } from "./application/commands/update-rkh-approvals";
 import {
@@ -43,8 +44,6 @@ import {
 } from "./application/commands";
 import { GetDatacapAllocatorsQueryHandler } from "./application/queries/get-datacap-allocators";
 import { SubmitGovernanceReviewResultCommandHandler } from "./application/commands/submit-governance-review";
-import { MergeApplicationPRCommandHandler } from "./application/commands/merge-application-pr";
-import { RKHApprovalCompletedEventHandler } from "./application/events/handlers/rkh-approval-completed-handler";
 
 export const initialize = async (): Promise<Container> => {
   const container = new Container();
@@ -84,7 +83,6 @@ export const initialize = async (): Promise<Container> => {
   container
     .bind<IEventHandler<GovernanceReviewRejected>>(TYPES.Event)
     .to(GovernanceReviewRejectedEventHandler);
-
   container
     .bind<IEventHandler<RKHApprovalCompleted>>(TYPES.Event)
     .to(RKHApprovalCompletedEventHandler);
@@ -108,9 +106,6 @@ export const initialize = async (): Promise<Container> => {
   container
     .bind<ICommandHandler<ICommand>>(TYPES.CommandHandler)
     .to(UpdateGithubBranchCommandHandler);
-  container
-    .bind<ICommandHandler<ICommand>>(TYPES.CommandHandler)
-    .to(MergeApplicationPRCommandHandler);
 
   const commandBus = container.get<ICommandBus>(TYPES.CommandBus);
   container

@@ -20,16 +20,18 @@ export class KycController {
     @inject(TYPES.CommandBus) private readonly _commandBus: ICommandBus
   ) {}
 
-  @httpPost("/:id/kyc/result")
+  @httpPost("/kyc/result")
   async submitKYCResult(
     @requestParam("id") id: string,
     @request() req: Request,
     @response() res: Response
   ) {
-    const { event, data } = req.body;
+    const { event, data, custom } = req.body;
+    const applicationId = custom.applicationId;
+    console.log("applicationId", applicationId);
 
     const result = await this._commandBus.send(
-      new SubmitKYCResultCommand(id, {
+      new SubmitKYCResultCommand(applicationId, {
         status: event === "success" ? "approved" : "rejected",
         data: data.kyc,
       })
