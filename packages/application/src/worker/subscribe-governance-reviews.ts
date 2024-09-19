@@ -19,7 +19,7 @@ type GovernanceReviewer = {
 
 // TODO: Move this to a config file
 export const GOVERNANCE_REVIEWERS = process.env.GOVERNANCE_REVIEWERS?.split(",") || [
-  "nikonikoxyz",
+  "galen-mcandrew", "Kevin-FF-USA"
 ];
 const POLL_INTERVAL = parseInt(process.env.POLL_INTERVAL || "5000", 10);
 
