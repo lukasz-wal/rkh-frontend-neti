@@ -1,28 +1,23 @@
-import { Octokit } from "@octokit/rest";
-import { throttling } from "@octokit/plugin-throttling";
-import { components } from "@octokit/openapi-types";
-import { inject, injectable } from "inversify";
-import { TYPES } from "@src/types";
+import { Octokit } from '@octokit/rest'
+import { throttling } from '@octokit/plugin-throttling'
+import { components } from '@octokit/openapi-types'
+import { inject, injectable } from 'inversify'
+import { TYPES } from '@src/types'
 
-const ThrottledOctokit = Octokit.plugin(throttling);
+const ThrottledOctokit = Octokit.plugin(throttling)
 
-export type Branch = components["schemas"]["git-ref"];
-export type PullRequest = components["schemas"]["pull-request"];
-export type PullRequestReview = components["schemas"]["pull-request-review"];
+export type Branch = components['schemas']['git-ref']
+export type PullRequest = components['schemas']['pull-request']
+export type PullRequestReview = components['schemas']['pull-request-review']
+export type File = {
+  sha: string
+  content: string
+}
 
 export interface IGithubClient {
-  createBranch(
-    owner: string,
-    repo: string,
-    branchName: string,
-    baseBranch: string
-  ): Promise<Branch>;
+  createBranch(owner: string, repo: string, branchName: string, baseBranch: string): Promise<Branch>
 
-  deleteBranch(
-    owner: string,
-    repo: string,
-    branchName: string
-  ): Promise<void>;
+  deleteBranch(owner: string, repo: string, branchName: string): Promise<void>
 
   createPullRequest(
     owner: string,
@@ -31,58 +26,45 @@ export interface IGithubClient {
     body: string,
     head: string,
     base: string,
-    files: { path: string; content: string }[]
-  ): Promise<PullRequest>;
+    files: { path: string; content: string }[],
+  ): Promise<PullRequest>
 
   updatePullRequest(
     owner: string,
     repo: string,
     pullNumber: number,
     title?: string,
-    body?: string
-  ): Promise<PullRequest>;
+    body?: string,
+  ): Promise<PullRequest>
 
-  createPullRequestComment(
-    owner: string,
-    repo: string,
-    pullNumber: number,
-    body: string
-  ): Promise<PullRequestReview>;
+  closePullRequest(owner: string, repo: string, pullNumber: number): Promise<void>
+
+  createPullRequestComment(owner: string, repo: string, pullNumber: number, body: string): Promise<PullRequestReview>
 
   updatePullRequestComment(
     owner: string,
     repo: string,
     pullNumber: number,
     commentId: number,
-    body: string
-  ): Promise<PullRequestReview>;
+    body: string,
+  ): Promise<PullRequestReview>
 
-  updatePullRequestReviewers(
-    owner: string,
-    repo: string,
-    pullNumber: number,
-    reviewers: string[]
-  ): Promise<void>;
+  updatePullRequestReviewers(owner: string, repo: string, pullNumber: number, reviewers: string[]): Promise<void>
 
-  getPullRequestReviews(
-    owner: string,
-    repo: string,
-    pullNumber: number
-  ): Promise<PullRequestReview[]>;
+  getPullRequestReviews(owner: string, repo: string, pullNumber: number): Promise<PullRequestReview[]>
 
-  mergePullRequest(
-    owner: string,
-    repo: string,
-    pullNumber: number,
-    commitMessage: string
-  ): Promise<void>;
+  mergePullRequest(owner: string, repo: string, pullNumber: number, commitMessage: string): Promise<void>
+
+  getPullRequest(owner: string, repo: string, prNumber: number): Promise<PullRequest>
+
+  getFile(owner: string, repo: string, path: string, ref: string): Promise<File>
 }
 
 /**
  * Configuration options for GithubClient
  */
 export interface GithubClientConfig {
-  authToken: string;
+  authToken: string
 }
 
 /**
@@ -90,47 +72,35 @@ export interface GithubClientConfig {
  */
 @injectable()
 export class GithubClient implements IGithubClient {
-  private octokit: Octokit;
+  private octokit: Octokit
 
   constructor(
     @inject(TYPES.GithubClientConfig)
-    config: GithubClientConfig
+    config: GithubClientConfig,
   ) {
     this.octokit = new ThrottledOctokit({
       auth: config.authToken,
       throttle: {
         onRateLimit: (retryAfter, options, octokit, retryCount) => {
-          octokit.log.warn(
-            `Request quota exhausted for request ${options.method} ${options.url}`
-          );
-          console.log("Rate limit exceeded");
+          octokit.log.warn(`Request quota exhausted for request ${options.method} ${options.url}`)
 
           if (retryCount < 1) {
             // only retries once
-            octokit.log.info(`Retrying after ${retryAfter} seconds!`);
-            return true;
+            octokit.log.info(`Retrying after ${retryAfter} seconds!`)
+            return true
           }
         },
         onSecondaryRateLimit: (retryAfter, options, octokit) => {
           // does not retry, only logs a warning
-          octokit.log.warn(
-            `SecondaryRateLimit detected for request ${options.method} ${options.url}`
-          );
-          console.log("SecondaryRateLimit detected");
-          console.log(retryAfter, options);
+          octokit.log.warn(`SecondaryRateLimit detected for request ${options.method} ${options.url}`)
         },
       },
-    });
+    })
   }
 
-  async createBranch(
-    owner: string,
-    repo: string,
-    branchName: string,
-    baseBranch: string
-  ): Promise<Branch> {
+  async createBranch(owner: string, repo: string, branchName: string, baseBranch: string): Promise<Branch> {
     // Get the latest commit SHA of the base branch.
-    const sha = await this.getReferenceHash(owner, repo, baseBranch);
+    const sha = await this.getReferenceHash(owner, repo, baseBranch)
 
     // Create a new branch with the latest commit SHA.
     const { data } = await this.octokit.git.createRef({
@@ -138,21 +108,17 @@ export class GithubClient implements IGithubClient {
       repo: repo,
       ref: `refs/heads/${branchName}`,
       sha: sha,
-    });
+    })
 
-    return data;
+    return data
   }
 
-  async deleteBranch(
-    owner: string,
-    repo: string,
-    branchName: string
-  ): Promise<void> {
+  async deleteBranch(owner: string, repo: string, branchName: string): Promise<void> {
     await this.octokit.git.deleteRef({
       owner,
       repo,
       ref: `heads/${branchName}`,
-    });
+    })
   }
 
   async createPullRequest(
@@ -162,7 +128,7 @@ export class GithubClient implements IGithubClient {
     body: string,
     head: string,
     base: string,
-    files: { path: string; content: string }[]
+    files: { path: string; content: string }[],
   ): Promise<PullRequest> {
     // Create or update files in the branch
     for (const file of files) {
@@ -171,9 +137,9 @@ export class GithubClient implements IGithubClient {
         repo,
         path: file.path,
         message: `Add/update ${file.path}`,
-        content: Buffer.from(file.content).toString("base64"),
+        content: Buffer.from(file.content).toString('base64'),
         branch: head,
-      });
+      })
     }
 
     // Create the pull request
@@ -184,9 +150,9 @@ export class GithubClient implements IGithubClient {
       body,
       head,
       base,
-    });
+    })
 
-    return data;
+    return data
   }
 
   async updatePullRequest(
@@ -194,42 +160,51 @@ export class GithubClient implements IGithubClient {
     repo: string,
     pullNumber: number,
     title?: string,
-    body?: string
+    body?: string,
   ): Promise<PullRequest> {
     const updateParams: {
-      owner: string;
-      repo: string;
-      pull_number: number;
-      title?: string;
-      body?: string;
+      owner: string
+      repo: string
+      pull_number: number
+      title?: string
+      body?: string
     } = {
       owner,
       repo,
       pull_number: pullNumber,
-    };
+    }
 
-    if (title) updateParams.title = title;
-    if (body) updateParams.body = body;
+    if (title) updateParams.title = title
+    if (body) updateParams.body = body
 
-    const { data } = await this.octokit.pulls.update(updateParams);
-    return data;
+    const { data } = await this.octokit.pulls.update(updateParams)
+    return data
+  }
+
+  async closePullRequest(owner: string, repo: string, pullNumber: number): Promise<void> {
+    await this.octokit.pulls.update({
+      owner,
+      repo,
+      pull_number: pullNumber,
+      state: 'closed',
+    })
   }
 
   async createPullRequestComment(
     owner: string,
     repo: string,
     pullNumber: number,
-    body: string
+    body: string,
   ): Promise<PullRequestReview> {
     const { data } = await this.octokit.pulls.createReview({
       owner,
       repo,
       pull_number: pullNumber,
       body,
-      event: "COMMENT",
-    });
+      event: 'COMMENT',
+    })
 
-    return data;
+    return data
   }
 
   async updatePullRequestComment(
@@ -237,7 +212,7 @@ export class GithubClient implements IGithubClient {
     repo: string,
     pullNumber: number,
     commentId: number,
-    body: string
+    body: string,
   ): Promise<PullRequestReview> {
     const { data } = await this.octokit.pulls.updateReview({
       owner,
@@ -245,63 +220,88 @@ export class GithubClient implements IGithubClient {
       pull_number: pullNumber,
       review_id: commentId,
       body,
-    });
+    })
 
-    return data;
+    return data
   }
 
   async updatePullRequestReviewers(
     owner: string,
     repo: string,
     pullNumber: number,
-    reviewers: string[]
+    reviewers: string[],
   ): Promise<void> {
     await this.octokit.pulls.requestReviewers({
       owner,
       repo,
       pull_number: pullNumber,
       reviewers,
-    });
+    })
   }
 
-  async getPullRequestReviews(
-    owner: string,
-    repo: string,
-    pullNumber: number
-  ): Promise<PullRequestReview[]> {
+  async getPullRequestReviews(owner: string, repo: string, pullNumber: number): Promise<PullRequestReview[]> {
     const { data } = await this.octokit.pulls.listReviews({
       owner,
       repo,
       pull_number: pullNumber,
-    });
+    })
 
-    return data;
+    return data
   }
 
-  async mergePullRequest(
-    owner: string,
-    repo: string,
-    pullNumber: number,
-    commitMessage: string
-  ): Promise<void> {
+  async mergePullRequest(owner: string, repo: string, pullNumber: number, commitMessage: string): Promise<void> {
     await this.octokit.pulls.merge({
       owner,
       repo,
       pull_number: pullNumber,
       commit_message: commitMessage,
-    });
+    })
   }
 
-  private async getReferenceHash(
-    owner: string,
-    repo: string,
-    branch: string
-  ): Promise<string> {
+  private async getReferenceHash(owner: string, repo: string, branch: string): Promise<string> {
     const { data } = await this.octokit.git.getRef({
       owner: owner,
       repo: repo,
       ref: `heads/${branch}`,
-    });
-    return data.object.sha;
+    })
+    return data.object.sha
+  }
+
+  async getPullRequest(owner: string, repo: string, prNumber: number): Promise<PullRequest> {
+    try {
+      const { data } = await this.octokit.pulls.get({
+        owner,
+        repo,
+        pull_number: prNumber,
+      })
+
+      return data
+    } catch (error: any) {
+      console.error(`Error fetching PR details: ${error.message}`)
+      throw error
+    }
+  }
+
+  async getFile(owner: string, repo: string, path: string, ref: string): Promise<File> {
+    try {
+      const { data } = await this.octokit.repos.getContent({
+        owner,
+        repo,
+        path,
+        ref,
+      })
+
+      if ('content' in data) {
+        return {
+          sha: data.sha,
+          content: Buffer.from(data.content, 'base64').toString('utf-8'),
+        }
+      } else {
+        throw new Error('File content not found')
+      }
+    } catch (error: any) {
+      console.error(`Error fetching file content: ${error.message}`)
+      throw error
+    }
   }
 }

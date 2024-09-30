@@ -5,9 +5,11 @@
   "type": "module",
   "scripts": {
     "build": "tsc --build --force && tsc-alias",
-    "start": "TS_NODE_BASEURL=dist node -r tsconfig-paths/register dist/api/index.js",
-    "start:worker:governance-review": "TS_NODE_BASEURL=dist node -r tsconfig-paths/register dist/worker/subscribe-governance-review-status.js",
-    "start:worker:rkh": "TS_NODE_BASEURL=dist node -r tsconfig-paths/register dist/worker/subscribe-rkh.js"
+    "start": "npm run build && TS_NODE_BASEURL=dist node -r tsconfig-paths/register dist/api/index.js",
+    "start:worker:governance-review": "npm run build && TS_NODE_BASEURL=dist node -r tsconfig-paths/register dist/worker/subscribe-governance-review-status.js",
+    "start:worker:rkh": "npm run build && TS_NODE_BASEURL=dist node -r tsconfig-paths/register dist/worker/subscribe-rkh.js",
+    "fmt": "prettier --write 'src/**/*.{js,ts,json}'",
+    "fmt:check": "prettier --check src test"
   },
   "repository": "git@github.com:threesigmaxyz/filecoin-plus.git",
   "author": "Afonso Oliveira <afonso.oliveira@threesigma.xyz>",
@@ -21,6 +23,8 @@
   },
   "dependencies": {
     "@filecoin-plus/core": "^1.0.0",
+    "@filecoin-shipyard/lotus-client-provider-nodejs": "^1.1.1",
+    "@filecoin-shipyard/lotus-client-schema": "^4.2.0",
     "@ipld/dag-cbor": "^9.2.1",
     "@keyko-io/filecoin-verifier-tools": "^2.2.4",
     "@octokit/core": "^6.1.2",

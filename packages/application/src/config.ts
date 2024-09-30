@@ -1,5 +1,7 @@
-import dotenv from 'dotenv';
-dotenv.config();
+import dotenv from 'dotenv'
+dotenv.config()
+
+const DEFAULT_POLLING_INTERVAL = 10000
 
 export default {
   API_PORT: process.env.API_PORT || 3000,
@@ -30,6 +32,16 @@ export default {
 
   // GitHub handles for the governance team
   GOVERNANCE_TEAM_GITHUB_HANDLES: process.env.GOVERNANCE_TEAM_GITHUB_HANDLES
-    ? process.env.GOVERNANCE_TEAM_GITHUB_HANDLES.split(',').map(handle => handle.trim())
+    ? process.env.GOVERNANCE_TEAM_GITHUB_HANDLES.split(',').map((handle) => handle.trim())
     : ['galen-mcandrew', 'Kevin-FF-USA'],
-};
+
+  // Admin API key configuration
+  ADMIN_API_KEY: process.env.ADMIN_API_KEY || 'default_admin_api_key',
+
+  // Pooling intervals
+  SUBSCRIBE_APPLICATION_SUBMISSIONS_POLLING_INTERVAL: Number(process.env.SUBSCRIBE_APPLICATION_SUBMISSIONS_POLLING_INTERVAL) || DEFAULT_POLLING_INTERVAL,
+  SUBSCRIBE_APPLICATION_EDITS_POLLING_INTERVAL: Number(process.env.SUBSCRIBE_APPLICATION_EDITS_POLLING_INTERVAL) || DEFAULT_POLLING_INTERVAL,
+  SUBSCRIBE_GOVERNANCE_REVIEWS_POLLING_INTERVAL: Number(process.env.SUBSCRIBE_GOVERNANCE_REVIEWS_POLLING_INTERVAL) || DEFAULT_POLLING_INTERVAL,
+  SUBSCRIBE_RKH_APPROVALS_POLLING_INTERVAL: Number(process.env.SUBSCRIBE_RKH_APPROVALS_POLLING_INTERVAL) || DEFAULT_POLLING_INTERVAL,
+  SUBSCRIBE_DATACAP_ALLOCATIONS_POLLING_INTERVAL: Number(process.env.SUBSCRIBE_DATACAP_ALLOCATIONS_POLLING_INTERVAL) || DEFAULT_POLLING_INTERVAL,
+}

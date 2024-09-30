@@ -12,5 +12,11 @@
   "scripts": {
     "application": "npx -w @filecoin-plus/application",
     "core": "npx -w @filecoin-plus/core"
+  },
+  "devDependencies": {
+    "prettier": "^3.3.3"
+  },
+  "dependencies": {
+    "@filecoin-shipyard/lotus-client-rpc": "^1.2.0"
   }
 }

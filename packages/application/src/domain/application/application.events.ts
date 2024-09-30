@@ -1,0 +1,235 @@
+import { Event } from '@filecoin-plus/core'
+import { KYCApprovedData, KYCRejectedData } from '@src/domain/types'
+
+export class ApplicationCreated extends Event {
+  eventName = ApplicationCreated.name
+  aggregateName = 'allocator'
+
+  public timestamp: Date
+
+  constructor(
+    public guid: string,
+    public applicationNumber: number,
+    public applicantName: string,
+    public applicantLocation: string,
+    public applicantGithubHandle: string,
+    public applicantSlackHandle: string,
+    public applicantAddress: string,
+    public applicantOrgName: string,
+    public applicantOrgAddresses: string[],
+    public allocationStandardizedAllocations: string[],
+    public allocationTargetClients: string[],
+    public allocationRequiredReplicas: string,
+    public allocationRequiredStorageProviders: string,
+    public allocationTooling: string[],
+    public allocationDataTypes: string[],
+    public allocationProjected12MonthsUsage: string,
+    public allocationBookkeepingRepo: string,
+    public type: string,
+    public datacap: number,
+  ) {
+    super(guid)
+    this.timestamp = new Date()
+  }
+}
+
+export class ApplicationEdited extends Event {
+  eventName = ApplicationEdited.name
+  aggregateName = 'allocator'
+
+  public timestamp: Date
+
+  constructor(
+    allocatorId: string,
+    public applicationNumber?: number,
+    public applicantName?: string,
+    public applicantLocation?: string,
+    public applicantGithubHandle?: string,
+    public applicantSlackHandle?: string,
+    public applicantAddress?: string,
+    public applicantOrgName?: string,
+    public applicantOrgAddresses?: string[],
+    public standardizedAllocations?: string[],
+    public targetClients?: string[],
+    public requiredReplicas?: string,
+    public requiredStorageProviders?: string,
+    public tooling?: string[],
+    public dataTypes?: string[],
+    public projected12MonthsUsage?: string,
+    public allocationBookkeepingRepo?: string,
+  ) {
+    super(allocatorId)
+    this.timestamp = new Date()
+  }
+}
+
+export class AllocatorMultisigUpdated extends Event {
+  eventName = AllocatorMultisigUpdated.name
+  aggregateName = 'allocator'
+
+  public timestamp: Date
+
+  constructor(
+    applicationId: string,
+    public allocatorActorId: string,
+    public multisigAddress: string,
+    public multisigThreshold: number,
+    public multisigSigners: string[],
+  ) {
+    super(applicationId)
+    this.timestamp = new Date()
+  }
+}
+
+export class ApplicationPullRequestUpdated extends Event {
+  eventName = ApplicationPullRequestUpdated.name
+  aggregateName = 'allocator'
+
+  public timestamp: Date
+
+  constructor(
+    allocatorId: string,
+    public prNumber: number,
+    public prUrl: string,
+    public commentId: number,
+  ) {
+    super(allocatorId)
+    this.timestamp = new Date()
+  }
+}
+
+export class KYCStarted extends Event {
+  eventName = KYCStarted.name
+  aggregateName = 'allocator'
+
+  public timestamp: Date
+
+  constructor(allocatorId: string) {
+    super(allocatorId)
+    this.timestamp = new Date()
+  }
+}
+
+export class KYCApproved extends Event {
+  eventName = KYCApproved.name
+  aggregateName = 'allocator'
+
+  public timestamp: Date
+
+  constructor(
+    allocatorId: string,
+    public data: KYCApprovedData,
+  ) {
+    super(allocatorId)
+    this.timestamp = new Date()
+  }
+}
+
+export class KYCRejected extends Event {
+  eventName = KYCRejected.name
+  aggregateName = 'allocator'
+
+  public timestamp: Date
+
+  constructor(
+    allocatorId: string,
+    public data: KYCRejectedData,
+  ) {
+    super(allocatorId)
+    this.timestamp = new Date()
+  }
+}
+
+export class GovernanceReviewStarted extends Event {
+  eventName = GovernanceReviewStarted.name
+  aggregateName = 'allocator'
+
+  public timestamp: Date
+
+  constructor(allocatorId: string) {
+    super(allocatorId)
+    this.timestamp = new Date()
+  }
+}
+
+export class GovernanceReviewApproved extends Event {
+  eventName = GovernanceReviewApproved.name
+  aggregateName = 'allocator'
+
+  public timestamp: Date
+
+  constructor(allocatorId: string) {
+    super(allocatorId)
+  }
+}
+
+export class GovernanceReviewRejected extends Event {
+  eventName = GovernanceReviewRejected.name
+  aggregateName = 'allocator'
+
+  public timestamp: Date
+
+  constructor(allocatorId: string) {
+    super(allocatorId)
+  }
+}
+
+export class RKHApprovalStarted extends Event {
+  eventName = RKHApprovalStarted.name
+  aggregateName = 'allocator'
+
+  public timestamp: Date
+
+  constructor(
+    allocatorId: string,
+    // TODO: public readonly multisigAddress: string,
+    public readonly approvalThreshold: number,
+    // TODO: public readonly signers: string[]
+  ) {
+    super(allocatorId)
+    this.timestamp = new Date()
+  }
+}
+
+export class RKHApprovalsUpdated extends Event {
+  eventName = RKHApprovalsUpdated.name
+  aggregateName = 'allocator'
+
+  public timestamp: Date
+
+  constructor(
+    allocatorId: string,
+    public approvals: string[],
+    public approvalThreshold: number,
+  ) {
+    super(allocatorId)
+    this.timestamp = new Date()
+  }
+}
+
+export class RKHApprovalCompleted extends Event {
+  eventName = RKHApprovalCompleted.name
+  aggregateName = 'allocator'
+
+  public timestamp: Date
+
+  constructor(allocatorId: string) {
+    super(allocatorId)
+    this.timestamp = new Date()
+  }
+}
+
+export class DatacapAllocationUpdated extends Event {
+  eventName = DatacapAllocationUpdated.name
+  aggregateName = 'allocator'
+
+  public timestamp: Date
+
+  constructor(
+    allocatorId: string,
+    public datacap: number,
+  ) {
+    super(allocatorId)
+    this.timestamp = new Date()
+  }
+}

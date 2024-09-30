@@ -11,7 +11,8 @@
     "paths": {
       "@src/*": ["*"]
     },
-    "types": ["reflect-metadata"]
+    "types": ["reflect-metadata"],
+    "noImplicitAny": false
   },
   "tsc-alias": {
     "resolveFullPaths": true,

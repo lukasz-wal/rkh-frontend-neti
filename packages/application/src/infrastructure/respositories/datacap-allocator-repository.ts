@@ -1,13 +1,35 @@
-import { EventSourcedRepository } from '@filecoin-plus/core';
-import { inject, injectable } from 'inversify';
+import { EventSourcedRepository } from '@filecoin-plus/core'
+import { inject, injectable } from 'inversify'
 
-import { TYPES } from '@src/types';
+import { TYPES } from '@src/types'
 
-import { DatacapAllocator, IDatacapAllocatorEventStore, IDatacapAllocatorRepository } from '@src/domain/datacap-allocator';
+import {
+  DatacapAllocator,
+  IDatacapAllocatorEventStore,
+  IDatacapAllocatorRepository,
+} from '@src/domain/application/application'
+import { PullRequestService } from '@src/application/services/pull-request.service'
 
 @injectable()
-export class DatacapAllocatorRepository extends EventSourcedRepository<DatacapAllocator> implements IDatacapAllocatorRepository {
-  constructor(@inject(TYPES.DatacapAllocatorEventStore) private readonly eventstore: IDatacapAllocatorEventStore) {
-    super(eventstore, DatacapAllocator);
+export class DatacapAllocatorRepository
+  extends EventSourcedRepository<DatacapAllocator>
+  implements IDatacapAllocatorRepository
+{
+  constructor(
+    @inject(TYPES.PullRequestService) private readonly pullRequestService: PullRequestService,
+    @inject(TYPES.DatacapAllocatorEventStore) private readonly eventstore: IDatacapAllocatorEventStore,
+  ) {
+    super(eventstore, DatacapAllocator)
+  }
+
+  async save(aggregateRoot: DatacapAllocator, expectedVersion: number) {
+    if (aggregateRoot.getUncommittedEvents().length > 0) {
+      this.pullRequestService.updatePullRequest(aggregateRoot)
+    }
+    return super.save(aggregateRoot, expectedVersion)
+  }
+
+  async getById(guid: string) {
+    return super.getById(guid)
   }
 }

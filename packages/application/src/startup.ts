@@ -8,13 +8,16 @@ import {
   IQueryHandler,
   Logger,
   createWinstonLogger,
-} from "@filecoin-plus/core";
-import { Container } from "inversify";
+} from '@filecoin-plus/core'
+import { Container } from 'inversify'
 
-import { infrastructureModule } from "@src/infrastructure/module";
+import { infrastructureModule } from '@src/infrastructure/module'
 import {
-  AllocatorApplied,
-  ApplicationSubmitted,
+  AllocatorMultisigUpdated,
+  ApplicationCreated,
+  ApplicationEdited,
+  ApplicationPullRequestUpdated,
+  DatacapAllocationUpdated,
   GovernanceReviewApproved,
   GovernanceReviewRejected,
   GovernanceReviewStarted,
@@ -22,11 +25,15 @@ import {
   KYCRejected,
   KYCStarted,
   RKHApprovalCompleted,
-} from "@src/domain/events";
-import { AllocatorAppliedEventHandler } from "@src/application/events/handlers/allocator-applied-handler";
-import { TYPES } from "@src/types";
+  RKHApprovalStarted,
+  RKHApprovalsUpdated,
+} from '@src/domain/application/application.events'
+import { TYPES } from '@src/types'
 import {
-  ApplicationSubmittedEventHandler,
+  AllocatorMultisigUpdatedEventHandler,
+  ApplicationEditedEventHandler,
+  ApplicationPullRequestUpdatedEventHandler,
+  DatacapAllocationUpdatedEventHandler,
   GovernanceReviewApprovedEventHandler,
   GovernanceReviewRejectedEventHandler,
   GovernanceReviewStartedEventHandler,
@@ -34,100 +41,73 @@ import {
   KYCRejectedEventHandler,
   KYCStartedEventHandler,
   RKHApprovalCompletedEventHandler,
-} from "./application/events/handlers";
-import { UpdateRKHApprovalsCommandHandler } from "./application/commands/update-rkh-approvals";
-import {
-  CreateApplicationCommandHandler,
-  SubmitKYCResultCommandHandler,
-  UpdateDatacapAllocationCommandHandler,
-  UpdateGithubBranchCommandHandler,
-} from "./application/commands";
-import { GetDatacapAllocatorsQueryHandler } from "./application/queries/get-datacap-allocators";
-import { SubmitGovernanceReviewResultCommandHandler } from "./application/commands/submit-governance-review";
+  RKHApprovalStartedEventHandler,
+  RKHApprovalsUpdatedEventHandler,
+} from './application/events/handlers'
+import { UpdateRKHApprovalsCommandHandler } from './application/use-cases/update-rkh-approvals/update-rkh-approvals.command'
+import { SubmitGovernanceReviewResultCommandHandler } from './application/use-cases/submit-governance-review/submit-governance-review.command'
+import { ApplicationCreatedEventHandler } from './application/use-cases/create-application/application-created.event'
+import { CreateApplicationCommandHandler } from './application/use-cases/create-application/create-application.command'
+import { MessageService } from './application/services/message.service'
+import { PullRequestService } from './application/services/pull-request.service'
+import { SubmitKYCResultCommandHandler } from './application/use-cases/submit-kyc-result/submit-kyc-result.command'
+import { GetApplicationsQueryHandler } from './application/queries/get-applications/get-applications.query'
+import { EditApplicationCommandHandler } from './application/use-cases/edit-application/edit-application.command'
+import { UpdateDatacapAllocationCommandHandler } from './application/use-cases/update-datacap-allocation/update-datacap-allocation'
 
 export const initialize = async (): Promise<Container> => {
-  const container = new Container();
+  const container = new Container()
 
-  await container.loadAsync(infrastructureModule);
+  await container.loadAsync(infrastructureModule)
 
   // Logger
-  const logger = createWinstonLogger("filecoin-plus-backend");
-  container.bind<Logger>(TYPES.Logger).toConstantValue(logger);
+  const logger = createWinstonLogger('filecoin-plus-backend')
+  container.bind<Logger>(TYPES.Logger).toConstantValue(logger)
 
-  container
-    .bind<IEventHandler<AllocatorApplied>>(TYPES.Event)
-    .to(AllocatorAppliedEventHandler);
+  container.bind<PullRequestService>(TYPES.PullRequestService).to(PullRequestService)
+  container.bind<MessageService>(TYPES.MessageService).to(MessageService)
 
+  container.bind<IEventHandler<ApplicationCreated>>(TYPES.Event).to(ApplicationCreatedEventHandler)
+  container.bind<IEventHandler<ApplicationEdited>>(TYPES.Event).to(ApplicationEditedEventHandler)
   container
-    .bind<IEventHandler<ApplicationSubmitted>>(TYPES.Event)
-    .to(ApplicationSubmittedEventHandler);
+    .bind<IEventHandler<ApplicationPullRequestUpdated>>(TYPES.Event)
+    .to(ApplicationPullRequestUpdatedEventHandler)
+  container.bind<IEventHandler<AllocatorMultisigUpdated>>(TYPES.Event).to(AllocatorMultisigUpdatedEventHandler)
 
   // TODO: V1 Bind KYC events to their handlers
-  container
-    .bind<IEventHandler<KYCStarted>>(TYPES.Event)
-    .to(KYCStartedEventHandler);
-  container
-    .bind<IEventHandler<KYCApproved>>(TYPES.Event)
-    .to(KYCApprovedEventHandler);
-  container
-    .bind<IEventHandler<KYCRejected>>(TYPES.Event)
-    .to(KYCRejectedEventHandler);
+  container.bind<IEventHandler<KYCStarted>>(TYPES.Event).to(KYCStartedEventHandler)
+  container.bind<IEventHandler<KYCApproved>>(TYPES.Event).to(KYCApprovedEventHandler)
+  container.bind<IEventHandler<KYCRejected>>(TYPES.Event).to(KYCRejectedEventHandler)
 
   // TODO: V1 Bind Governance events to their handlers
-  container
-    .bind<IEventHandler<GovernanceReviewStarted>>(TYPES.Event)
-    .to(GovernanceReviewStartedEventHandler);
-  container
-    .bind<IEventHandler<GovernanceReviewApproved>>(TYPES.Event)
-    .to(GovernanceReviewApprovedEventHandler);
-  container
-    .bind<IEventHandler<GovernanceReviewRejected>>(TYPES.Event)
-    .to(GovernanceReviewRejectedEventHandler);
-  container
-    .bind<IEventHandler<RKHApprovalCompleted>>(TYPES.Event)
-    .to(RKHApprovalCompletedEventHandler);
+  container.bind<IEventHandler<GovernanceReviewStarted>>(TYPES.Event).to(GovernanceReviewStartedEventHandler)
+  container.bind<IEventHandler<GovernanceReviewApproved>>(TYPES.Event).to(GovernanceReviewApprovedEventHandler)
+  container.bind<IEventHandler<GovernanceReviewRejected>>(TYPES.Event).to(GovernanceReviewRejectedEventHandler)
 
-  container
-    .bind<IEventHandler<RKHApprovalCompleted>>(TYPES.Event)
-    .to(RKHApprovalCompletedEventHandler);
+  container.bind<IEventHandler<RKHApprovalStarted>>(TYPES.Event).to(RKHApprovalStartedEventHandler)
+  container.bind<IEventHandler<RKHApprovalsUpdated>>(TYPES.Event).to(RKHApprovalsUpdatedEventHandler)
+  container.bind<IEventHandler<RKHApprovalCompleted>>(TYPES.Event).to(RKHApprovalCompletedEventHandler)
+  container.bind<IEventHandler<DatacapAllocationUpdated>>(TYPES.Event).to(DatacapAllocationUpdatedEventHandler)
 
   // Commands
-  container
-    .bind<ICommandHandler<ICommand>>(TYPES.CommandHandler)
-    .to(CreateApplicationCommandHandler);
-  container
-    .bind<ICommandHandler<ICommand>>(TYPES.CommandHandler)
-    .to(SubmitKYCResultCommandHandler);
-  container
-    .bind<ICommandHandler<ICommand>>(TYPES.CommandHandler)
-    .to(SubmitGovernanceReviewResultCommandHandler);
-  container
-    .bind<ICommandHandler<ICommand>>(TYPES.CommandHandler)
-    .to(UpdateRKHApprovalsCommandHandler);
-  container
-    .bind<ICommandHandler<ICommand>>(TYPES.CommandHandler)
-    .to(UpdateDatacapAllocationCommandHandler);
-  container
-    .bind<ICommandHandler<ICommand>>(TYPES.CommandHandler)
-    .to(UpdateGithubBranchCommandHandler);
+  container.bind<ICommandHandler<ICommand>>(TYPES.CommandHandler).to(CreateApplicationCommandHandler)
+  container.bind<ICommandHandler<ICommand>>(TYPES.CommandHandler).to(EditApplicationCommandHandler)
 
-  const commandBus = container.get<ICommandBus>(TYPES.CommandBus);
-  container
-    .getAll<ICommandHandler<ICommand>>(TYPES.CommandHandler)
-    .forEach((handler: ICommandHandler<ICommand>) => {
-      commandBus.registerHandler(handler);
-    });
+  container.bind<ICommandHandler<ICommand>>(TYPES.CommandHandler).to(SubmitKYCResultCommandHandler)
+  container.bind<ICommandHandler<ICommand>>(TYPES.CommandHandler).to(SubmitGovernanceReviewResultCommandHandler)
+  container.bind<ICommandHandler<ICommand>>(TYPES.CommandHandler).to(UpdateRKHApprovalsCommandHandler)
+  container.bind<ICommandHandler<ICommand>>(TYPES.CommandHandler).to(UpdateDatacapAllocationCommandHandler)
+  const commandBus = container.get<ICommandBus>(TYPES.CommandBus)
+  container.getAll<ICommandHandler<ICommand>>(TYPES.CommandHandler).forEach((handler: ICommandHandler<ICommand>) => {
+    commandBus.registerHandler(handler)
+  })
 
-  container
-    .bind<IQueryHandler<IQuery>>(TYPES.QueryHandler)
-    .to(GetDatacapAllocatorsQueryHandler);
+  container.bind<IQueryHandler<IQuery>>(TYPES.QueryHandler).to(GetApplicationsQueryHandler)
 
-  const queryBus = container.get<IQueryBus>(TYPES.QueryBus);
-  container
-    .getAll<IQueryHandler<IQuery>>(TYPES.QueryHandler)
-    .forEach((handler: IQueryHandler<IQuery>) => {
-      queryBus.registerHandler(handler);
-    });  
+  const queryBus = container.get<IQueryBus>(TYPES.QueryBus)
+  container.getAll<IQueryHandler<IQuery>>(TYPES.QueryHandler).forEach((handler: IQueryHandler<IQuery>) => {
+    queryBus.registerHandler(handler)
+  })
 
-  return container;
-};
+  return container
+}

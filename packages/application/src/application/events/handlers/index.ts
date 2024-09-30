@@ -1,9 +1,12 @@
-import { IEventHandler } from "@filecoin-plus/core";
-import { inject, injectable } from "inversify";
-import { Db } from "mongodb";
+import { IEventHandler } from '@filecoin-plus/core'
+import { inject, injectable } from 'inversify'
+import { Db } from 'mongodb'
 
 import {
-  ApplicationSubmitted,
+  AllocatorMultisigUpdated,
+  ApplicationEdited,
+  ApplicationPullRequestUpdated,
+  DatacapAllocationUpdated,
   GovernanceReviewApproved,
   GovernanceReviewRejected,
   GovernanceReviewStarted,
@@ -13,300 +16,246 @@ import {
   RKHApprovalCompleted,
   RKHApprovalStarted,
   RKHApprovalsUpdated,
-} from "@src/domain/events";
-import { CommandBus } from "@src/infrastructure/command-bus";
-import { TYPES } from "@src/types";
-import {
-  DatacapAllocatorPhase,
-  DatacapAllocatorPhaseStatus,
-} from "@src/domain/datacap-allocator";
-import { UpdateGithubBranchCommand } from "@src/application/commands";
+} from '@src/domain/application/application.events'
+import { TYPES } from '@src/types'
+import { IApplicationDetailsRepository } from '@src/infrastructure/respositories/application-details.repository'
+import { ApplicationStatus } from '@src/domain/application/application'
 
 @injectable()
-export class ApplicationSubmittedEventHandler
-  implements IEventHandler<ApplicationSubmitted>
-{
-  public event = ApplicationSubmitted.name;
+export class ApplicationEditedEventHandler implements IEventHandler<ApplicationEdited> {
+  public event = ApplicationEdited.name
 
   constructor(
-    @inject(TYPES.CommandBus) private readonly _commandBus: CommandBus,
-    @inject(TYPES.Db) private readonly _db: Db
+    @inject(TYPES.ApplicationDetailsRepository) private readonly _repository: IApplicationDetailsRepository,
   ) {}
 
-  async handle(event: ApplicationSubmitted): Promise<void> {
-    console.log("ApplicationSubmittedEventHandler", event);
-    // Update allocator status in the database
-    await this._db.collection("datacapAllocators").updateOne(
-      { id: event.aggregateId },
-      {
-        $set: {
-          status: {
-            phase: DatacapAllocatorPhase.KYC,
-            phaseStatus: DatacapAllocatorPhaseStatus.NOT_STARTED,
-          },
-          phases: {
-            submission: {
-              pullRequestUrl: event.prUrl,
-              pullRequestNumber: event.prNumber,
-              pullRequestCommentId: event.commentId,
-              timestamp: event.timestamp,
-            },
-          },
-        },
-      }
-    );
-
-    const result = await this._commandBus.send(
-      new UpdateGithubBranchCommand(event.aggregateId)
-    );
+  async handle(event: ApplicationEdited): Promise<void> {
+    await this._repository.update({
+      id: event.aggregateId,
+      number: event.applicationNumber,
+      name: event.applicantName,
+      organization: event.applicantOrgName,
+      address: event.applicantAddress,
+      github: event.applicantGithubHandle,
+      location: event.applicantLocation,
+    })
   }
 }
 
 @injectable()
-export class KYCStartedEventHandler implements IEventHandler<KYCStarted> {
-  public event = KYCStarted.name;
+export class ApplicationPullRequestUpdatedEventHandler implements IEventHandler<ApplicationPullRequestUpdated> {
+  public event = ApplicationPullRequestUpdated.name
 
   constructor(
-    @inject(TYPES.CommandBus) private readonly _commandBus: CommandBus,
-    @inject(TYPES.Db) private readonly _db: Db
+    @inject(TYPES.ApplicationDetailsRepository) private readonly _repository: IApplicationDetailsRepository,
+  ) {}
+
+  async handle(event: ApplicationPullRequestUpdated): Promise<void> {
+    await this._repository.update({
+      id: event.aggregateId,
+      status: ApplicationStatus.KYC_PHASE,
+      applicationDetails: {
+        pullRequestUrl: event.prUrl,
+        pullRequestNumber: event.prNumber,
+      },
+    })
+  }
+}
+
+@injectable()
+export class AllocatorMultisigUpdatedEventHandler implements IEventHandler<AllocatorMultisigUpdated> {
+  public event = AllocatorMultisigUpdated.name
+
+  constructor(
+    @inject(TYPES.ApplicationDetailsRepository) private readonly _repository: IApplicationDetailsRepository,
+  ) {}
+
+  async handle(event: AllocatorMultisigUpdated): Promise<void> {
+    await this._repository.update({
+      id: event.aggregateId,
+      actorId: event.allocatorActorId,
+      address: event.multisigAddress,
+    })
+  }
+}
+@injectable()
+export class KYCStartedEventHandler implements IEventHandler<KYCStarted> {
+  public event = KYCStarted.name
+
+  constructor(
+    @inject(TYPES.ApplicationDetailsRepository) private readonly _repository: IApplicationDetailsRepository,
   ) {}
 
   async handle(event: KYCStarted): Promise<void> {
-    console.log("KYCStartedEventHandler", event);
-
-    // Update allocator status in the database
-    await this._db.collection("datacapAllocators").updateOne(
-      { id: event.aggregateId },
-      {
-        $set: {
-          status: {
-            phase: DatacapAllocatorPhase.KYC,
-            phaseStatus: DatacapAllocatorPhaseStatus.IN_PROGRESS,
-          },
-        },
-      }
-    );
-
-    const result = await this._commandBus.send(
-      new UpdateGithubBranchCommand(event.aggregateId)
-    );
+    this._repository.update({
+      id: event.aggregateId,
+      status: ApplicationStatus.KYC_PHASE,
+    })
   }
 }
 
 @injectable()
 export class KYCApprovedEventHandler implements IEventHandler<KYCApproved> {
-  public event = KYCApproved.name;
+  public event = KYCApproved.name
 
   constructor(
-    @inject(TYPES.CommandBus) private readonly _commandBus: CommandBus,
-    @inject(TYPES.Db) private readonly _db: Db
+    @inject(TYPES.ApplicationDetailsRepository) private readonly _repository: IApplicationDetailsRepository,
   ) {}
 
   async handle(event: KYCApproved): Promise<void> {
-    // Update allocator status in the database
-    await this._db.collection("datacapAllocators").updateOne(
-      { id: event.aggregateId },
-      {
-        $set: {
-          status: {
-            phase: DatacapAllocatorPhase.GOVERNANCE_REVIEW,
-            phaseStatus: DatacapAllocatorPhaseStatus.NOT_STARTED,
-          },
-          kycData: event.data,
-        },
-      }
-    );
-
-    const result = await this._commandBus.send(
-      new UpdateGithubBranchCommand(event.aggregateId)
-    );
+    await this._repository.update({
+      id: event.aggregateId,
+      status: ApplicationStatus.GOVERNANCE_REVIEW_PHASE,
+    })
   }
 }
 
 @injectable()
 export class KYCRejectedEventHandler implements IEventHandler<KYCRejected> {
-  public event = KYCRejected.name;
+  public event = KYCRejected.name
 
   constructor(
-    @inject(TYPES.CommandBus) private readonly _commandBus: CommandBus,
-    @inject(TYPES.Db) private readonly _db: Db
+    @inject(TYPES.ApplicationDetailsRepository) private readonly _repository: IApplicationDetailsRepository,
   ) {}
 
   async handle(event: KYCRejected): Promise<void> {
-    // Update allocator status in the database
-    await this._db.collection("datacapAllocators").updateOne(
-      { id: event.aggregateId },
-      {
-        $set: {
-          status: {
-            phase: DatacapAllocatorPhase.KYC,
-            phaseStatus: DatacapAllocatorPhaseStatus.FAILED,
-          },
-          kycData: event.data,
-        },
-      }
-    );
-
-    await this._commandBus.send(
-      new UpdateGithubBranchCommand(event.aggregateId)
-    );
+    await this._repository.update({
+      id: event.aggregateId,
+      status: ApplicationStatus.REJECTED,
+    })
   }
 }
 
 @injectable()
-export class GovernanceReviewStartedEventHandler
-  implements IEventHandler<GovernanceReviewStarted>
-{
-  public event = GovernanceReviewStarted.name;
+export class GovernanceReviewStartedEventHandler implements IEventHandler<GovernanceReviewStarted> {
+  public event = GovernanceReviewStarted.name
 
   constructor(
-    @inject(TYPES.CommandBus) private readonly _commandBus: CommandBus,
-    @inject(TYPES.Db) private readonly _db: Db
+    @inject(TYPES.ApplicationDetailsRepository) private readonly _repository: IApplicationDetailsRepository,
   ) {}
 
   async handle(event: GovernanceReviewStarted): Promise<void> {
-    // Update allocator status in the database
-    await this._db.collection("datacapAllocators").updateOne(
-      { id: event.aggregateId },
-      {
-        $set: {
-          status: {
-            phase: DatacapAllocatorPhase.GOVERNANCE_REVIEW,
-            phaseStatus: DatacapAllocatorPhaseStatus.IN_PROGRESS,
-          },
-        },
-      }
-    );
-
-    const result = await this._commandBus.send(
-      new UpdateGithubBranchCommand(event.aggregateId)
-    );
+    await this._repository.update({
+      id: event.aggregateId,
+      status: ApplicationStatus.GOVERNANCE_REVIEW_PHASE,
+    })
   }
 }
 
 @injectable()
-export class GovernanceReviewApprovedEventHandler
-  implements IEventHandler<GovernanceReviewApproved>
-{
-  public event = GovernanceReviewApproved.name;
+export class GovernanceReviewApprovedEventHandler implements IEventHandler<GovernanceReviewApproved> {
+  public event = GovernanceReviewApproved.name
 
-  constructor(
-    @inject(TYPES.CommandBus) private readonly _commandBus: CommandBus,
-    @inject(TYPES.Db) private readonly _db: Db
-  ) {}
+  constructor(@inject(TYPES.Db) private readonly _db: Db) {}
 
   async handle(event: GovernanceReviewApproved): Promise<void> {
     // Update allocator status in the database
-    await this._db.collection("datacapAllocators").updateOne(
+    await this._db.collection('applicationDetails').updateOne(
       { id: event.aggregateId },
       {
         $set: {
-          status: {
-            phase: DatacapAllocatorPhase.RKH_APPROVAL,
-            phaseStatus: DatacapAllocatorPhaseStatus.NOT_STARTED,
-          },
+          status: ApplicationStatus.RKH_APPROVAL_PHASE,
         },
-      }
-    );
-
-    const result = await this._commandBus.send(
-      new UpdateGithubBranchCommand(event.aggregateId)
-    );
+      },
+    )
   }
 }
 
 @injectable()
-export class GovernanceReviewRejectedEventHandler
-  implements IEventHandler<GovernanceReviewRejected>
-{
-  public event = GovernanceReviewRejected.name;
+export class GovernanceReviewRejectedEventHandler implements IEventHandler<GovernanceReviewRejected> {
+  public event = GovernanceReviewRejected.name
 
-  constructor(
-    @inject(TYPES.CommandBus) private readonly _commandBus: CommandBus,
-    @inject(TYPES.Db) private readonly _db: Db
-  ) {}
+  constructor(@inject(TYPES.Db) private readonly _db: Db) {}
 
   async handle(event: GovernanceReviewRejected): Promise<void> {
     // Update allocator status in the database
-    await this._db.collection("datacapAllocators").updateOne(
+    await this._db.collection('applicationDetails').updateOne(
       { id: event.aggregateId },
       {
         $set: {
-          status: {
-            phase: DatacapAllocatorPhase.GOVERNANCE_REVIEW,
-            phaseStatus: DatacapAllocatorPhaseStatus.FAILED,
-          },
+          status: ApplicationStatus.REJECTED,
         },
-      }
-    );
-
-    const result = await this._commandBus.send(
-      new UpdateGithubBranchCommand(event.aggregateId)
-    );
+      },
+    )
   }
 }
 
+@injectable()
 export class RKHApprovalStartedEventHandler implements IEventHandler<RKHApprovalStarted> {
-  public event = RKHApprovalStarted.name;
+  public event = RKHApprovalStarted.name
 
   constructor(
-    @inject(TYPES.CommandBus) private readonly _commandBus: CommandBus,
-    @inject(TYPES.Db) private readonly _db: Db
+    @inject(TYPES.ApplicationDetailsRepository) private readonly _repository: IApplicationDetailsRepository,
   ) {}
 
   async handle(event: RKHApprovalStarted): Promise<void> {
-    // Update allocator status in the database
-    await this._db.collection("datacapAllocators").updateOne(
-      { id: event.aggregateId },
-      {
-        $set: {
-          status: {
-            phase: DatacapAllocatorPhase.RKH_APPROVAL,
-            phaseStatus: DatacapAllocatorPhaseStatus.IN_PROGRESS,
-          },
-        },
-      }
-    );
-
-    const result = await this._commandBus.send(
-      new UpdateGithubBranchCommand(event.aggregateId)
-    );
+    await this._repository.update({
+      id: event.aggregateId,
+      status: ApplicationStatus.RKH_APPROVAL_PHASE,
+      rkhPhase: {
+        approvals: [],
+        approvalThreshold: event.approvalThreshold,
+      },
+    })
   }
 }
 
-// TODO: Implement this
-// export class RKHApprovalsUpdatedEventHandler implements IEventHandler<RKHApprovalsUpdated> {
-//   
-// }
-
 @injectable()
-export class RKHApprovalCompletedEventHandler
-  implements IEventHandler<RKHApprovalCompleted>
-{
-  public event = RKHApprovalCompleted.name;
+export class RKHApprovalsUpdatedEventHandler implements IEventHandler<RKHApprovalsUpdated> {
+  public event = RKHApprovalsUpdated.name
 
   constructor(
-    @inject(TYPES.CommandBus) private readonly _commandBus: CommandBus,
-    @inject(TYPES.Db) private readonly _db: Db
+    @inject(TYPES.ApplicationDetailsRepository) private readonly _repository: IApplicationDetailsRepository,
   ) {}
 
+  async handle(event: RKHApprovalsUpdated) {
+    console.log('RKHApprovalsUpdatedEventHandler', event)
+
+    await this._repository.update({
+      id: event.aggregateId,
+      status: ApplicationStatus.RKH_APPROVAL_PHASE,
+      rkhPhase: {
+        approvals: event.approvals,
+        approvalThreshold: event.approvalThreshold,
+      },
+    })
+  }
+}
+
+@injectable()
+export class RKHApprovalCompletedEventHandler implements IEventHandler<RKHApprovalCompleted> {
+  public event = RKHApprovalCompleted.name
+
+  constructor(@inject(TYPES.Db) private readonly _db: Db) {}
+
   async handle(event: RKHApprovalCompleted) {
-    console.log("RKHApprovalCompletedEventHandler", event);
     // Update allocator status in the database
-    await this._db.collection("datacapAllocators").updateOne(
+    await this._db.collection('applicationDetails').updateOne(
       { id: event.aggregateId },
       {
         $set: {
-          status: {
-            phase: DatacapAllocatorPhase.RKH_APPROVAL,
-            phaseStatus: DatacapAllocatorPhaseStatus.COMPLETED,
-          },
+          status: ApplicationStatus.APPROVED,
         },
-      }
-    );
+      },
+    )
+  }
+}
 
-    const result = await this._commandBus.send(
-      new UpdateGithubBranchCommand(event.aggregateId)
-    );
+@injectable()
+export class DatacapAllocationUpdatedEventHandler implements IEventHandler<DatacapAllocationUpdated> {
+  public event = DatacapAllocationUpdated.name
+
+  constructor(
+    @inject(TYPES.ApplicationDetailsRepository) private readonly _repository: IApplicationDetailsRepository,
+  ) {}
+
+  async handle(event: DatacapAllocationUpdated) {
+    console.log('DatacapAllocationUpdatedEventHandler', event)
+
+    await this._repository.update({
+      id: event.aggregateId,
+      status: ApplicationStatus.APPROVED,
+      datacap: event.datacap,
+    })
   }
 }

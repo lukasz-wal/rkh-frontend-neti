@@ -1,17 +1,19 @@
-import { Command } from "@filecoin-plus/core";
+import { Command } from '@filecoin-plus/core'
+import { ApplicationStatus } from '@src/domain/application/application'
 
-import { DatacapAllocatorPhase } from "@src/domain/datacap-allocator";
+export enum PhaseStatus {
+  Approved = 'approved',
+  Rejected = 'rejected',
+}
 
-export type PhaseResult<A, R> =
-  | { status: "approved"; data: A }
-  | { status: "rejected"; data: R };
+export type PhaseResult<A, R> = { status: PhaseStatus.Approved; data: A } | { status: PhaseStatus.Rejected; data: R }
 
 export class SubmitPhaseResultCommand<A, R> extends Command {
   constructor(
     public readonly allocatorId: string,
-    public readonly phase: DatacapAllocatorPhase,
-    public readonly result: PhaseResult<A, R>
+    public readonly phase: ApplicationStatus,
+    public readonly result: PhaseResult<A, R>,
   ) {
-    super();
+    super()
   }
 }
