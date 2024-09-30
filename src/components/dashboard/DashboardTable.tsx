@@ -35,8 +35,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 
-import { ApplicationStatusBadge } from "@/components/application-status-badge";
-import { ApplicationActionButton } from "@/components/application-action-button";
+import { ApplicationStatusBadge } from "@/components/dashboard/panels/applications/ApplicationStatusBadge";
 import { Application } from "@/types/application";
 
 const columns: ColumnDef<Application>[] = [
@@ -73,7 +72,9 @@ const columns: ColumnDef<Application>[] = [
     accessorKey: "status",
     header: "Status",
     cell: ({ row }) => (
-      <ApplicationStatusBadge application={row.original as Application} />
+      <div className="flex justify-center"> {/* Added this wrapper */}
+        <ApplicationStatusBadge application={row.original as Application} />
+      </div>
     ),
   },
   //       <div className="capitalize">{row.getValue("status")}</div>
@@ -82,7 +83,9 @@ const columns: ColumnDef<Application>[] = [
     enableHiding: false,
     cell: ({ row }) => {
       return (
-        <ApplicationActionButton application={row.original as Application} />
+        <div>
+          [Action Button]
+        </div>
       );
     },
   },

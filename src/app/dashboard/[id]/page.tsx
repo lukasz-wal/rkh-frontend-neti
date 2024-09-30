@@ -18,7 +18,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import Account from "@/components/Account";
+import Account from "@/components/account/Account";
 import ApplicationTimeline from "@/components/application-timeline";
 import SignTransactionButton from "@/components/SignTransactionButton";
 

@@ -13,6 +13,7 @@ export const metadata: Metadata = {
   description: "A dashboard managing your Fil+ applications",
 };
 
+
 export default function RootLayout({
   children,
 }: Readonly<{

@@ -1,21 +1,16 @@
-import { Account } from "@/types/account";
 import { createContext } from "react";
 
-export interface LedgerAccount {
-  address: string;
-  path: string;
-  index: number;
-}
+import { Account } from "@/types/account";
+import { Connector } from "@/types/connector";
 
 export interface AccountContextType {
   account: Account | null;
-  init: () => Promise<void>;
-  connect: (connector: "ledger", index?: number) => Promise<void>;
+  connect: (connectorName: string, options?: any) => Promise<void>;
   disconnect: () => Promise<void>;
-  proposeAddVerifier: (verifier: string, datacap: string) => Promise<string>;
-  fetchLedgerAccounts: () => Promise<LedgerAccount[]>;
+  connectors: { [key: string]: Connector };
+  proposeAddVerifier: (applicationId: string, verifierAddress: string) => Promise<string>;
+  // Add a new method to load the persisted account
+  loadPersistedAccount: () => Promise<void>;
 }
 
-export const AccountContext = createContext<AccountContextType | undefined>(
-  undefined
-);
+export const AccountContext = createContext<AccountContextType | undefined>(undefined);

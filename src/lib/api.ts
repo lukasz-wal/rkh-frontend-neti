@@ -1,16 +1,11 @@
+import { env, testApplications } from "@/config/environment";
 import { AccountRole } from "@/types/account";
 import { ApplicationsResponse } from "@/types/application";
 
 /**
  * API base URL for fetching applications.
- * Set this in your environment variables:
- * - Use "http://localhost:3001/api/v1" for local development
- * - Use "https://filecoin-plus-backend-x5dlwms4sq-ew.a.run.app/api/v1" for production
  */
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
-if (!API_BASE_URL) {
-  throw new Error("NEXT_PUBLIC_API_URL environment variable is not set");
-}
+const API_BASE_URL = env.apiBaseUrl;
 
 /**
  * Fetches applications based on search criteria and pagination.
@@ -28,6 +23,13 @@ export async function fetchApplications(
   page: number,
   pageLimit: number
 ): Promise<ApplicationsResponse> {
+  if (env.useTestData) {
+    return {
+      applications: testApplications,
+      totalCount: testApplications.length,
+    };
+  }
+
   const params = new URLSearchParams({
     page: page.toString(),
     limit: pageLimit.toString(),
@@ -77,6 +79,10 @@ export async function fetchApplications(
 }
 
 export async function fetchRole(address: string): Promise<AccountRole> {
+  if (env.useTestData) {
+    return AccountRole.ADMIN;
+  }
+
   const url = `${API_BASE_URL}/roles?address=${address}`;
 
   try {

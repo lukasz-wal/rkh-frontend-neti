@@ -15,7 +15,6 @@ import { useToast } from "@/components/ui/use-toast";
 import {
   Table,
   TableBody,
-  TableCaption,
   TableCell,
   TableHead,
   TableHeader,
@@ -47,7 +46,10 @@ export default function SignTransactionButton({
     setIsPending(true);
     try {
       const messageId = await proposeAddVerifier(application.address, application.datacap);
-      console.log("messageId", messageId);
+      toast({
+        title: "RKH Transaction Proposed",
+        description: `Transaction proposed with message id: ${messageId}`,
+      });
     } catch (error) {
       console.error('Error proposing verifier:', error);
       toast({

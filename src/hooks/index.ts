@@ -1,2 +1,2 @@
-export * from './use-auto-refresh-data';
+export * from './useAutoRefreshData';
 export * from './useAccount';
