@@ -2,7 +2,7 @@ import Link from "next/link";
 import { useSelectedLayoutSegment } from "next/navigation";
 
 import { cn } from "@/lib/utils";
-import Account from "../Account";
+import Account from "../account/Account";
 
 export interface MainNavItem {
   title: string;

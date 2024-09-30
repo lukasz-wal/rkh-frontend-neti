@@ -25,105 +25,28 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { CopyIcon, GitBranch, MoreHorizontal } from "lucide-react";
-import SignTransactionButton from "../SignTransactionButton";
 import Link from "next/link";
-import { useAccount } from "@/hooks/useAccount";
-import { useToast } from "../ui/use-toast";
-import { AccountRole } from "@/types/account";
+import { useToast } from "../../../ui/use-toast";
+import { ApplicationStatusBadge } from "./ApplicationStatusBadge";
+import { ApplicationActionButton } from "./ApplicationActionButton";
 
-interface DashboardApplicationsPanelProps {
+interface ApplicationsPanelProps {
   applications: Application[];
   totalCount: number;
   currentPage: number;
   pageSize: number;
 }
 
-export function DashboardApplicationsPanel({
+export function ApplicationsPanel({
   applications,
   totalCount,
   currentPage,
   pageSize,
-}: DashboardApplicationsPanelProps) {
-  const { account } = useAccount();
+}: ApplicationsPanelProps) {
   const { toast } = useToast();
 
   const startIndex = (currentPage - 1) * pageSize + 1;
   const endIndex = Math.min(startIndex + pageSize - 1, totalCount);
-
-  function renderActionButton(application: Application) {
-    if (!account?.isConnected) {
-      return <Button disabled>Connect Wallet</Button>;
-    }
-
-    switch (application.status.phase) {
-      case "SUBMISSION":
-        return (
-          <Button>
-            <Link
-              href={`https://github.com/filecoin-project/Allocator-Registry/pull/${application.phases.submission.pullRequestNumber}`}
-              target="_blank"
-            >
-              View
-            </Link>
-          </Button>
-        );
-
-      case "KYC":
-        return (
-          <Button>
-            <Link
-              href={`https://github.com/filecoin-project/Allocator-Registry/pull/${application.phases.submission.pullRequestNumber}`}
-              target="_blank"
-            >
-              View
-            </Link>
-          </Button>
-        );
-        //return (
-        //  <Button disabled={account?.role !== AccountRole.USER}>
-        //    <Link
-        //      href={`https://flow-dev.togggle.io/fidl/kyc?allocatorId=${application.id}`}
-        //      target="_blank"
-        //    >
-        //      Submit KYC
-        //    </Link>
-        //  </Button>
-        //);
-
-      case "GOVERNANCE_REVIEW":
-        return (
-          <Button>
-            <Link
-              href={`https://github.com/filecoin-project/Allocator-Registry/pull/${application.phases.submission.pullRequestNumber}`}
-              target="_blank"
-            >
-              View
-            </Link>
-          </Button>
-        );
-        //return (
-        //  <>
-        //  <SignTransactionButton application={application} text="Approve" />
-        //  <Button disabled={account?.role !== AccountRole.GOVERNANCE_TEAM}>
-        //    <Link
-        //      href={`https://github.com/threesigmaxyz/Allocator-Registry/pull/${application.phases.submission.pullRequestNumber}`}
-        //      target="_blank"
-        //    >
-        //      Review
-        //    </Link>
-        //  </Button>
-        //  </>
-        //);
-
-      case "RKH_APPROVAL":
-        if (account?.role !== AccountRole.ROOT_KEY_HOLDER) {
-          return <Button disabled>(0/2) Approve</Button>;
-        }
-        return (
-          <SignTransactionButton application={application} text="(0/2) Approve" />
-        );
-    }
-  }
 
   return (
     <Card>
@@ -142,7 +65,6 @@ export function DashboardApplicationsPanel({
               <TableHead className="hidden md:table-cell">Country</TableHead>
               <TableHead className="hidden md:table-cell">DataCap</TableHead>
               <TableHead>Phase</TableHead>
-              <TableHead className="hidden md:table-cell">Status</TableHead>
               <TableHead>Action</TableHead>
               <TableHead>
                 <span className="sr-only">Actions</span>
@@ -163,15 +85,12 @@ export function DashboardApplicationsPanel({
                   <TableCell className="hidden md:table-cell">
                     {application.datacap} PiB
                   </TableCell>
+                  <TableCell className="flex items-center justify-center h-full">
+                    <ApplicationStatusBadge application={application} />
+                  </TableCell>
                   <TableCell>
-                    <Badge>{application.status.phase}</Badge>
+                    <ApplicationActionButton application={application} />
                   </TableCell>
-                  <TableCell className="hidden md:table-cell">
-                    <Badge variant="outline">
-                      {application.status.phaseStatus}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>{renderActionButton(application)}</TableCell>
                   <TableCell className="flex items-center">
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>

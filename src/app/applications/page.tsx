@@ -5,7 +5,7 @@ import { useSearchParams } from "next/navigation";
 import { fetchApplications } from "@/lib/api";
 
 import { useAutoRefreshData } from "@/hooks";
-import { DashboardTable } from "@/components/dashboard-table";
+import { DashboardTable } from "@/components/dashboard/DashboardTable";
 
 const ITEMS_PER_PAGE = 100;
 

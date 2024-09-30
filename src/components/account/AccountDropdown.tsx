@@ -37,8 +37,6 @@ export default function AccountDropdown({ account, onLogout }: AccountDropdownPr
       <DropdownMenuContent align="end">
         <DropdownMenuLabel>{account.address}</DropdownMenuLabel>
         <DropdownMenuSeparator />
-        <DropdownMenuItem>Settings</DropdownMenuItem>
-        <DropdownMenuSeparator />
         <DropdownMenuItem>
           <Button variant="outline" className="w-full" onClick={onLogout}>
             Logout

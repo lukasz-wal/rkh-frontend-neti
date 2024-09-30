@@ -4,21 +4,15 @@ import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 
 import {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbList,
-  BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb";
-import {
-  DashboardApplicationsPanel,
+  ApplicationsPanel,
   DashboardHeader,
 } from "@/components/dashboard";
 import Pagination from "@/components/Pagination";
 import { fetchApplications } from "@/lib/api";
-import Link from "next/link";
-import Account from "@/components/Account";
+import Account from "@/components/account/Account";
 import ScaleLoader from "react-spinners/ScaleLoader";
+import { DashboardBreadcrumb } from "@/components/dashboard/DashboardBreadcrumb";
+import { env } from "@/config/environment";
 
 const PAGE_SIZE = 10;
 
@@ -35,8 +29,13 @@ export default function DashboardPage() {
     queryKey: ["applications", searchTerm, activeFilters, currentPage],
     queryFn: () =>
       fetchApplications(searchTerm, activeFilters, currentPage, PAGE_SIZE),
-    refetchInterval: 10 * 1000, // Refetch every 10 seconds
+    refetchInterval: 1 * 1000, // Refetch every 1 seconds
   });
+
+  const breadcrumbItems = [
+    { label: "Dashboard", href: "/dashboard" },
+    { label: "Applications", href: "/dashboard/applications" },
+  ];
 
   const applications = data?.applications || [];
   const totalCount = data?.totalCount || 0;
@@ -44,30 +43,23 @@ export default function DashboardPage() {
   return (
     <>
       <header className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b bg-background px-4 sm:static sm:h-auto sm:border-0 sm:bg-transparent sm:px-6">
-        <Breadcrumb className="hidden md:flex">
-          <BreadcrumbList>
-            <BreadcrumbItem>
-              <BreadcrumbLink asChild>
-                <Link href="#">Dashboard</Link>
-              </BreadcrumbLink>
-            </BreadcrumbItem>
-            <BreadcrumbSeparator />
-            <BreadcrumbItem>
-              <BreadcrumbLink asChild>
-                <Link href="#">Applications</Link>
-              </BreadcrumbLink>
-            </BreadcrumbItem>
-          </BreadcrumbList>
-        </Breadcrumb>
+        <DashboardBreadcrumb items={breadcrumbItems} />
+        {env.useTestData && (
+            <div className="bg-yellow-100 p-2 text-yellow-800">
+              Using test data in {env.apiBaseUrl} environment
+            </div>
+        )}
         <div className="relative ml-auto flex-1 md:grow-0"></div>
         <Account />
       </header>
+
       <DashboardHeader
         searchTerm={searchTerm}
         setSearchTerm={setSearchTerm}
         activeFilters={activeFilters}
         setActiveFilters={setActiveFilters}
       />
+
       <main className="grid flex-1 items-start gap-4 p-4 sm:px-6 sm:py-0 md:gap-8">
         {isLoading && (
           <div className="absolute inset-0 flex items-center justify-center">
@@ -83,7 +75,7 @@ export default function DashboardPage() {
         )}
         {!isLoading && !error && (
           <>
-            <DashboardApplicationsPanel
+            <ApplicationsPanel
               applications={applications}
               totalCount={totalCount}
               currentPage={currentPage}
