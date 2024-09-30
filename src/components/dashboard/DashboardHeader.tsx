@@ -47,39 +47,6 @@ export function DashboardHeader({
         />
       </div>
       <div className="ml-auto flex items-center gap-2">
-        <div className="px-10">
-          <MultipleSelector
-            defaultOptions={OPTIONS}
-            emptyIndicator={
-              <p className="text-center text-lg leading-10 text-gray-600 dark:text-gray-400">
-                All phases selected
-              </p>
-            }
-            onChange={(selectedOptions) => {
-              setActiveFilters(selectedOptions.map((option) => option.value));
-            }}
-          />
-        </div>
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="outline" size="sm" className="h-7 gap-1">
-              <ListFilter className="h-3.5 w-3.5" />
-              <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
-                Filter
-              </span>
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuLabel>Filter by</DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            <DropdownMenuCheckboxItem>SUBMISSION</DropdownMenuCheckboxItem>
-            <DropdownMenuCheckboxItem>KYC</DropdownMenuCheckboxItem>
-            <DropdownMenuCheckboxItem>
-              GOVERNANCE_REVIEW
-            </DropdownMenuCheckboxItem>
-            <DropdownMenuCheckboxItem>RKH_APPROVAL</DropdownMenuCheckboxItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
         <Button size="sm" className="h-7 gap-1">
           <PlusCircle className="h-3.5 w-3.5" />
           <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">

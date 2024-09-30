@@ -1,10 +1,4 @@
-export type ApplicationPhase = "SUBMISSION" | "KYC" | "GOVERNANCE_REVIEW" | "RKH_APPROVAL" | "DATA_CAP_GRANT";
-export type ApplicationPhaseStatus = "NOT_STARTED" | "IN_PROGRESS" | "COMPLETED" | "FAILED";
-
-export type ApplicationStatus = {
-  phase: ApplicationPhase;
-  phaseStatus: ApplicationPhaseStatus;
-}
+export type ApplicationStatus = "SUBMISSION_PHASE" | "KYC_PHASE" | "GOVERNANCE_REVIEW_PHASE" | "RKH_APPROVAL_PHASE" | "APPROVED" | "REJECTED";
 
 export interface Application {
   id: string;
@@ -18,10 +12,10 @@ export interface Application {
   type: string;
   datacap: string;
 
+  actorId?: string;
+
   // STATUS
   status: ApplicationStatus;
-
-  phases: any; // TODO: Type this
 
   // SUBMISSION PHASE
   githubPrNumber: string;

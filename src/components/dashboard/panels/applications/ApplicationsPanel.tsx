@@ -60,8 +60,9 @@ export function ApplicationsPanel({
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>#</TableHead>
+              <TableHead className="hidden md:table-cell">#</TableHead>
               <TableHead>Name</TableHead>
+              <TableHead className="hidden md:table-cell">Github</TableHead>
               <TableHead className="hidden md:table-cell">Country</TableHead>
               <TableHead className="hidden md:table-cell">DataCap</TableHead>
               <TableHead>Phase</TableHead>
@@ -75,17 +76,26 @@ export function ApplicationsPanel({
             {applications.map((application) => {
               return (
                 <TableRow key={application.id}>
-                  <TableCell className="font-medium">
-                    {application.number}
+                  <TableCell className="hidden md:table-cell font-medium">
+                    {application.id}
                   </TableCell>
                   <TableCell>{application.name}</TableCell>
+                  <TableCell className="hidden md:table-cell">
+                    <Link 
+                      href={`https://github.com/${application.github}`} 
+                      target="_blank"
+                      className="flex items-center text-blue-600 hover:text-blue-800 transition-colors"
+                    >
+                      <span className="underline">{application.github}</span>
+                    </Link>
+                  </TableCell>
                   <TableCell className="hidden md:table-cell">
                     {application.country}
                   </TableCell>
                   <TableCell className="hidden md:table-cell">
                     {application.datacap} PiB
                   </TableCell>
-                  <TableCell className="flex items-center justify-center h-full">
+                  <TableCell className="flex items-center">
                     <ApplicationStatusBadge application={application} />
                   </TableCell>
                   <TableCell>
@@ -105,14 +115,13 @@ export function ApplicationsPanel({
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
                         <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                        <DropdownMenuItem>View</DropdownMenuItem>
-                        {application.phases?.submission?.pullRequestUrl && (
+                        {application.githubPrLink && (
                           <DropdownMenuItem>
                             <Link
-                              href={`https://github.com/filecoin-project/Allocator-Registry/pull/${application.phases.submission.pullRequestNumber}`}
+                              href={`https://github.com/threesigmaxyz/Allocator-Registry/pull/${application.githubPrNumber}`}
                               target="_blank"
                             >
-                              Open PR
+                              View PR
                             </Link>
                           </DropdownMenuItem>
                         )}

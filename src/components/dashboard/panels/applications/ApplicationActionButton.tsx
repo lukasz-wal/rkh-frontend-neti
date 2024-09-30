@@ -13,24 +13,24 @@ interface ActionConfig {
 }
 
 function getActionConfig(application: Application, account?: { role: AccountRole }): ActionConfig {
-  const { status, phases, id } = application;
+  const { status, id, githubPrNumber } = application;
 
-  switch (status.phase) {
-    case "SUBMISSION":
-    case "GOVERNANCE_REVIEW":
+  switch (status) {
+    case "SUBMISSION_PHASE":
+    case "GOVERNANCE_REVIEW_PHASE":
       return {
         label: "View",
-        href: `https://github.com/filecoin-project/Allocator-Registry/pull/${phases.submission.pullRequestNumber}`,
+        href: `https://github.com/filecoin-project/Allocator-Registry/pull/${githubPrNumber}`,
       };
 
-    case "KYC":
+    case "KYC_PHASE":
       return {
         label: "Submit KYC",
         href: `https://flow-dev.togggle.io/fidl/kyc?allocatorId=${id}`,
         disabled: account?.role !== AccountRole.USER,
       };
 
-    case "RKH_APPROVAL":
+    case "RKH_APPROVAL_PHASE":
       if (account?.role !== AccountRole.ROOT_KEY_HOLDER && account?.role !== AccountRole.ADMIN) {
         return {
           label: "(0/2) Approve",
@@ -50,7 +50,7 @@ function getActionConfig(application: Application, account?: { role: AccountRole
   }
 }
 
-export function ApplicationActionButton({ application }: { application: Application }) {
+export function ApplicationActionButton({ application }: { application: Application }) {  
   const { account } = useAccount();
   const { label, href, disabled, component: Component } = getActionConfig(application, { role: account?.role ?? AccountRole.GUEST });
 
@@ -64,7 +64,7 @@ export function ApplicationActionButton({ application }: { application: Applicat
         <Link href={href} target="_blank">
           {label}
         </Link>
-      </Button>
+      </Button>      
     );
   }
 

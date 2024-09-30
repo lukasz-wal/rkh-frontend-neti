@@ -41,7 +41,7 @@ export async function fetchApplications(
     params.append("search", searchTerm);
   }
 
-  const url = `${API_BASE_URL}/allocators?${params.toString()}`;
+  const url = `${API_BASE_URL}/applications?${params.toString()}`;
 
   try {
     const response = await fetch(url);
@@ -52,24 +52,32 @@ export async function fetchApplications(
     const result = await response.json();
 
     return {
-      applications: result.data.allocators.map((allocator: any) => ({
-        id: allocator.id,
-        number: allocator.number,
-        name: allocator.name,
-        organization: allocator.organization,
-        address: allocator.address,
-        github: allocator.github,
-        country: allocator.country,
-        region: allocator.region,
-        type: allocator.type,
-        datacap: allocator.datacap,
-        createdAt: allocator.createdAt || "2021-09-01T00:00:00.000Z",
-        phases: allocator.phases,
-        status: {
-          phase: allocator.status.phase,
-          phaseStatus: allocator.status.phaseStatus,
-        },
-      })),
+      applications: result.data.results
+        .map((allocator: any) => {
+          try {
+            return {
+              id: allocator.id,
+              number: allocator.number,
+              name: allocator.name,
+              organization: allocator.organization,
+              address: allocator.address,
+              github: allocator.github,
+              country: allocator.location?.[0] || "Unknown",
+              region: allocator.location?.[1] || "Unknown",
+              type: allocator.type,
+              datacap: allocator.datacap || 5,
+              createdAt: allocator.createdAt || "2021-09-01T00:00:00.000Z",
+              status: allocator.status,
+              actorId: allocator.actorId,
+              githubPrLink: allocator.applicationDetails?.pullRequestUrl,
+              githubPrNumber: allocator.applicationDetails?.pullRequestNumber,
+            };
+          } catch (error) {
+            console.error("Error processing application:", error);
+            return null;
+          }
+        })
+        .filter((application: any): application is NonNullable<typeof application> => application !== null),
       totalCount: result.data.pagination.totalItems,
     };
   } catch (error) {

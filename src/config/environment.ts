@@ -34,7 +34,7 @@ export const env: Environment = environments[currentEnv];
 
 // Test data
 export const testApplications: Application[] = [
-  {
+  /*{
     id: "66f976bde9de8776b74330e0",
     number: 1099,
     name: "Deep Kapur ",
@@ -142,5 +142,5 @@ export const testApplications: Application[] = [
     githubPrNumber: "126",
     githubPrLink: "https://github.com/alicejohnson/test/pull/126",
   },
-  // Add more test applications as needed
+  // Add more test applications as needed*/
 ];

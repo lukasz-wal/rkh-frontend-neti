@@ -34,7 +34,7 @@ export default function DashboardPage() {
 
   const breadcrumbItems = [
     { label: "Dashboard", href: "/dashboard" },
-    { label: "Applications", href: "/dashboard/applications" },
+    { label: "Applications", href: "/dashboard" },
   ];
 
   const applications = data?.applications || [];

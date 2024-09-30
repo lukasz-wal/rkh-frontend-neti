@@ -21,8 +21,10 @@ export class LedgerConnector implements Connector {
 
   async connect(): Promise<Account> {
     try {
-      this.transport = await TransportWebUSB.create();
-      this.filecoinApp = new FilecoinApp(this.transport);
+      if (!this.transport) {
+        this.transport = await TransportWebUSB.create();
+        this.filecoinApp = new FilecoinApp(this.transport);
+      }
 
       const version = await this.filecoinApp.getVersion();
       if (version.device_locked) {
@@ -67,6 +69,11 @@ export class LedgerConnector implements Connector {
 
   // Additional methods specific to Ledger
   async fetchAccounts(): Promise<LedgerAccount[]> {
+    if (!this.transport) {
+      this.transport = await TransportWebUSB.create();
+      this.filecoinApp = new FilecoinApp(this.transport);
+    }
+
     const accounts: LedgerAccount[] = [];
     for (let i = 0; i < 10; i++) {
       const path = `m/44'/461'/0'/0/${i}`;

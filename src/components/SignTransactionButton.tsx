@@ -23,11 +23,6 @@ import {
 import { useAccount } from "@/hooks/useAccount";
 import { Application } from "@/types/application";
 
-interface Wallet {
-  getAccounts: () => Promise<string[]>;
-  sign: (message: any) => Promise<any>;
-}
-
 interface SignTransactionButtonProps {
   application: Application;
   text: string;
@@ -65,6 +60,7 @@ export default function SignTransactionButton({
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <Button
+        className="w-[150px]"
         disabled={!account?.isConnected || isPending}
         onClick={() => setIsOpen(true)}
       >
@@ -88,9 +84,9 @@ export default function SignTransactionButton({
                 </TableRow>
               </TableHeader>
               <TableBody>
-                <TableRow key="address">
-                  <TableCell>{"Address"}</TableCell>
-                  <TableCell>{application.address.slice(0, 10)}...{application.address.slice(-10)}</TableCell>
+                <TableRow key="verifier">
+                  <TableCell>{"Verifier"}</TableCell>
+                  <TableCell>{application.actorId}</TableCell>
                 </TableRow>
                 <TableRow key="datacap">
                   <TableCell>{"DataCap"}</TableCell>
@@ -100,7 +96,7 @@ export default function SignTransactionButton({
             </Table>
           )}
         </div>
-        <Button disabled={isPending} onClick={() => signTransaction()}>
+        <Button className="w-[150px]" disabled={isPending} onClick={() => signTransaction()}>
           {isPending ? "Submitting..." : "Submit"}
         </Button>
       </DialogContent>
