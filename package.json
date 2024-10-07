@@ -17,6 +17,7 @@
     "prettier": "^3.3.3"
   },
   "dependencies": {
-    "@filecoin-shipyard/lotus-client-rpc": "^1.2.0"
+    "@filecoin-shipyard/lotus-client-rpc": "^1.2.0",
+    "@octokit/auth-app": "^7.1.1"
   }
 }

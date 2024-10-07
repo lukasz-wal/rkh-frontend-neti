@@ -10,7 +10,6 @@ import { DatacapAllocatorRepository } from '@src/infrastructure/respositories/da
 import { IDatacapAllocatorEventStore, IDatacapAllocatorRepository } from '@src/domain/application/application'
 import config from '@src/config'
 import { createMongodbConnection } from './db/mongodb'
-import { RabbitMQConfig, RabbitMQEventBus } from './event-bus/rabbitmq-event-bus'
 import { QueryBus } from './query-bus'
 import { GithubClient, GithubClientConfig, IGithubClient } from './clients/github'
 import { AirtableClient, AirtableClientConfig, IAirtableClient } from './clients/airtable'
@@ -26,22 +25,14 @@ export const infrastructureModule = new AsyncContainerModule(async (bind: interf
   const db: Db = await createMongodbConnection(config.MONGODB_URI, config.DB_NAME)
   bind<Db>(TYPES.Db).toConstantValue(db)
 
-  // RabbitMQ configuration
-  // const rabbitMQConfig: RabbitMQConfig = {
-  //   url: config.RABBITMQ_URL,
-  //   username: config.RABBITMQ_USERNAME,
-  //   password: config.RABBITMQ_PASSWORD,
-  //   exchangeName: config.RABBITMQ_EXCHANGE_NAME,
-  //   exchangeType: config.RABBITMQ_EXCHANGE_TYPE,
-  //   queueName: config.RABBITMQ_QUEUE_NAME,
-  // };
-  // bind<RabbitMQConfig>(TYPES.RabbitMQConfig).toConstantValue(rabbitMQConfig);
-  // bind<IEventBus>(TYPES.EventBus).to(RabbitMQEventBus).inSingletonScope();
+  // Memory event bus
   bind<IEventBus>(TYPES.EventBus).to(InMemoryEventBus).inSingletonScope()
 
   // GitHub client configuration
   const githubClientConfig: GithubClientConfig = {
-    authToken: config.GITHUB_AUTH_TOKEN,
+    appId: config.GITHUB_APP_ID,
+    appPrivateKey: config.GITHUB_APP_PRIVATE_KEY,
+    appInstallationId: config.GITHUB_APP_INSTALLATION_ID,
   }
   bind<GithubClientConfig>(TYPES.GithubClientConfig).toConstantValue(githubClientConfig)
   bind<IGithubClient>(TYPES.GithubClient).to(GithubClient).inSingletonScope()

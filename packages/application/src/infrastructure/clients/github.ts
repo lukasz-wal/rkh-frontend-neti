@@ -3,6 +3,7 @@ import { throttling } from '@octokit/plugin-throttling'
 import { components } from '@octokit/openapi-types'
 import { inject, injectable } from 'inversify'
 import { TYPES } from '@src/types'
+import { createAppAuth } from '@octokit/auth-app'
 
 const ThrottledOctokit = Octokit.plugin(throttling)
 
@@ -64,7 +65,9 @@ export interface IGithubClient {
  * Configuration options for GithubClient
  */
 export interface GithubClientConfig {
-  authToken: string
+  appId: string
+  appPrivateKey: string
+  appInstallationId: string
 }
 
 /**
@@ -79,7 +82,12 @@ export class GithubClient implements IGithubClient {
     config: GithubClientConfig,
   ) {
     this.octokit = new ThrottledOctokit({
-      auth: config.authToken,
+      authStrategy: createAppAuth,
+      auth: {
+        appId: config.appId,
+        privateKey: config.appPrivateKey,
+        installationId: config.appInstallationId,
+      },
       throttle: {
         onRateLimit: (retryAfter, options, octokit, retryCount) => {
           octokit.log.warn(`Request quota exhausted for request ${options.method} ${options.url}`)

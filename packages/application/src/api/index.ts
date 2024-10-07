@@ -55,9 +55,8 @@ async function main() {
   }
 
   // Start worker services
-  // TODO: Move this to application startup
   await subscribeApplicationSubmissions(container)
-  await subscribeApplicationEdits(container)
+  // await subscribeApplicationEdits(container)
   await subscribeGovernanceReviews(container)
   await subscribeRKHApprovals(container)
   await subscribeDatacapAllocations(container)
