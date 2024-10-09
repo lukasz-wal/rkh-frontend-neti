@@ -12,10 +12,10 @@
 This repository contains the source code for the backend service responsible for managing the Filecoin Plus program.
 
 ## Project Overview
-The `filecoin-plus-backend` service manages the entire lifecycle of applications within the Filecoin Plus program. It is designed as an event-driven system to automate and streamline the process from initial application submission to final approval. The system starts with a GitHub pull request (PR), which triggers the subsequent automated workflows, aligning with the requirement that all application-related activities are managed via GitHub.
+The `filecoin-plus-backend` service manages the entire lifecycle of allocator applications within the Filecoin Plus program. It is designed as an event-driven system to automate and streamline the process from initial application submission to final approval. The system starts with a GitHub pull request (PR), which triggers the subsequent automated workflows, aligning with the requirement that all application-related activities are managed via GitHub.
 
 The backend service is responsible for the following key functionalities:
-- **Application Submission**: Accepting applications from users and submitting them to the Filecoin-Allocator registry repository.
+- **Application Submission**: Accepting allocator applications from users and submitting them to the Filecoin-Allocator registry repository.
 - **KYC Process**: Managing the KYC process for applicants.
 - **Governance Review**: Facilitating the governance review process for applications.
 - **Root Key Holder Approval**: Managing the on-chain approval process for root key holders.
@@ -51,27 +51,26 @@ stateDiagram-v2
 
 ### Application Submission
 - Applications are submitted via a Form connected to an Airtable
-- For GDP compliance, the application data is split into two different views, a public and private view.
+- For GDPR compliance, the application data is split into two different views, a public and private view.
 - The public data is fetched by the Filecoin Plus backend and stored in a MongoDB database. The data is fetched using the [airtable](https://www.npmjs.com/package/airtable) NPM package.
 - Afterwards the backend will create a PR application to the Filecoin-Allocator registry repository. containing the formatted json file with the public data.
 
 ![Application Phase](img/phases/application-phase.png)
 
-### KYC Process
-- After the application is accepted the applican will be provided a link to the Toggle platform to complete KYC.
-- The KYC process is done through the Toggle platform. The Toggle platform will provide a KYC status to the Filecoin Plus backend.
+### Know Your Client (KYC) Process
+- After the application is accepted the applicant will be provided a link to the Togggle platform to complete KYC and human verification.
+- The KYC process is done through the Togggle platform. The Togggle platform will provide a KYC status to the Filecoin Plus backend.
 
 ![KYC Phase](img/phases/kyc-phase.png)
 
 ### Governance Review
-- After the KYC is accept
+- After the KYC is accepted, governance team will review and provide feedback on allocator applications.
 
 ![Governance Review Phase](img/phases/governance-review-phase.png)
 
 
 ### Root Key Holder Approval
-
-The Filecoin Plus Backend is designed to streamline the process of data storage and retrieval transactions on the Filecoin network, enhancing the efficiency and scalability of storage deals. The main flows of the system include client authentication, data storage request processing, and interaction with the Filecoin blockchain to finalize deals.
+- Root Key Holders are responsible for auditing the diligence and bookkeeping of the governance team before approving on-chain DataCap reqeusts to allocators. These requests can be for new allocators, to supply more DataCap to existing allocators, or to remove DataCap from an allocator.
 
 ## Architecture and Tech Stack
 
