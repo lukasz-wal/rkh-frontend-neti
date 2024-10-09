@@ -31,15 +31,15 @@ export const AccountProvider: React.FC<{
   /**
    * Connects using the specified connector.
    * @param connectorName The name of the connector ('ledger' or 'metamask').
-   * @param options Optional parameters (e.g., account index for Ledger).
+   * @param accountIndex The index of the account to connect to on the ledger.
    */
   const connect = useCallback(
-    async (connectorName: string, options?: any) => {
+    async (connectorName: string, accountIndex?: number) => {
       try {
         let connector = connectors[connectorName];
 
-        if (connectorName === "ledger" && options?.accountIndex !== undefined) {
-          connector = new LedgerConnector(options.accountIndex);
+        if (connectorName === "ledger" && accountIndex !== undefined) {
+          connector = new LedgerConnector(accountIndex);
         }
         const acc = await connector.connect();
         setAccount(acc);
@@ -93,13 +93,13 @@ export const AccountProvider: React.FC<{
     const messageId = await api.proposeVerifier(
       verifierAccountId,
       fullDataCap,
-      0, // TODO: accountIndex,
+      account.index ?? 0,
       account.wallet
     );
     return messageId;
   }, [currentConnector]);
 
-  const acceptVerifierProposal = useCallback(async (applicationId: string, verifierAddress: string, fromAccount: string, transactionId: string) => {
+  const acceptVerifierProposal = useCallback(async (verifierAddress: string, datacap: string, fromAccount: string, transactionId: number) => {
     if (!account?.wallet) {
       throw new Error("Wallet not connected");
     }
@@ -114,12 +114,19 @@ export const AccountProvider: React.FC<{
       env.useTestData // (false => Mainnet, true => Testnet)
     );
 
+    const dataCap = parseFloat(datacap);
+    const fullDataCap = BigInt(dataCap * 1000000000000);
+    let verifierAccountId = verifierAddress;
+    if (verifierAccountId.length < 12) {
+      verifierAccountId = await api.actorKey(verifierAccountId)
+    }
+
     const messageId = await api.approveVerifier(
-      applicationId,
-      verifierAddress,
+      verifierAccountId,
+      fullDataCap,
       fromAccount,
       transactionId,
-      0,
+      account.index ?? 0,
       account.wallet
     )
 

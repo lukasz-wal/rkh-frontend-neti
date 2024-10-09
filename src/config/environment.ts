@@ -82,8 +82,8 @@ export const testApplications: Application[] = [
     githubPrNumber: "126",
     githubPrLink: "https://github.com/alicejohnson/test/pull/126",
 
-    rkhApprovals: [],
+    rkhApprovals: ['t0101'],
     rkhApprovalsThreshold: 2,
-  },
-
+    rkhMessageId: 0,
+  }
 ];

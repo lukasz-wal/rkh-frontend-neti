@@ -58,7 +58,7 @@ export default function LedgerDialog({ onClose }: LedgerDialogProps) {
 
   const handleLedgerAccountSelect = async (selectedAccount: LedgerAccount) => {
     try {
-      await connect("ledger", { accountIndex: selectedAccount.index });
+      await connect("ledger", selectedAccount.index);
       onClose();
     } catch (error) {
       console.error("Ledger connection error:", error);

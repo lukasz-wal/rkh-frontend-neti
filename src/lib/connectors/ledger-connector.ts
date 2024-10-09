@@ -42,6 +42,7 @@ export class LedgerConnector implements Connector {
 
       const role = await fetchRole(address);
       this.account = {
+        index: this.accountIndex,
         address,
         isConnected: true,
         wallet: new LedgerWallet(this.filecoinApp, address),

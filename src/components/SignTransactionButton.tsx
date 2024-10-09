@@ -35,7 +35,7 @@ export default function SignTransactionButton({
 }: SignTransactionButtonProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [isPending, setIsPending] = useState(false);
-  const { account, proposeAddVerifier } = useAccount();
+  const { account, proposeAddVerifier, acceptVerifierProposal } = useAccount();
   const { toast } = useToast();
 
   const proposeTransaction = async () => {
@@ -61,7 +61,12 @@ export default function SignTransactionButton({
   const approveTransaction = async () => {
     setIsPending(true);
     try {
-      const messageId = await proposeAddVerifier(application.address, application.datacap);
+      const messageId = await acceptVerifierProposal(
+        application.address,
+        application.datacap,
+        application.rkhApprovals ? application.rkhApprovals[0] : "",
+        application.rkhMessageId ?? 0
+      );
       toast({
         title: "RKH Transaction Approved",
         description: `Transaction approved with message id: ${messageId}`,
@@ -128,7 +133,13 @@ export default function SignTransactionButton({
           )}
         </div>
         <div className="flex justify-center">
-        <Button className="w-[150px]" disabled={isPending} onClick={() => proposeTransaction()}>
+        <Button className="w-[150px]" disabled={isPending} onClick={() => {
+          if (application.rkhApprovals && application.rkhApprovals.length > 0) {
+            approveTransaction();
+          } else {
+            proposeTransaction();
+          }
+        }}>
           {isPending ? "Submitting..." : "Submit"}
         </Button>
         </div>

@@ -13,4 +13,5 @@ export interface Account {
   isConnected: boolean
   role: AccountRole
   wallet: Wallet
+  index?: number
 }

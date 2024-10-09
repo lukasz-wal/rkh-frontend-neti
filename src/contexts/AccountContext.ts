@@ -5,11 +5,11 @@ import { Connector } from "@/types/connector";
 
 export interface AccountContextType {
   account: Account | null;
-  connect: (connectorName: string, options?: any) => Promise<void>;
+  connect: (connectorName: string, accountIndex?: number) => Promise<void>;
   disconnect: () => Promise<void>;
   connectors: { [key: string]: Connector };
-  proposeAddVerifier: (applicationId: string, verifierAddress: string) => Promise<string>;
-  acceptVerifierProposal: (applicationId: string, verifierAddress: string, fromAccount: string, transactionId: string) => Promise<string>;
+  proposeAddVerifier: (verifierAddress: string, datacap: string) => Promise<string>;
+  acceptVerifierProposal: (verifierAddress: string, datacap: string, fromAccount: string, transactionId: number) => Promise<string>;
   // Add a new method to load the persisted account
   loadPersistedAccount: () => Promise<void>;
 }
