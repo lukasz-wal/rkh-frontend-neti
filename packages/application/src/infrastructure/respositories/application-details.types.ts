@@ -19,6 +19,7 @@ interface ApplicationDetails {
   rkhPhase?: {
     approvals: string[]
     approvalThreshold?: number
+    approvalMessageId?: number
   }
 }
 

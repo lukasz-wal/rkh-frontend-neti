@@ -7,6 +7,7 @@ import { TYPES } from '@src/types'
 export class UpdateRKHApprovalsCommand extends Command {
   constructor(
     public readonly allocatorId: string,
+    public readonly messageId: number,
     public readonly approvals: string[],
   ) {
     super()
@@ -34,7 +35,7 @@ export class UpdateRKHApprovalsCommandHandler implements ICommandHandler<UpdateR
       return
     }
 
-    allocator.updateRKHApprovals(command.approvals)
+    allocator.updateRKHApprovals(command.messageId, command.approvals)
 
     // Check if the approval threshold is met
     if (command.approvals.length >= allocator.rkhApprovalThreshold) {

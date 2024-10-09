@@ -33,6 +33,7 @@ export const infrastructureModule = new AsyncContainerModule(async (bind: interf
     appId: config.GITHUB_APP_ID,
     appPrivateKey: config.GITHUB_APP_PRIVATE_KEY,
     appInstallationId: config.GITHUB_APP_INSTALLATION_ID,
+    githubToken: config.GITHUB_TOKEN,
   }
   bind<GithubClientConfig>(TYPES.GithubClientConfig).toConstantValue(githubClientConfig)
   bind<IGithubClient>(TYPES.GithubClient).to(GithubClient).inSingletonScope()

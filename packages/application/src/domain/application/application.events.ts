@@ -199,6 +199,7 @@ export class RKHApprovalsUpdated extends Event {
 
   constructor(
     allocatorId: string,
+    public messageId: number,
     public approvals: string[],
     public approvalThreshold: number,
   ) {

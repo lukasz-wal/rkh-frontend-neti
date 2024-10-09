@@ -20,6 +20,7 @@ import {
 import { TYPES } from '@src/types'
 import { IApplicationDetailsRepository } from '@src/infrastructure/respositories/application-details.repository'
 import { ApplicationStatus } from '@src/domain/application/application'
+import { ApplicationDetails } from '@src/infrastructure/respositories/application-details.types'
 
 @injectable()
 export class ApplicationEditedEventHandler implements IEventHandler<ApplicationEdited> {
@@ -30,7 +31,7 @@ export class ApplicationEditedEventHandler implements IEventHandler<ApplicationE
   ) {}
 
   async handle(event: ApplicationEdited): Promise<void> {
-    await this._repository.update({
+    const updated = {
       id: event.aggregateId,
       number: event.applicationNumber,
       name: event.applicantName,
@@ -38,7 +39,13 @@ export class ApplicationEditedEventHandler implements IEventHandler<ApplicationE
       address: event.applicantAddress,
       github: event.applicantGithubHandle,
       location: event.applicantLocation,
-    })
+    } as Partial<ApplicationDetails>
+
+    if (event.standardizedAllocations?.length) {
+      updated.datacap = parseInt(event.standardizedAllocations[0])
+    }
+
+    await this._repository.update(updated)
   }
 }
 
@@ -217,6 +224,7 @@ export class RKHApprovalsUpdatedEventHandler implements IEventHandler<RKHApprova
       rkhPhase: {
         approvals: event.approvals,
         approvalThreshold: event.approvalThreshold,
+        approvalMessageId: event.messageId,
       },
     })
   }

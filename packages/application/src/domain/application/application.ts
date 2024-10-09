@@ -228,11 +228,11 @@ export class DatacapAllocator extends AggregateRoot {
     this.applyChange(new GovernanceReviewRejected(this.guid))
   }
 
-  updateRKHApprovals(approvals: string[]) {
+  updateRKHApprovals(messageId: number, approvals: string[]) {
     this.ensureValidApplicationStatus([ApplicationStatus.RKH_APPROVAL_PHASE])
 
     if (approvals.length !== this.rkhApprovals.length) {
-      this.applyChange(new RKHApprovalsUpdated(this.guid, approvals, this.rkhApprovalThreshold))
+      this.applyChange(new RKHApprovalsUpdated(this.guid, messageId, approvals, this.rkhApprovalThreshold))
     }
   }
 
@@ -284,6 +284,7 @@ export class DatacapAllocator extends AggregateRoot {
     this.slackUsername = event.applicantSlackHandle || this.slackUsername
     this.country = event.applicantLocation || this.country
     this.region = event.applicantLocation || this.region
+    this.allocationStandardizedAllocations = event.standardizedAllocations || this.allocationStandardizedAllocations
   }
 
   applyAllocatorMultisigUpdated(event: AllocatorMultisigUpdated) {

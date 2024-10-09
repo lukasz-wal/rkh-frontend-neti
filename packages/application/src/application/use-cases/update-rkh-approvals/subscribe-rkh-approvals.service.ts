@@ -43,7 +43,7 @@ export async function subscribeRKHApprovals(container: Container) {
         console.log('Application details not found for address', tx.parsed.params.verifier)
         continue
       }
-      await commandBus.send(new UpdateRKHApprovalsCommand(applicationDetails.id, tx.tx.signers))
+      await commandBus.send(new UpdateRKHApprovalsCommand(applicationDetails.id, tx.id, tx.tx.signers))
     }
   }, config.SUBSCRIBE_RKH_APPROVALS_POLLING_INTERVAL)
 }

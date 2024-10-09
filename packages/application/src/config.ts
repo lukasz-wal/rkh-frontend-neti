@@ -22,6 +22,7 @@ export default {
   GITHUB_APP_ID: process.env.GITHUB_APP_ID || '1',
   GITHUB_APP_PRIVATE_KEY: process.env.GITHUB_APP_PRIVATE_KEY || '-----BEGIN PRIVATE KEY-----\n...',
   GITHUB_APP_INSTALLATION_ID: process.env.GITHUB_APP_INSTALLATION_ID || '1337',
+  GITHUB_TOKEN: process.env.GITHUB_TOKEN,
 
   // Airtable client configuration
   AIRTABLE_API_KEY: process.env.AIRTABLE_API_KEY || 'your-airtable-api-key',
