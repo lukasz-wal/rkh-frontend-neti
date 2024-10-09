@@ -72,9 +72,6 @@ stateDiagram-v2
 ### Root Key Holder Approval
 - Root Key Holders are responsible for auditing the diligence and bookkeeping of the governance team before approving on-chain DataCap reqeusts to allocators. These requests can be for new allocators, to supply more DataCap to existing allocators, or to remove DataCap from an allocator.
 
-  
-The Filecoin Plus Backend is designed to streamline the process of data storage and retrieval transactions on the Filecoin network, enhancing the efficiency and scalability of storage deals. The main flows of the system include client authentication, data storage request processing, and interaction with the Filecoin blockchain to finalize deals.
-
 ## Architecture and Tech Stack
 
 ## Getting Started
