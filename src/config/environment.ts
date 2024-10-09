@@ -12,7 +12,7 @@ const environments: { [key: string]: Environment } = {
     apiBaseUrl: "http://localhost:3001/api/v1",
     useTestData: true,
     rpcUrl: "http://localhost:8010/proxy/rpc/v1",
-    rpcToken: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJBbGxvdyI6WyJyZWFkIiwid3JpdGUiLCJzaWduIiwiYWRtaW4iXX0.-Smbgh6Tx3efvys9BHrF57dN8DI4tOe05dL8qC5qPtM",
+    rpcToken: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJBbGxvdyI6WyJyZWFkIiwid3JpdGUiLCJzaWduIiwiYWRtaW4iXX0.n9KFQZGg1BN7X9Yz9uOvLwVHrZCIGrx8InX_DCBNnKY",
   },
   staging: {
     apiBaseUrl: "https://allocator-rkh-backend-utcn6.ondigitalocean.app/api/v1",
@@ -34,7 +34,7 @@ export const env: Environment = environments[currentEnv];
 
 // Test data
 export const testApplications: Application[] = [
-  /*{
+  {
     id: "66f976bde9de8776b74330e0",
     number: 1099,
     name: "Deep Kapur ",
@@ -45,48 +45,10 @@ export const testApplications: Application[] = [
     region: "North America",
     type: "Manual",
     datacap: "50 ",
-    status: {
-      phase: "KYC",
-      phaseStatus: "IN_PROGRESS"
-    },
-    phases: {
-      application: {
-        number: 1099
-      },
-      submission: {
-        githubPrNumber: "123",
-        githubPrLink: "https://github.com/dkkapur/test/pull/123",
-      }
-    },
+    actorId: "f03019909",
+    status: "KYC_PHASE",
     githubPrNumber: "123",
     githubPrLink: "https://github.com/dkkapur/test/pull/123",
-  },
-  {
-    id: "77a123bde9de8776b74330e1",
-    number: 1100,
-    name: "Jane Doe",
-    organization: "Tech Innovators Inc.",
-    address: "f2pk34lqjjck5jgsbtd2dnvu5z6pm7tiuujvv6cuy",
-    github: "@janedoe",
-    country: "Europe",
-    region: "Europe",
-    type: "Manual",
-    datacap: "100 ",
-    status: {
-      phase: "GOVERNANCE_REVIEW",
-      phaseStatus: "IN_PROGRESS"
-    },
-    phases: {
-      application: {
-        number: 1100
-      },
-      submission: {
-        githubPrNumber: "124",
-        githubPrLink: "https://github.com/janedoe/test/pull/124",
-      }
-    },
-    githubPrNumber: "124",
-    githubPrLink: "https://github.com/janedoe/test/pull/124",
   },
   {
     id: "88b234cde9de8776b74330e2",
@@ -99,19 +61,8 @@ export const testApplications: Application[] = [
     region: "Asia",
     type: "Manual",
     datacap: "75 ",
-    status: {
-      phase: "RKH_APPROVAL",
-      phaseStatus: "IN_PROGRESS"
-    },
-    phases: {
-      application: {
-        number: 1101
-      },
-      submission: {
-        githubPrNumber: "125",
-        githubPrLink: "https://github.com/johnsmith/test/pull/125",
-      }
-    },
+    actorId: "f03019909",
+    status: "GOVERNANCE_REVIEW_PHASE",
     githubPrNumber: "125",
     githubPrLink: "https://github.com/johnsmith/test/pull/125",
   },
@@ -126,21 +77,13 @@ export const testApplications: Application[] = [
     region: "South America",
     type: "Manual",
     datacap: "60 ",
-    status: {
-      phase: "KYC",
-      phaseStatus: "IN_PROGRESS"
-    },
-    phases: {
-      application: {
-        number: 1102
-      },
-      submission: {
-        githubPrNumber: "126",
-        githubPrLink: "https://github.com/alicejohnson/test/pull/126",
-      }
-    },
+    actorId: "f03019909",
+    status: "RKH_APPROVAL_PHASE",
     githubPrNumber: "126",
     githubPrLink: "https://github.com/alicejohnson/test/pull/126",
+
+    rkhApprovals: [],
+    rkhApprovalsThreshold: 2,
   },
-  // Add more test applications as needed*/
+
 ];

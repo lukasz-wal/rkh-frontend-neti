@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import ScaleLoader from "react-spinners/ScaleLoader";
+import { ExternalLink } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -37,7 +38,7 @@ export default function SignTransactionButton({
   const { account, proposeAddVerifier } = useAccount();
   const { toast } = useToast();
 
-  const signTransaction = async () => {
+  const proposeTransaction = async () => {
     setIsPending(true);
     try {
       const messageId = await proposeAddVerifier(application.address, application.datacap);
@@ -50,6 +51,26 @@ export default function SignTransactionButton({
       toast({
         title: "Error",
         description: "Failed to propose verifier",
+        variant: "destructive",
+      });
+    }
+    setIsPending(false);
+    setIsOpen(false);
+  };
+
+  const approveTransaction = async () => {
+    setIsPending(true);
+    try {
+      const messageId = await proposeAddVerifier(application.address, application.datacap);
+      toast({
+        title: "RKH Transaction Approved",
+        description: `Transaction approved with message id: ${messageId}`,
+      });
+    } catch (error) {
+      console.error('Error accepting verifier proposal:', error);
+      toast({
+        title: "Error",
+        description: "Failed to accept verifier proposal",
         variant: "destructive",
       });
     }
@@ -86,7 +107,17 @@ export default function SignTransactionButton({
               <TableBody>
                 <TableRow key="verifier">
                   <TableCell>{"Verifier"}</TableCell>
-                  <TableCell>{application.actorId}</TableCell>
+                  <TableCell>
+                    {application.actorId}
+                    <a
+                      href={`https://filscan.io/en/address/${application.actorId}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="ml-2 inline-block align-middle"
+                    >
+                      <ExternalLink size={16} />
+                    </a>
+                  </TableCell>
                 </TableRow>
                 <TableRow key="datacap">
                   <TableCell>{"DataCap"}</TableCell>
@@ -96,9 +127,11 @@ export default function SignTransactionButton({
             </Table>
           )}
         </div>
-        <Button className="w-[150px]" disabled={isPending} onClick={() => signTransaction()}>
+        <div className="flex justify-center">
+        <Button className="w-[150px]" disabled={isPending} onClick={() => proposeTransaction()}>
           {isPending ? "Submitting..." : "Submit"}
         </Button>
+        </div>
       </DialogContent>
     </Dialog>
   );

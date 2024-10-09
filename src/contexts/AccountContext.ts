@@ -9,6 +9,7 @@ export interface AccountContextType {
   disconnect: () => Promise<void>;
   connectors: { [key: string]: Connector };
   proposeAddVerifier: (applicationId: string, verifierAddress: string) => Promise<string>;
+  acceptVerifierProposal: (applicationId: string, verifierAddress: string, fromAccount: string, transactionId: string) => Promise<string>;
   // Add a new method to load the persisted account
   loadPersistedAccount: () => Promise<void>;
 }

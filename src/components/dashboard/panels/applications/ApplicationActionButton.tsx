@@ -31,14 +31,16 @@ function getActionConfig(application: Application, account?: { role: AccountRole
       };
 
     case "RKH_APPROVAL_PHASE":
+      const label = `(${application.rkhApprovals?.length ?? 0}/${application.rkhApprovalsThreshold ?? 2}) Approve`;
       if (account?.role !== AccountRole.ROOT_KEY_HOLDER && account?.role !== AccountRole.ADMIN) {
         return {
-          label: "(0/2) Approve",
-          disabled: true,
+          label,
+          component: SignTransactionButton,
+          // disabled: true,
         };
       }
       return {
-        label: "(0/2) Approve",
+        label,
         component: SignTransactionButton,
       };
 

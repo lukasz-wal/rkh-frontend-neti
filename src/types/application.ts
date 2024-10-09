@@ -28,7 +28,8 @@ export interface Application {
   // ---
 
   // KHK APPROVAL PHASE
-  // ---
+  rkhApprovals?: string[];
+  rkhApprovalsThreshold?: number;
 }
 
 export interface ApplicationsResponse {

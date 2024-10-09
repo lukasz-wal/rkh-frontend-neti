@@ -41,7 +41,6 @@ export const AccountProvider: React.FC<{
         if (connectorName === "ledger" && options?.accountIndex !== undefined) {
           connector = new LedgerConnector(options.accountIndex);
         }
-
         const acc = await connector.connect();
         setAccount(acc);
         setCurrentConnector(connector);
@@ -68,10 +67,6 @@ export const AccountProvider: React.FC<{
       throw new Error("Wallet not connected");
     }
 
-    console.log("account", account);
-    console.log("account.wallet", account.wallet);
-    console.log("verifierAddress", verifierAddress);
-    console.log("datacap", datacap);
     const api = new VerifyAPI(
       VerifyAPI.browserProvider(env.rpcUrl, {
         token: async () => {
@@ -79,19 +74,58 @@ export const AccountProvider: React.FC<{
         },
       }),
       account.wallet,
-      false // this.lotusNode.name !== "Mainnet" // if node != Mainnet => testnet = true
+      env.useTestData // (false => Mainnet, true => Testnet)
     );
+
+    const dataCap = parseFloat(datacap);
+    const fullDataCap = BigInt(dataCap * 1000000000000);
+    let verifierAccountId = verifierAddress;
+    if (verifierAccountId.length < 12) {
+      verifierAccountId = await api.actorKey(verifierAccountId)
+    }
+
+    console.log("account", account);
+    console.log("account.wallet", account.wallet);
+    console.log("verifierAddress", verifierAddress);
+    console.log("verifierAccountId", verifierAccountId);
+    console.log("fullDataCap", fullDataCap);
     
     const messageId = await api.proposeVerifier(
-      verifierAddress,
-      BigInt(datacap),
-      0, //TODO: accountIndex,
+      verifierAccountId,
+      fullDataCap,
+      0, // TODO: accountIndex,
       account.wallet
     );
-    console.log("messageId", messageId);
-
-    return "messageId";
+    return messageId;
   }, [currentConnector]);
+
+  const acceptVerifierProposal = useCallback(async (applicationId: string, verifierAddress: string, fromAccount: string, transactionId: string) => {
+    if (!account?.wallet) {
+      throw new Error("Wallet not connected");
+    }
+
+    const api = new VerifyAPI(
+      VerifyAPI.browserProvider(env.rpcUrl, {
+        token: async () => {
+          return env.rpcToken;
+        },
+      }),
+      account.wallet,
+      env.useTestData // (false => Mainnet, true => Testnet)
+    );
+
+    const messageId = await api.approveVerifier(
+      applicationId,
+      verifierAddress,
+      fromAccount,
+      transactionId,
+      0,
+      account.wallet
+    )
+
+    return messageId;
+  }, [account]);
+  
 
   return (
     <QueryClientProvider client={queryClient}>
@@ -102,6 +136,7 @@ export const AccountProvider: React.FC<{
           disconnect,
           connectors,
           proposeAddVerifier,
+          acceptVerifierProposal,
           loadPersistedAccount,
         }}
       >

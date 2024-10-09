@@ -12,7 +12,7 @@ export class FilsnapWallet implements Wallet {
         this.address = address;
     }
 
-    async sign(message: any): Promise<string> {
+    async sign(message: any, indexAccount: number): Promise<string> {
         const { error, result } = await this.adapter.signMessage(
             {
                 value: message.Value,

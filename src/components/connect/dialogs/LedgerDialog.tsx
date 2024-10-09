@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
 import { Loader2, ChevronLeft, ChevronRight, Copy } from "lucide-react";
@@ -21,11 +21,15 @@ export default function LedgerDialog({ onClose }: LedgerDialogProps) {
   const [ledgerAccounts, setLedgerAccounts] = useState<LedgerAccount[]>([]);
   const [currentPage, setCurrentPage] = useState(0);
   const { toast } = useToast();
+  const isConnectedRef = useRef(false); // Track whether connection has been attempted
 
   const accountsPerPage = 5;
 
   useEffect(() => {
-    handleLedgerConnect();
+    if (!isConnectedRef.current) {
+      handleLedgerConnect();
+      isConnectedRef.current = true; // Mark as connected
+    }
   }, []);
 
   const handleLedgerConnect = async () => {
@@ -34,6 +38,7 @@ export default function LedgerDialog({ onClose }: LedgerDialogProps) {
     try {
       const ledgerConnector = connectors["ledger"] as LedgerConnector;
       const accounts = await ledgerConnector.fetchAccounts();
+      console.log("accounts", accounts);
       setLedgerAccounts(accounts);
     } catch (error) {
       console.error("Connection error:", error);

@@ -118,7 +118,7 @@ export function ApplicationsPanel({
                         {application.githubPrLink && (
                           <DropdownMenuItem>
                             <Link
-                              href={`https://github.com/threesigmaxyz/Allocator-Registry/pull/${application.githubPrNumber}`}
+                              href={`https://github.com/filecoin-project/Allocator-Registry/pull/${application.githubPrNumber}`}
                               target="_blank"
                             >
                               View PR
