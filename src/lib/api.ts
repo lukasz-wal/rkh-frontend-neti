@@ -71,8 +71,9 @@ export async function fetchApplications(
               actorId: allocator.actorId,
               githubPrLink: allocator.applicationDetails?.pullRequestUrl,
               githubPrNumber: allocator.applicationDetails?.pullRequestNumber,
-              rkhApprovals: allocator.rkhPhase?.rkhApprovals,
-              rkhApprovalsThreshold: allocator.rkhPhase?.rkhApprovalsThreshold,
+              rkhApprovals: allocator.rkhPhase?.approvals,
+              rkhApprovalsThreshold: allocator.rkhPhase?.approvalsThreshold,
+              rkhMessageId: allocator.rkhPhase?.messageId,
             };
           } catch (error) {
             console.error("Error processing application:", error);
