@@ -9,42 +9,10 @@ services:
         BUILD_CONTEXT: application
     ports:
       - 3000:3001
-    environment:
-      - NODE_ENV=dev
-      - API_PORT=3000
-      - MONGODB_URI=mongodb://mongodb:27017/
-      - RABBITMQ_URL=rabbitmq:5672
-      - RABBITMQ_USERNAME=admin
-      - RABBITMQ_PASSWORD=admin
-      - RABBITMQ_EXCHANGE_NAME=filecoin-plus
-      - RABBITMQ_EXCHANGE_TYPE=topic
-      - RABBITMQ_QUEUE_NAME=allocator
-      - GITHUB_AUTH_TOKEN=github_pat
+    env_file:
+      - .env
     depends_on:
-      rabbitmq:
-        condition: service_healthy
-
-  worker:
-    build:
-      context: .
-      dockerfile: Dockerfile
-      args:
-        BUILD_CONTEXT: worker
-    command:
-      npm -w @filecoin-plus/application run start:worker
-    environment:
-      - NODE_ENV=dev
-      - MONGODB_URI=mongodb://mongodb:27017/
-      - RABBITMQ_URL=rabbitmq:5672
-      - RABBITMQ_USERNAME=admin
-      - RABBITMQ_PASSWORD=admin
-      - RABBITMQ_EXCHANGE_NAME=filecoin-plus
-      - RABBITMQ_EXCHANGE_TYPE=topic
-      - RABBITMQ_QUEUE_NAME=allocator
-      - GITHUB_AUTH_TOKEN=github_pat
-    depends_on:
-      rabbitmq:
-        condition: service_healthy
+      - mongodb
 
   mongodb:
     container_name: filecoin-plus-mongodb
@@ -54,25 +22,6 @@ services:
       - 27017:27017
     volumes:
       - mongo_data:/data/db
-
-  rabbitmq:
-    container_name: filecoin-plus-rabbitmq
-    image: rabbitmq:3-management
-    restart: unless-stopped
-    ports:
-      - 5672:5672 # AMQP protocol port
-      - 15672:15672 # Management UI port
-    volumes:
-      - rabbitmq_data:/var/lib/rabbitmq
-    environment:
-      - RABBITMQ_DEFAULT_USER=admin
-      - RABBITMQ_DEFAULT_PASS=admin
-    healthcheck:
-      test: rabbitmq-diagnostics -q ping
-      interval: 30s
-      timeout: 10s
-      retries: 5
-      start_period: 10s
 
   toggle:
     image: wiremock/wiremock:3.8.0
