@@ -21,6 +21,12 @@ interface ApplicationDetails {
     approvalThreshold?: number
     approvalMessageId?: number
   }
+  // DONE xTODO: Add allocation instruction
+  allocationInstruction?: {
+    method: string[]
+    amount: number[]
+    timestamp: number[]
+  }
 }
 
 export { ApplicationDetails }

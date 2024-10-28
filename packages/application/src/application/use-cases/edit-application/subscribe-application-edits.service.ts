@@ -79,6 +79,10 @@ export async function subscribeApplicationEdits(container: Container) {
             allocationDataTypes: applicationPullRequestFile.application.data_types,
             allocationProjected12MonthsUsage: applicationPullRequestFile.application['12m_requested'],
             allocationBookkeepingRepo: applicationPullRequestFile.application.allocation_bookkeeping,
+            // DONE xTODO: add allocation instruction
+            applicationInstructionMethod: applicationPullRequestFile.allocation_instruction.method,
+            applicationInstructionAmount: applicationPullRequestFile.allocation_instruction.amount,
+            applicationInstructionTimestamp: applicationPullRequestFile.allocation_instruction.timestamp,
           })
           await commandBus.send(command)
         } catch (error: any) {

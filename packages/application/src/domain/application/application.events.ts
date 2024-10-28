@@ -25,6 +25,10 @@ export class ApplicationCreated extends Event {
     public allocationDataTypes: string[],
     public allocationProjected12MonthsUsage: string,
     public allocationBookkeepingRepo: string,
+    // DONE xTODO: amount + method here
+    public allocationInstructionMethod: string[],
+    public alloctaionInstructionAmount: number[],
+    public allocationInstructionTimestamp: number[],
     public type: string,
     public datacap: number,
   ) {
@@ -57,6 +61,11 @@ export class ApplicationEdited extends Event {
     public dataTypes?: string[],
     public projected12MonthsUsage?: string,
     public allocationBookkeepingRepo?: string,
+    // DONE xTODO: allocation instruction
+    public applicationInstructionMethod?: string[],
+    public applicationInstructionAmount?: number[],
+    public applicationInstructionTimestamp?: number[],
+    //
   ) {
     super(allocatorId)
     this.timestamp = new Date()
@@ -158,7 +167,11 @@ export class GovernanceReviewApproved extends Event {
 
   public timestamp: Date
 
-  constructor(allocatorId: string) {
+  constructor(
+    allocatorId: string,
+    // DONE xTODO: add allocationMethod
+    public allocationMethod: string,
+  ) {
     super(allocatorId)
   }
 }
@@ -190,6 +203,41 @@ export class RKHApprovalStarted extends Event {
     this.timestamp = new Date()
   }
 }
+
+// DONE xTODO: create MetaAllocatorApprovalStarted event
+export class MetaAllocatorApprovalStarted extends Event {
+  eventName = MetaAllocatorApprovalStarted.name
+  aggregateName = 'allocator'
+  
+  public timestamp: Date
+
+  constructor(
+    allocatorId: string,
+    // xTODO: is approvalThreshold needed?
+    public readonly approvalThreshold: number,
+  ) {
+    super(allocatorId)
+    this.timestamp = new Date()
+  }
+}
+
+// DONE xTODO: create MetaAllocatorApprovalCompleted event
+export class MetaAllocatorApprovalCompleted extends Event {
+  eventName = MetaAllocatorApprovalCompleted.name
+  aggregateName = 'allocator'
+
+  public timestamp: Date
+
+  constructor(
+    allocatorId: string,
+    public blockNumber: number,
+    public txHash: string,
+  ) {
+    super(allocatorId)
+    this.timestamp = new Date()
+  }
+}
+
 
 export class RKHApprovalsUpdated extends Event {
   eventName = RKHApprovalsUpdated.name

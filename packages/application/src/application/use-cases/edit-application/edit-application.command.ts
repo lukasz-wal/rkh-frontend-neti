@@ -24,6 +24,10 @@ export class EditApplicationCommand extends Command {
   public readonly allocationDataTypes: string[]
   public readonly allocationProjected12MonthsUsage: string
   public readonly allocationBookkeepingRepo: string
+  // DONE xTODO: allocation instruction
+  public readonly applicationInstructionMethod: string[]
+  public readonly applicationInstructionAmount: number[]
+  public readonly applicationInstructionTimestamp: number[]
 
   /**
    * Creates a new EditApplicationCommand instance.
@@ -71,6 +75,10 @@ export class EditApplicationCommandHandler implements ICommandHandler<EditApplic
       allocationDataTypes: command.allocationDataTypes,
       allocationProjected12MonthsUsage: command.allocationProjected12MonthsUsage,
       allocationBookkeepingRepo: command.allocationBookkeepingRepo,
+      // DONE xTODO: allocation instruction
+      applicationInstructionMethod: command.applicationInstructionMethod,
+      applicationInstructionAmount: command.applicationInstructionAmount,
+      applicationInstructionTimestamp: command.applicationInstructionTimestamp,
     })
     this.logger.info(`Application ${command.applicationId} edited successfully`)
 

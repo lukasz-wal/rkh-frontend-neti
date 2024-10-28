@@ -12,6 +12,9 @@ import {
   DatacapAllocationUpdated,
   RKHApprovalsUpdated,
   RKHApprovalCompleted,
+  // xTODO: add meta allocator approval events
+  MetaAllocatorApprovalStarted,
+  MetaAllocatorApprovalCompleted,
   ApplicationCreated,
   ApplicationEdited,
   ApplicationPullRequestUpdated,
@@ -19,17 +22,24 @@ import {
 } from './application.events'
 import { KYCApprovedData, KYCRejectedData } from '@src/domain/types'
 
-export interface IDatacapAllocatorRepository extends IRepository<DatacapAllocator> {}
+export interface IDatacapAllocatorRepository extends IRepository<DatacapAllocator> { }
 
-export interface IDatacapAllocatorEventStore extends IEventStore<DatacapAllocator> {}
+export interface IDatacapAllocatorEventStore extends IEventStore<DatacapAllocator> { }
 
 export enum ApplicationStatus {
   SUBMISSION_PHASE = 'SUBMISSION_PHASE',
   KYC_PHASE = 'KYC_PHASE',
   GOVERNANCE_REVIEW_PHASE = 'GOVERNANCE_REVIEW_PHASE',
   RKH_APPROVAL_PHASE = 'RKH_APPROVAL_PHASE',
+  // DONE xTODO: add phase for meta allocator
+  META_APPROVAL_PHASE = 'META_APPROVAL_PHASE',
   APPROVED = 'APPROVED',
   REJECTED = 'REJECTED',
+}
+
+export enum ApplicationAllocator {
+  META_ALLOCATOR = 'META_ALLOCATOR',
+  RKH_ALLOCATOR = 'RKH_ALLOCATOR',
 }
 
 export type ApplicationPullRequest = {
@@ -69,6 +79,10 @@ export class DatacapAllocator extends AggregateRoot {
   public allocationDataTypes: string[]
   public allocationProjected12MonthsUsage: string
   public allocationBookkeepingRepo: string
+  // DONE xTODO: amount + method here
+  public allocationInstructionMethod: string[]
+  public allocationInstructionAmount: number[]
+  public allocationInstructionTimestamp: number[]
 
   public applicationStatus: ApplicationStatus
 
@@ -106,6 +120,10 @@ export class DatacapAllocator extends AggregateRoot {
     allocationDataTypes: string[]
     allocationProjected12MonthsUsage: string
     allocationBookkeepingRepo: string
+    // DONE xTODO: amount + method here
+    allocationInstructionMethod: string[]
+    allocationInstructionAmount: number[]
+    allocationInstructionTimestamp: number[]
     type: string
     datacap: number
   }): DatacapAllocator {
@@ -129,6 +147,10 @@ export class DatacapAllocator extends AggregateRoot {
         params.allocationDataTypes,
         params.allocationProjected12MonthsUsage,
         params.allocationBookkeepingRepo,
+        // DONE xTODO: amount + method here 
+        params.allocationInstructionMethod,
+        params.allocationInstructionAmount,
+        params.allocationInstructionTimestamp,
         params.type,
         params.datacap,
       ),
@@ -153,6 +175,10 @@ export class DatacapAllocator extends AggregateRoot {
     allocationDataTypes?: string[]
     allocationProjected12MonthsUsage?: string
     allocationBookkeepingRepo?: string
+    // DONE xTODO: allocation instruction .edit
+    applicationInstructionMethod?: string[]
+    applicationInstructionAmount?: number[]
+    applicationInstructionTimestamp?: number[]
   }) {
     this.ensureValidApplicationStatus([
       ApplicationStatus.SUBMISSION_PHASE,
@@ -179,6 +205,10 @@ export class DatacapAllocator extends AggregateRoot {
         params.allocationDataTypes,
         params.allocationProjected12MonthsUsage,
         params.allocationBookkeepingRepo,
+        // DONE xTODO: allocation instruction
+        params.applicationInstructionMethod,
+        params.applicationInstructionAmount,
+        params.applicationInstructionTimestamp,
       ),
     )
   }
@@ -217,9 +247,15 @@ export class DatacapAllocator extends AggregateRoot {
 
   approveGovernanceReview() {
     this.ensureValidApplicationStatus([ApplicationStatus.GOVERNANCE_REVIEW_PHASE])
+    // xTODO: Error handling
+    const allocationMethod = this.applicationInstructionMethod[this.applicationInstructionMethod.length - 1];
+    this.applyChange(new GovernanceReviewApproved(this.guid, allocationMethod))
 
-    this.applyChange(new GovernanceReviewApproved(this.guid))
-    this.applyChange(new RKHApprovalStarted(this.guid, 2)) // TODO: Hardcoded 2 for multisig threshold
+    if (allocationMethod === ApplicationAllocator.META_ALLOCATOR) {
+      this.applyChange(new MetaAllocatorApprovalStarted(this.guid, 2))
+    } else {
+      this.applyChange(new RKHApprovalStarted(this.guid, 2)) // TODO: Hardcoded 2 for multisig threshold
+    }
   }
 
   rejectGovernanceReview() {
@@ -236,9 +272,15 @@ export class DatacapAllocator extends AggregateRoot {
     }
   }
 
+  // xTODO: Error handling
+  completeMetaAllocatorApproval(blockNumber: number, txHash: string) {
+    console.log("completing meta approval... GUID: ", this.guid)
+    // DONE xTODO: add blockNumber and txHash to the event
+    this.applyChange(new MetaAllocatorApprovalCompleted(this.guid, blockNumber, txHash))
+  }
+
   completeRKHApproval() {
     this.ensureValidApplicationStatus([ApplicationStatus.RKH_APPROVAL_PHASE])
-
     this.applyChange(new RKHApprovalCompleted(this.guid))
   }
 
@@ -350,7 +392,15 @@ export class DatacapAllocator extends AggregateRoot {
     this.rkhApprovalThreshold = event.approvalThreshold
   }
 
+  applyMetaAllocatorApprovalStarted(event: RKHApprovalStarted) {
+    // xTODO: ?
+  }
+
   applyRKHApprovalCompleted(event: RKHApprovalCompleted) {
+    this.applicationStatus = ApplicationStatus.APPROVED
+  }
+  // DONE xTODO: Create apply method for meta allocator
+  applyMetaAllocatorApprovalCompleted(event: MetaAllocatorApprovalCompleted) {
     this.applicationStatus = ApplicationStatus.APPROVED
   }
 
