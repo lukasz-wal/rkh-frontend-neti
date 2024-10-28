@@ -49,6 +49,7 @@ function isApplicationNumberInRange(applicationNumber: number): boolean {
 }
 
 function mapRecordToCommand(record: any): CreateApplicationCommand {
+  // DONE xTODO: update CreateApplicationCommand
   return new CreateApplicationCommand({
     applicationId: record.id,
     applicationNumber: record.fields['Application Number'] as number,
@@ -78,4 +79,8 @@ function mapRecordToCommand(record: any): CreateApplicationCommand {
 
     allocatorMultisigAddress: record.fields['Multisig Address'] as string | undefined,
   })
+}
+
+export function mapRecordToCommandTest(record: any): CreateApplicationCommand {
+  return mapRecordToCommand(record);
 }

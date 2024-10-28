@@ -28,10 +28,15 @@ export class CreateApplicationCommand extends Command {
   public readonly allocationTargetClients: string[]
   public readonly allocationRequiredReplicas: string
   public readonly allocationRequiredStorageProviders: string
+  public readonly allocationTooallocationTargetClientsling: string[]
   public readonly allocationTooling: string[]
   public readonly allocationDataTypes: string[]
   public readonly allocationProjected12MonthsUsage: string
   public readonly allocationBookkeepingRepo: string
+  // DONE xTODO: amount + method here
+  public readonly allocationInstructionMethod: string[]
+  public readonly allocationInstructionAmount: number[]
+  public readonly allocationInstructionTimestamp: number[]
 
   public readonly type: string
   public readonly datacap: number
@@ -84,7 +89,6 @@ export class CreateApplicationCommandHandler implements ICommandHandler<CreateAp
         applicantAddress: command.applicantAddress,
         applicantOrgName: command.applicantOrgName,
         applicantOrgAddresses: command.applicantOrgAddresses,
-
         allocationStandardizedAllocations: command.allocationStandardizedAllocations,
         allocationTargetClients: command.allocationTargetClients,
         allocationRequiredReplicas: command.allocationRequiredReplicas,
@@ -93,6 +97,10 @@ export class CreateApplicationCommandHandler implements ICommandHandler<CreateAp
         allocationDataTypes: command.allocationDataTypes,
         allocationProjected12MonthsUsage: command.allocationProjected12MonthsUsage,
         allocationBookkeepingRepo: command.allocationBookkeepingRepo,
+        //  DONE xTODO: add amount + method
+        allocationInstructionMethod: command.allocationInstructionMethod,
+        allocationInstructionAmount: command.allocationInstructionAmount,
+        allocationInstructionTimestamp: command.allocationInstructionTimestamp,
         type: command.type,
         datacap: command.datacap,
       })
@@ -101,7 +109,9 @@ export class CreateApplicationCommandHandler implements ICommandHandler<CreateAp
         const actorId = await this.lotusClient.getActorId(command.allocatorMultisigAddress)
         allocator.setAllocatorMultisig(actorId, command.allocatorMultisigAddress, 2, ['s1', 's2'])
       }
+      this.logger.info("Creating pull request...")
 
+      // DONE xTODO: update createPullRequest
       const pullRequest = await this.pullRequestService.createPullRequest(allocator)
       allocator.setApplicationPullRequest(pullRequest.number, pullRequest.url, pullRequest.commentId)
 
