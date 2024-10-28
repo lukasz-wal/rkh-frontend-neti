@@ -7,10 +7,13 @@ services:
       dockerfile: Dockerfile
       args:
         BUILD_CONTEXT: application
+    network_mode: host
     ports:
       - 3000:3001
     env_file:
       - .env
+    volumes:
+      - './packages/application/src:/usr/src/app/packages/application/src'
     depends_on:
       - mongodb
 

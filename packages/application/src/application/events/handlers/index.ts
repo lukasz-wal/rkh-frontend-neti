@@ -228,8 +228,6 @@ export class MetaAllocatorApprovalCompletedEventHandler implements IEventHandler
 
   async handle(event: MetaAllocatorApprovalCompleted) {
 
-    console.log("Inside MetaAllocatorApprovalCompletedEventHandler...")
-
     await this._db.collection('applicationDetails').updateOne(
       { id: event.aggregateId },
       {
