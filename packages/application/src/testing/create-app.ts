@@ -38,7 +38,11 @@ async function fetchApplicationDocumentById(applicationId: string, databaseName:
 }
 
 
-export async function createApplicationTest(container: Container, applicationId: string) {
+export async function createApplicationTest(
+    container: Container,
+    applicationId: string,
+    verbose = true,
+) {
 
     const sampleRecord: any = {
         id: applicationId,
@@ -67,7 +71,9 @@ export async function createApplicationTest(container: Container, applicationId:
     const commandBus = container.get<ICommandBus>(TYPES.CommandBus)
     const command = mapRecordToCommandTest(sampleRecord);
     await commandBus.send(command)
-    console.log('Generated CreateApplicationCommand:', command);
+    if (verbose) {
+        console.log('Generated CreateApplicationCommand:', command);
+    }
 }
 
 
@@ -117,4 +123,6 @@ async function main() {
 }
 
 
-main()
+if (import.meta.url === `file://${process.argv[1]}`) {
+    main();
+}

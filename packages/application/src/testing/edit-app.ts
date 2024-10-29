@@ -40,7 +40,7 @@ async function fetchApplicationDocumentById(applicationId: string, databaseName:
 }
 
 
-async function editApplicationTest(
+export async function editApplicationTest(
     container: Container,
     targetApplicationId: string,
     applicationInstructionDict: { method: string[], amount: number[], timestamp: number[] },
@@ -168,4 +168,6 @@ async function main() {
 }
 
 
-main()
+if (import.meta.url === `file://${process.argv[1]}`) {
+    main();
+}
