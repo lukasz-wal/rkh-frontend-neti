@@ -213,8 +213,6 @@ export class MetaAllocatorApprovalStarted extends Event {
 
   constructor(
     allocatorId: string,
-    // xTODO: is approvalThreshold needed?
-    public readonly approvalThreshold: number,
   ) {
     super(allocatorId)
     this.timestamp = new Date()
