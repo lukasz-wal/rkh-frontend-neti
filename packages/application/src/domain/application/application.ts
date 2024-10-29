@@ -249,14 +249,16 @@ export class DatacapAllocator extends AggregateRoot {
     this.ensureValidApplicationStatus([ApplicationStatus.GOVERNANCE_REVIEW_PHASE])
     this.ensureValidApplicationInstructionMethod([
       ApplicationAllocator.META_ALLOCATOR,
-      ApplicationAllocator.META_ALLOCATOR,
+      ApplicationAllocator.RKH_ALLOCATOR,
     ])
 
     const allocationMethod = this.applicationInstructionMethod[this.applicationInstructionMethod.length - 1];
     this.applyChange(new GovernanceReviewApproved(this.guid, allocationMethod))
 
     if (allocationMethod === ApplicationAllocator.META_ALLOCATOR) {
+      console.log("MetaAllocatorApprovalStarted...")
       this.applyChange(new MetaAllocatorApprovalStarted(this.guid))
+      // this.applyChange(new MetaAllocatorApprovalCompleted(this.guid, 0, '0x'))
     } else {
       this.applyChange(new RKHApprovalStarted(this.guid, 2)) // TODO: Hardcoded 2 for multisig threshold
     }
@@ -397,13 +399,16 @@ export class DatacapAllocator extends AggregateRoot {
     this.rkhApprovalThreshold = event.approvalThreshold
   }
 
-  applyMetaAllocatorApprovalStarted(event: RKHApprovalStarted) {
-    // xTODO: ?
-  }
-
   applyRKHApprovalCompleted(event: RKHApprovalCompleted) {
     this.applicationStatus = ApplicationStatus.APPROVED
   }
+
+  // DONE xTODO: Create apply method for meta allocator
+  applyMetaAllocatorApprovalStarted(event: MetaAllocatorApprovalStarted) {
+    this.applicationStatus = ApplicationStatus.META_APPROVAL_PHASE
+    console.log("Inside applyMetaAllocatorApprovalStarted - status: ", this.applicationStatus)
+  }
+
   // DONE xTODO: Create apply method for meta allocator
   applyMetaAllocatorApprovalCompleted(event: MetaAllocatorApprovalCompleted) {
     this.applicationStatus = ApplicationStatus.APPROVED
