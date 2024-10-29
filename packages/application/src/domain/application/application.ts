@@ -247,15 +247,20 @@ export class DatacapAllocator extends AggregateRoot {
 
   approveGovernanceReview() {
     this.ensureValidApplicationStatus([ApplicationStatus.GOVERNANCE_REVIEW_PHASE])
-    // xTODO: Error handling
+    this.ensureValidApplicationInstructionMethod([
+      ApplicationAllocator.META_ALLOCATOR,
+      ApplicationAllocator.META_ALLOCATOR,
+    ])
+
     const allocationMethod = this.applicationInstructionMethod[this.applicationInstructionMethod.length - 1];
     this.applyChange(new GovernanceReviewApproved(this.guid, allocationMethod))
 
     if (allocationMethod === ApplicationAllocator.META_ALLOCATOR) {
-      this.applyChange(new MetaAllocatorApprovalStarted(this.guid, 2))
+      this.applyChange(new MetaAllocatorApprovalStarted(this.guid))
     } else {
       this.applyChange(new RKHApprovalStarted(this.guid, 2)) // TODO: Hardcoded 2 for multisig threshold
     }
+
   }
 
   rejectGovernanceReview() {
@@ -287,7 +292,7 @@ export class DatacapAllocator extends AggregateRoot {
   updateDatacapAllocation(datacap: number) {
     try {
       this.completeRKHApproval()
-    } catch (error) {}
+    } catch (error) { }
     // TODO: this.applyChange(new DatacapAllocationUpdated(this.guid, datacap));
   }
 
@@ -417,5 +422,28 @@ export class DatacapAllocator extends AggregateRoot {
     if (!expectedStatuses.includes(this.applicationStatus)) {
       throw new ApplicationError(StatusCodes.BAD_REQUEST, errorCode, errorMessage)
     }
+  }
+
+  private ensureValidApplicationInstructionMethod(
+    expectedInstructionMethods: ApplicationAllocator[],
+    errorCode: string = '5308',
+    errorMessage: string = 'Invalid operation for the current phase',
+  ): void {
+
+    // Ensure length of applicationInstructionMethod is greater than 0 and consistent with other instruction details
+    if (
+      this.applicationInstructionMethod.length === 0 ||
+      this.applicationInstructionMethod.length !== this.applicationInstructionAmount.length ||
+      this.applicationInstructionMethod.length !== this.applicationInstructionTimestamp.length
+    ) {
+      throw new ApplicationError(StatusCodes.BAD_REQUEST, errorCode, 'Mismatch or empty instruction data')
+    }
+
+    // Ensure that allocationMethod is in expectedInstructionMethods else throw an error
+    const allocationMethod = this.applicationInstructionMethod[this.applicationInstructionMethod.length - 1]
+    if (!expectedInstructionMethods.includes(allocationMethod)) {
+      throw new ApplicationError(StatusCodes.BAD_REQUEST, errorCode, errorMessage)
+    }
+
   }
 }
