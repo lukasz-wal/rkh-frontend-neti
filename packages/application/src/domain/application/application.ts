@@ -59,6 +59,11 @@ export type ApplicationApplicantData = {
   orgAddress: string
 }
 
+export type ApplicationInstruction = {
+  method: string[]
+  amount: number[]
+}
+
 export class DatacapAllocator extends AggregateRoot {
   public applicationNumber: number
   public applicationPullRequest: ApplicationPullRequest

@@ -1,7 +1,7 @@
 import { Command, ICommandHandler, Logger } from '@filecoin-plus/core'
 import { inject, injectable } from 'inversify'
-
-import { IDatacapAllocatorRepository } from '@src/domain/application/application'
+import { ApplicationAllocator } from '@src/domain/application/application'
+import { ApplicationInstruction, IDatacapAllocatorRepository } from '@src/domain/application/application'
 import { TYPES } from '@src/types'
 
 export class EditApplicationCommand extends Command {
@@ -47,7 +47,49 @@ export class EditApplicationCommandHandler implements ICommandHandler<EditApplic
     private readonly logger: Logger,
     @inject(TYPES.DatacapAllocatorRepository)
     private readonly repository: IDatacapAllocatorRepository,
-  ) {}
+  ) { }
+
+  ensureValidApplicationInstruction(
+    prevApplicationInstruction: ApplicationInstruction,
+    currApplicationInstruction: ApplicationInstruction,
+  ): ApplicationInstruction {
+
+    if (!prevApplicationInstruction) {
+      prevApplicationInstruction = { method: [], amount: [] }
+    }
+
+    // If currApplicationInstruction is empty default to prevApplicationInstruction
+    if (!currApplicationInstruction) {
+      return prevApplicationInstruction
+    }
+
+    // Ensure method and amount arrays have the same length:
+    if (currApplicationInstruction.method.length !== currApplicationInstruction.amount.length) {
+      return prevApplicationInstruction;
+    }
+
+    // Ensure instruction arrays length >= previous instruction arrays length
+    if (currApplicationInstruction.method.length < prevApplicationInstruction.method.length) {
+      return prevApplicationInstruction;
+    }
+
+    // Ensure each method is valid
+    const validMethods = [ApplicationAllocator.META_ALLOCATOR, ApplicationAllocator.RKH_ALLOCATOR];
+    for (let method of currApplicationInstruction.method) {
+      if (!validMethods.includes(method as ApplicationAllocator)) {
+        return prevApplicationInstruction;
+      }
+    }
+
+    // Ensure each amount is a positive integer
+    for (let amount of currApplicationInstruction.amount) {
+      if (!Number.isInteger(amount) || amount <= 0) {
+        return prevApplicationInstruction;
+      }
+    }
+
+    return currApplicationInstruction
+  }
 
   async handle(command: EditApplicationCommand): Promise<void> {
     this.logger.info(`Handling edit application command for application ${command.applicationId}`)
@@ -56,6 +98,16 @@ export class EditApplicationCommandHandler implements ICommandHandler<EditApplic
       this.logger.error('Application not found')
       throw new Error('Application not found')
     }
+
+    const prevApplicationInstruction = {
+      method: application.applicationInstructionMethod,
+      amount: application.applicationInstructionAmount,
+    }
+    const currApplicationInstruction = {
+      method: command.applicationInstructionMethod,
+      amount: command.applicationInstructionAmount
+    }
+    const validApplicationInstruction = this.ensureValidApplicationInstruction(prevApplicationInstruction, currApplicationInstruction)
 
     await application.edit({
       applicationNumber: command.applicationNumber,
@@ -75,8 +127,8 @@ export class EditApplicationCommandHandler implements ICommandHandler<EditApplic
       allocationProjected12MonthsUsage: command.allocationProjected12MonthsUsage,
       allocationBookkeepingRepo: command.allocationBookkeepingRepo,
       // DONE xTODO: allocation instruction
-      applicationInstructionMethod: command.applicationInstructionMethod,
-      applicationInstructionAmount: command.applicationInstructionAmount,
+      applicationInstructionMethod: validApplicationInstruction.method,
+      applicationInstructionAmount: validApplicationInstruction.amount,
     })
     this.logger.info(`Application ${command.applicationId} edited successfully`)
 
