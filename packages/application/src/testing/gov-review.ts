@@ -101,7 +101,6 @@ async function main() {
     if (!testEdit) {
         allocator.applicationInstructionAmount = applicationInstructionDict.amount
         allocator.applicationInstructionMethod = applicationInstructionDict.method
-        allocator.applicationInstructionTimestamp = applicationInstructionDict.timestamp
     }
     allocator.applicationStatus = ApplicationStatus.GOVERNANCE_REVIEW_PHASE
 

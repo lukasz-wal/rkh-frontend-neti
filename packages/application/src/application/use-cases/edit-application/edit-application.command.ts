@@ -27,7 +27,6 @@ export class EditApplicationCommand extends Command {
   // DONE xTODO: allocation instruction
   public readonly applicationInstructionMethod: string[]
   public readonly applicationInstructionAmount: number[]
-  public readonly applicationInstructionTimestamp: number[]
 
   /**
    * Creates a new EditApplicationCommand instance.
@@ -78,7 +77,6 @@ export class EditApplicationCommandHandler implements ICommandHandler<EditApplic
       // DONE xTODO: allocation instruction
       applicationInstructionMethod: command.applicationInstructionMethod,
       applicationInstructionAmount: command.applicationInstructionAmount,
-      applicationInstructionTimestamp: command.applicationInstructionTimestamp,
     })
     this.logger.info(`Application ${command.applicationId} edited successfully`)
 

@@ -82,7 +82,6 @@ export async function subscribeApplicationEdits(container: Container) {
             // DONE xTODO: add allocation instruction
             applicationInstructionMethod: applicationPullRequestFile.allocation_instruction.method,
             applicationInstructionAmount: applicationPullRequestFile.allocation_instruction.amount,
-            applicationInstructionTimestamp: applicationPullRequestFile.allocation_instruction.timestamp,
           })
           await commandBus.send(command)
         } catch (error: any) {

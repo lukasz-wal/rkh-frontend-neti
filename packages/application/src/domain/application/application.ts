@@ -82,7 +82,6 @@ export class DatacapAllocator extends AggregateRoot {
   // DONE xTODO: amount + method here
   public allocationInstructionMethod: string[]
   public allocationInstructionAmount: number[]
-  public allocationInstructionTimestamp: number[]
 
   public applicationStatus: ApplicationStatus
 
@@ -123,7 +122,6 @@ export class DatacapAllocator extends AggregateRoot {
     // DONE xTODO: amount + method here
     allocationInstructionMethod: string[]
     allocationInstructionAmount: number[]
-    allocationInstructionTimestamp: number[]
     type: string
     datacap: number
   }): DatacapAllocator {
@@ -150,7 +148,6 @@ export class DatacapAllocator extends AggregateRoot {
         // DONE xTODO: amount + method here 
         params.allocationInstructionMethod,
         params.allocationInstructionAmount,
-        params.allocationInstructionTimestamp,
         params.type,
         params.datacap,
       ),
@@ -178,7 +175,6 @@ export class DatacapAllocator extends AggregateRoot {
     // DONE xTODO: allocation instruction .edit
     applicationInstructionMethod?: string[]
     applicationInstructionAmount?: number[]
-    applicationInstructionTimestamp?: number[]
   }) {
     this.ensureValidApplicationStatus([
       ApplicationStatus.SUBMISSION_PHASE,
@@ -208,7 +204,6 @@ export class DatacapAllocator extends AggregateRoot {
         // DONE xTODO: allocation instruction
         params.applicationInstructionMethod,
         params.applicationInstructionAmount,
-        params.applicationInstructionTimestamp,
       ),
     )
   }
@@ -438,8 +433,7 @@ export class DatacapAllocator extends AggregateRoot {
     // Ensure length of applicationInstructionMethod is greater than 0 and consistent with other instruction details
     if (
       this.applicationInstructionMethod.length === 0 ||
-      this.applicationInstructionMethod.length !== this.applicationInstructionAmount.length ||
-      this.applicationInstructionMethod.length !== this.applicationInstructionTimestamp.length
+      this.applicationInstructionMethod.length !== this.applicationInstructionAmount.length
     ) {
       throw new ApplicationError(StatusCodes.BAD_REQUEST, errorCode, 'Mismatch or empty instruction data')
     }

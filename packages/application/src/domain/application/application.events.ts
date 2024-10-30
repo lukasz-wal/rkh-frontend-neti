@@ -28,7 +28,6 @@ export class ApplicationCreated extends Event {
     // DONE xTODO: amount + method here
     public allocationInstructionMethod: string[],
     public alloctaionInstructionAmount: number[],
-    public allocationInstructionTimestamp: number[],
     public type: string,
     public datacap: number,
   ) {
@@ -64,8 +63,6 @@ export class ApplicationEdited extends Event {
     // DONE xTODO: allocation instruction
     public applicationInstructionMethod?: string[],
     public applicationInstructionAmount?: number[],
-    public applicationInstructionTimestamp?: number[],
-    //
   ) {
     super(allocatorId)
     this.timestamp = new Date()
@@ -214,6 +211,7 @@ export class MetaAllocatorApprovalStarted extends Event {
   constructor(
     allocatorId: string,
   ) {
+    console.log("Created: ", MetaAllocatorApprovalStarted.name)
     super(allocatorId)
     this.timestamp = new Date()
   }

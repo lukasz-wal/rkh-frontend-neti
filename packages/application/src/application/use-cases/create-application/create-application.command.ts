@@ -36,7 +36,6 @@ export class CreateApplicationCommand extends Command {
   // DONE xTODO: amount + method here
   public readonly allocationInstructionMethod: string[]
   public readonly allocationInstructionAmount: number[]
-  public readonly allocationInstructionTimestamp: number[]
 
   public readonly type: string
   public readonly datacap: number
@@ -100,7 +99,6 @@ export class CreateApplicationCommandHandler implements ICommandHandler<CreateAp
         //  DONE xTODO: add amount + method
         allocationInstructionMethod: command.allocationInstructionMethod,
         allocationInstructionAmount: command.allocationInstructionAmount,
-        allocationInstructionTimestamp: command.allocationInstructionTimestamp,
         type: command.type,
         datacap: command.datacap,
       })

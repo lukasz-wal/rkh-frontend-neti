@@ -30,7 +30,6 @@ export type ApplicationPullRequestFile = {
   allocation_instruction: {
     method: string[],
     amount: number[],
-    timestamp: number[],
   },
   pathway_addresses?: {
     msig: string
@@ -69,7 +68,6 @@ export function mapApplicationToPullRequestFile(application: DatacapAllocator): 
     allocation_instruction: {
       method: application.allocationInstructionMethod || [],
       amount: application.allocationInstructionAmount || [],
-      timestamp: application.allocationInstructionTimestamp || [],
     },
     pathway_addresses: application.allocatorMultisigAddress
       ? {

@@ -108,7 +108,6 @@ export async function editApplicationTest(
 
             applicationInstructionMethod: applicationInstructionDict.method,
             applicationInstructionAmount: applicationInstructionDict.amount,
-            applicationInstructionTimestamp: applicationInstructionDict.timestamp,
         })
 
         await commandBus.send(command)
