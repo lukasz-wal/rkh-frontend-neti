@@ -6,27 +6,20 @@ import '@src/api/http/controllers/index.js'
 import '@src/api/http/controllers/admin.controller'
 
 import Web3 from 'web3'
+import config from '@src/config'
 import { MongoClient } from 'mongodb'
 import { Container } from 'inversify'
 import { TYPES } from '@src/types'
 import { initialize } from '@src/startup'
 import { IApplicationDetailsRepository } from '@src/infrastructure/respositories/application-details.repository'
-import { subscribeMetaAllocatorApprovals } from '@src/application/use-cases/update-ma-approvals/subscribe-ma-approvals.service'
+import { subscribeMetaAllocatorApprovals, ensureSubscribeMetaAllocatorApprovalsConfig } from '@src/application/use-cases/update-ma-approvals/subscribe-ma-approvals.service'
 
 
-const ALLOCATOR_ADDRESS = '0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266'  // deployer
-const ALLOCATOR_PRIVATE_KEY = '0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80'
-// const META_ALLOCATOR_CONTRACT_ADDRESS = '0x365228774a8aeffbf253631cb8bb9dc440d37a30'
-const META_ALLOCATOR_CONTRACT_ADDRESS = '0x15a9d9b81e3c67b95ffedfb4416d25a113c8c6df'
-const RPC_URL = 'http://127.0.0.1:8545'
-const MONGO_URI = 'mongodb+srv://filecoin-plus:m6CEYieBTc0Y7kLs@ragnarokdemocluster.4zqzb.mongodb.net'
-
-
-const web3 = new Web3(RPC_URL)
+const web3 = new Web3(config.LOTUS_RPC_URL)
 
 
 async function fetchApplicationDocumentByAddressMany(address: string, databaseName: string, collectionName: string) {
-    const client = new MongoClient(MONGO_URI)
+    const client = new MongoClient(config.MONGODB_URI)
     try {
         await client.connect()
         const database = client.db(databaseName)
@@ -46,7 +39,7 @@ async function fetchApplicationDocumentByAddressMany(address: string, databaseNa
 
 
 async function deleteDocumentByIdMany(ids: any, databaseName: string, collectionName: string) {
-    const client = new MongoClient(MONGO_URI)
+    const client = new MongoClient(config.MONGODB_URI)
     try {
         await client.connect()
         const database = client.db(databaseName)
@@ -63,7 +56,7 @@ async function deleteDocumentByIdMany(ids: any, databaseName: string, collection
 
 async function removeDuplicates(address: string, databaseName: string, collectionName: string) {
     /** Multiple documents with same 'address' not allowed. */
-    const client = new MongoClient(MONGO_URI)
+    const client = new MongoClient(config.MONGODB_URI)
     try {
         await client.connect()
         const documents: any = await fetchApplicationDocumentByAddressMany(
@@ -143,9 +136,11 @@ async function metaAllocatorApprovalTest(
     await removeDuplicates(allocatorAddress, 'filecoin-plus', 'applicationDetails')
 
     const applicationDetailsRepository = container.get<IApplicationDetailsRepository>(TYPES.ApplicationDetailsRepository)
-    const applicationDetails: any = await applicationDetailsRepository.getByAddress(allocatorAddress)
-    console.log('applicationDetails before: ', applicationDetails)
+    const applicationDetails: any = await applicationDetailsRepository.getByAddress(allocatorAddress)    
+    const lastBlock = applicationDetails.metaAllocator?.blockNumber || -1
+    console.log('Last block:', lastBlock)
 
+    console.log('applicationDetails before: ', applicationDetails)
     const unsubscribe = await subscribeMetaAllocatorApprovals(container)
 
     const txHash = await simulateAddAllowance(
@@ -160,9 +155,12 @@ async function metaAllocatorApprovalTest(
         while (true) {
             const applicationDetails: any = await applicationDetailsRepository.getByAddress(allocatorAddress)
             if (applicationDetails && 'metaAllocator' in applicationDetails) {
-                console.log('applicationDetails after: ', applicationDetails)
-                unsubscribe()
-                break
+                const currBlock = applicationDetails.metaAllocator.blockNumber || -1
+                if (currBlock > lastBlock) {
+                    console.log('applicationDetails after: ', applicationDetails)
+                    unsubscribe()
+                    break
+                }
             } else {
                 console.log('Document not found or missing metaAllocator, retrying...')
                 await new Promise(resolve => setTimeout(resolve, 1000))
@@ -177,7 +175,9 @@ async function metaAllocatorApprovalTest(
 
 async function main() {
     /*
-    NOTE: Ensure meta allocator contract is deployed
+    NOTE: 
+    1. Ensure meta allocator contract is deployed
+    2. Ensure application is created (use create-app.ts)
 
     Expected output:
 
@@ -191,6 +191,27 @@ async function main() {
 
     2. PR approved and merged
     */
+
+    const META_ALLOCATOR_CONTRACT_ADDRESS = '0x15A9D9b81E3c67b95Ffedfb4416D25a113C8c6df'
+    const ALLOCATOR_ADDRESS = '0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266'  // deployer
+    const ALLOCATOR_PRIVATE_KEY = '0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80'
+
+    ensureSubscribeMetaAllocatorApprovalsConfig()
+    if (!config.VALID_META_ALLOCATOR_ADDRESSES.includes(META_ALLOCATOR_CONTRACT_ADDRESS)) {
+        console.error('Provided META_ALLOCATOR_CONTRACT_ADDRESS is invalid.')
+        return
+    }
+
+    console.log("Configured environment variables:")
+    const expectedConfigVars = [
+        'SUBSCRIBE_META_ALLOCATOR_APPROVALS_POLLING_INTERVAL',
+        'VALID_META_ALLOCATOR_ADDRESSES',
+        'LOTUS_RPC_URL',
+        'MONGODB_URI',
+    ]
+    for (const key of expectedConfigVars) {
+        console.log(key, config[key])
+    }
 
     console.log("Testing application creation...")
     const container = await initialize()
@@ -206,6 +227,3 @@ async function main() {
 
 
 main()
-
-
-// TODO: allocator amount should be determined from 'allocationInstruction'
