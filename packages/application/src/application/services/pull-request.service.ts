@@ -51,7 +51,6 @@ export class PullRequestService {
       [
         {
           path: `allocators/${application.guid}.json`,
-          // DONE xTODO: update mapApplicationToPullRequestFile
           content: JSON.stringify(mapApplicationToPullRequestFile(application), null, 2),
         },
       ],

@@ -49,7 +49,6 @@ function isApplicationNumberInRange(applicationNumber: number): boolean {
 }
 
 function mapRecordToCommand(record: any): CreateApplicationCommand {
-  // DONE xTODO: update CreateApplicationCommand
   return new CreateApplicationCommand({
     applicationId: record.id,
     applicationNumber: record.fields['Application Number'] as number,

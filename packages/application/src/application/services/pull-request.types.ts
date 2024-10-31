@@ -26,7 +26,6 @@ export type ApplicationPullRequestFile = {
     slack: string
     github_user: string
   }
-  // DONE xTODO: amount + method
   allocation_instruction: {
     method: string[],
     amount: number[],
@@ -64,7 +63,6 @@ export function mapApplicationToPullRequestFile(application: DatacapAllocator): 
       slack: application.applicantSlackHandle,
       github_user: application.applicantGithubHandle,
     },
-    // DONE xTODO: amount + method here
     allocation_instruction: {
       method: application.allocationInstructionMethod || [],
       amount: application.allocationInstructionAmount || [],

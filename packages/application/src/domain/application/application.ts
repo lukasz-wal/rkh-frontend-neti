@@ -12,7 +12,6 @@ import {
   DatacapAllocationUpdated,
   RKHApprovalsUpdated,
   RKHApprovalCompleted,
-  // xTODO: add meta allocator approval events
   MetaAllocatorApprovalStarted,
   MetaAllocatorApprovalCompleted,
   ApplicationCreated,
@@ -31,7 +30,6 @@ export enum ApplicationStatus {
   KYC_PHASE = 'KYC_PHASE',
   GOVERNANCE_REVIEW_PHASE = 'GOVERNANCE_REVIEW_PHASE',
   RKH_APPROVAL_PHASE = 'RKH_APPROVAL_PHASE',
-  // DONE xTODO: add phase for meta allocator
   META_APPROVAL_PHASE = 'META_APPROVAL_PHASE',
   APPROVED = 'APPROVED',
   REJECTED = 'REJECTED',
@@ -84,7 +82,6 @@ export class DatacapAllocator extends AggregateRoot {
   public allocationDataTypes: string[]
   public allocationProjected12MonthsUsage: string
   public allocationBookkeepingRepo: string
-  // DONE xTODO: amount + method here
   public allocationInstructionMethod: string[]
   public allocationInstructionAmount: number[]
 
@@ -124,7 +121,6 @@ export class DatacapAllocator extends AggregateRoot {
     allocationDataTypes: string[]
     allocationProjected12MonthsUsage: string
     allocationBookkeepingRepo: string
-    // DONE xTODO: amount + method here
     allocationInstructionMethod: string[]
     allocationInstructionAmount: number[]
     type: string
@@ -150,7 +146,6 @@ export class DatacapAllocator extends AggregateRoot {
         params.allocationDataTypes,
         params.allocationProjected12MonthsUsage,
         params.allocationBookkeepingRepo,
-        // DONE xTODO: amount + method here 
         params.allocationInstructionMethod,
         params.allocationInstructionAmount,
         params.type,
@@ -177,7 +172,6 @@ export class DatacapAllocator extends AggregateRoot {
     allocationDataTypes?: string[]
     allocationProjected12MonthsUsage?: string
     allocationBookkeepingRepo?: string
-    // DONE xTODO: allocation instruction .edit
     applicationInstructionMethod?: string[]
     applicationInstructionAmount?: number[]
   }) {
@@ -206,7 +200,6 @@ export class DatacapAllocator extends AggregateRoot {
         params.allocationDataTypes,
         params.allocationProjected12MonthsUsage,
         params.allocationBookkeepingRepo,
-        // DONE xTODO: allocation instruction
         params.applicationInstructionMethod,
         params.applicationInstructionAmount,
       ),
@@ -256,7 +249,6 @@ export class DatacapAllocator extends AggregateRoot {
     this.applyChange(new GovernanceReviewApproved(this.guid, allocationMethod))
 
     if (allocationMethod === ApplicationAllocator.META_ALLOCATOR) {
-      console.log("MetaAllocatorApprovalStarted...")
       this.applyChange(new MetaAllocatorApprovalStarted(this.guid))
       // this.applyChange(new MetaAllocatorApprovalCompleted(this.guid, 0, '0x'))
     } else {
@@ -279,10 +271,7 @@ export class DatacapAllocator extends AggregateRoot {
     }
   }
 
-  // xTODO: Error handling
   completeMetaAllocatorApproval(blockNumber: number, txHash: string) {
-    console.log("completing meta approval... GUID: ", this.guid)
-    // DONE xTODO: add blockNumber and txHash to the event
     this.applyChange(new MetaAllocatorApprovalCompleted(this.guid, blockNumber, txHash))
   }
 
@@ -403,13 +392,10 @@ export class DatacapAllocator extends AggregateRoot {
     this.applicationStatus = ApplicationStatus.APPROVED
   }
 
-  // DONE xTODO: Create apply method for meta allocator
   applyMetaAllocatorApprovalStarted(event: MetaAllocatorApprovalStarted) {
     this.applicationStatus = ApplicationStatus.META_APPROVAL_PHASE
-    console.log("Inside applyMetaAllocatorApprovalStarted - status: ", this.applicationStatus)
   }
 
-  // DONE xTODO: Create apply method for meta allocator
   applyMetaAllocatorApprovalCompleted(event: MetaAllocatorApprovalCompleted) {
     this.applicationStatus = ApplicationStatus.APPROVED
   }

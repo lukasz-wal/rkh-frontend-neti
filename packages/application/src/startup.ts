@@ -45,7 +45,6 @@ import {
   RKHApprovalCompletedEventHandler,
   RKHApprovalStartedEventHandler,
   RKHApprovalsUpdatedEventHandler,
-  // DONE aTODO: bind MetaAllocator handlers
   MetaAllocatorApprovalStartedEventHandler,
   MetaAllocatorApprovalCompletedEventHandler,
 } from './application/events/handlers'
@@ -96,7 +95,6 @@ export const initialize = async (): Promise<Container> => {
   container.bind<IEventHandler<RKHApprovalCompleted>>(TYPES.Event).to(RKHApprovalCompletedEventHandler)
   container.bind<IEventHandler<DatacapAllocationUpdated>>(TYPES.Event).to(DatacapAllocationUpdatedEventHandler)
   
-  // DONE xTODO: bind MetaAllocator events
   container.bind<IEventHandler<MetaAllocatorApprovalStarted>>(TYPES.Event).to(MetaAllocatorApprovalStartedEventHandler)
   container.bind<IEventHandler<MetaAllocatorApprovalCompleted>>(TYPES.Event).to(MetaAllocatorApprovalCompletedEventHandler)
 
@@ -108,7 +106,6 @@ export const initialize = async (): Promise<Container> => {
   container.bind<ICommandHandler<ICommand>>(TYPES.CommandHandler).to(SubmitGovernanceReviewResultCommandHandler)
   container.bind<ICommandHandler<ICommand>>(TYPES.CommandHandler).to(UpdateRKHApprovalsCommandHandler)
   container.bind<ICommandHandler<ICommand>>(TYPES.CommandHandler).to(UpdateDatacapAllocationCommandHandler)
-  // DONE xTODO: bind MetaAllocator handlers
   container.bind<ICommandHandler<ICommand>>(TYPES.CommandHandler).to(UpdateMetaAllocatorApprovalsCommandHandler)
 
   const commandBus = container.get<ICommandBus>(TYPES.CommandBus)

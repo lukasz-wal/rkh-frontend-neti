@@ -33,7 +33,6 @@ export class CreateApplicationCommand extends Command {
   public readonly allocationDataTypes: string[]
   public readonly allocationProjected12MonthsUsage: string
   public readonly allocationBookkeepingRepo: string
-  // DONE xTODO: amount + method here
   public readonly allocationInstructionMethod: string[]
   public readonly allocationInstructionAmount: number[]
 
@@ -96,7 +95,6 @@ export class CreateApplicationCommandHandler implements ICommandHandler<CreateAp
         allocationDataTypes: command.allocationDataTypes,
         allocationProjected12MonthsUsage: command.allocationProjected12MonthsUsage,
         allocationBookkeepingRepo: command.allocationBookkeepingRepo,
-        //  DONE xTODO: add amount + method
         allocationInstructionMethod: command.allocationInstructionMethod,
         allocationInstructionAmount: command.allocationInstructionAmount,
         type: command.type,
@@ -109,7 +107,6 @@ export class CreateApplicationCommandHandler implements ICommandHandler<CreateAp
       }
       this.logger.info("Creating pull request...")
 
-      // DONE xTODO: update createPullRequest
       const pullRequest = await this.pullRequestService.createPullRequest(allocator)
       allocator.setApplicationPullRequest(pullRequest.number, pullRequest.url, pullRequest.commentId)
 

@@ -25,7 +25,6 @@ export class ApplicationCreated extends Event {
     public allocationDataTypes: string[],
     public allocationProjected12MonthsUsage: string,
     public allocationBookkeepingRepo: string,
-    // DONE xTODO: amount + method here
     public allocationInstructionMethod: string[],
     public alloctaionInstructionAmount: number[],
     public type: string,
@@ -60,7 +59,6 @@ export class ApplicationEdited extends Event {
     public dataTypes?: string[],
     public projected12MonthsUsage?: string,
     public allocationBookkeepingRepo?: string,
-    // DONE xTODO: allocation instruction
     public applicationInstructionMethod?: string[],
     public applicationInstructionAmount?: number[],
   ) {
@@ -166,7 +164,6 @@ export class GovernanceReviewApproved extends Event {
 
   constructor(
     allocatorId: string,
-    // DONE xTODO: add allocationMethod
     public allocationMethod: string,
   ) {
     super(allocatorId)
@@ -201,7 +198,6 @@ export class RKHApprovalStarted extends Event {
   }
 }
 
-// DONE xTODO: create MetaAllocatorApprovalStarted event
 export class MetaAllocatorApprovalStarted extends Event {
   eventName = MetaAllocatorApprovalStarted.name
   aggregateName = 'allocator'
@@ -217,7 +213,6 @@ export class MetaAllocatorApprovalStarted extends Event {
   }
 }
 
-// DONE xTODO: create MetaAllocatorApprovalCompleted event
 export class MetaAllocatorApprovalCompleted extends Event {
   eventName = MetaAllocatorApprovalCompleted.name
   aggregateName = 'allocator'
