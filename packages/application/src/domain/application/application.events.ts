@@ -207,7 +207,6 @@ export class MetaAllocatorApprovalStarted extends Event {
   constructor(
     allocatorId: string,
   ) {
-    console.log("Created: ", MetaAllocatorApprovalStarted.name)
     super(allocatorId)
     this.timestamp = new Date()
   }

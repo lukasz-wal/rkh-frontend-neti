@@ -10,7 +10,6 @@ export class UpdateMetaAllocatorApprovalsCommand extends Command {
         public readonly txHash: string,
     ) {
         super()
-        console.log('UpdateMetaAllocatorApprovalsCommand')
     }
 }
 
@@ -26,7 +25,6 @@ constructor(
     ) { }
 
     async handle(command: UpdateMetaAllocatorApprovalsCommand): Promise<void> {
-        console.log('command', command)
         let allocator: DatacapAllocator
         try {
             allocator = await this._repository.getById(command.allocatorId)

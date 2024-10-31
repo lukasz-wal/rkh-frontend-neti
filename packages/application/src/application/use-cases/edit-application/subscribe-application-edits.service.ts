@@ -28,7 +28,7 @@ export async function subscribeApplicationEdits(container: Container) {
             logger.warn(`No GitHub PR found for application: ${application.id}`)
             continue
           }
-          console.log(application.applicationDetails?.pullRequestUrl)
+          logger.info(application.applicationDetails?.pullRequestUrl)
 
           // Fetch the PR details
           const prDetails = await githubClient.getPullRequest(
