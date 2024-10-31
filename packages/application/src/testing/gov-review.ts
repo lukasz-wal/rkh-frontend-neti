@@ -9,6 +9,7 @@ import { IApplicationDetailsRepository } from '@src/infrastructure/respositories
 import { createApplicationTest } from './create-app'
 import { editApplicationTest } from './edit-app'
 import { ApplicationStatus, IDatacapAllocatorRepository } from '@src/domain/application/application'
+import { IEventBus, Logger } from '@filecoin-plus/core'
 
 
 async function main() {
@@ -50,6 +51,19 @@ async function main() {
     // let applicationId;
 
     const container = await initialize()
+    const logger = container.get<Logger>(TYPES.Logger)
+
+    // Initialize RabbitMQ as subscribe to events
+    const eventBus = container.get<IEventBus>(TYPES.EventBus)
+    try {
+        // TODO: needed for RabbitMQ await eventBus.init();
+        await eventBus.subscribeEvents()
+        logger.info('Event bus initialized successfully')
+    } catch (error) {
+        logger.error('Failed to initialize event bus ', { error })
+        process.exit(1)
+    }
+
     const applicationDetailsRepository = container.get<IApplicationDetailsRepository>(TYPES.ApplicationDetailsRepository)
 
     if (!applicationId) {
@@ -105,6 +119,8 @@ async function main() {
     allocator.applicationStatus = ApplicationStatus.GOVERNANCE_REVIEW_PHASE
 
     allocator.approveGovernanceReview()
+    allocatorRepository.save(allocator, -1)  // needed for event handlers to trigger
+
     await new Promise(resolve => setTimeout(resolve, 1000))
 
     updatedApplicationDetails = await applicationDetailsRepository.getById(applicationId)
