@@ -63,7 +63,7 @@ export function ensureSubscribeMetaAllocatorApprovalsConfig() {
 
 
 async function fetchApprovals(fromBlock: number): Promise<any[]> {
-  const provider = new ethers.providers.JsonRpcProvider(config.LOTUS_RPC_URL)
+  const provider = new ethers.providers.JsonRpcProvider(config.EVM_RPC_URL)
   const iface = new ethers.utils.Interface(ALLOWANCE_CHANGED_EVENT_ABI)
   const eventTopic = iface.getEventTopic("AllowanceChanged")
   const filter = {

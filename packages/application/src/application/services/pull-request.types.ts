@@ -64,8 +64,8 @@ export function mapApplicationToPullRequestFile(application: DatacapAllocator): 
       github_user: application.applicantGithubHandle,
     },
     allocation_instruction: {
-      method: application.allocationInstructionMethod || [],
-      amount: application.allocationInstructionAmount || [],
+      method: application.applicationInstructionMethod || [],
+      amount: application.applicationInstructionAmount || [],
     },
     pathway_addresses: application.allocatorMultisigAddress
       ? {

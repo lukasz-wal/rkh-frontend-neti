@@ -82,8 +82,8 @@ export class DatacapAllocator extends AggregateRoot {
   public allocationDataTypes: string[]
   public allocationProjected12MonthsUsage: string
   public allocationBookkeepingRepo: string
-  public allocationInstructionMethod: string[]
-  public allocationInstructionAmount: number[]
+  public applicationInstructionMethod: string[] = []
+  public applicationInstructionAmount: number[] = []
 
   public applicationStatus: ApplicationStatus
 
@@ -121,8 +121,8 @@ export class DatacapAllocator extends AggregateRoot {
     allocationDataTypes: string[]
     allocationProjected12MonthsUsage: string
     allocationBookkeepingRepo: string
-    allocationInstructionMethod: string[]
-    allocationInstructionAmount: number[]
+    applicationInstructionMethod: string[]
+    applicationInstructionAmount: number[]
     type: string
     datacap: number
   }): DatacapAllocator {
@@ -146,8 +146,8 @@ export class DatacapAllocator extends AggregateRoot {
         params.allocationDataTypes,
         params.allocationProjected12MonthsUsage,
         params.allocationBookkeepingRepo,
-        params.allocationInstructionMethod,
-        params.allocationInstructionAmount,
+        params.applicationInstructionMethod,
+        params.applicationInstructionAmount,
         params.type,
         params.datacap,
       ),
@@ -323,6 +323,9 @@ export class DatacapAllocator extends AggregateRoot {
     this.country = event.applicantLocation || this.country
     this.region = event.applicantLocation || this.region
     this.allocationStandardizedAllocations = event.standardizedAllocations || this.allocationStandardizedAllocations
+
+    this.applicationInstructionMethod = event.applicationInstructionMethod || this.applicationInstructionMethod
+    this.applicationInstructionAmount = event.applicationInstructionAmount || this.applicationInstructionAmount
   }
 
   applyAllocatorMultisigUpdated(event: AllocatorMultisigUpdated) {
@@ -422,6 +425,8 @@ export class DatacapAllocator extends AggregateRoot {
   ): void {
 
     // Ensure length of applicationInstructionMethod is greater than 0 and consistent with other instruction details
+    console.log('this.applicationInstructionMethod', this.applicationInstructionMethod)
+    console.log('this.applicationInstructionAmount', this.applicationInstructionAmount)
     if (
       this.applicationInstructionMethod.length === 0 ||
       this.applicationInstructionMethod.length !== this.applicationInstructionAmount.length
@@ -431,9 +436,8 @@ export class DatacapAllocator extends AggregateRoot {
 
     // Ensure that allocationMethod is in expectedInstructionMethods else throw an error
     const allocationMethod = this.applicationInstructionMethod[this.applicationInstructionMethod.length - 1]
-    if (!expectedInstructionMethods.includes(allocationMethod)) {
+    if (!expectedInstructionMethods.includes(allocationMethod as ApplicationAllocator)) {
       throw new ApplicationError(StatusCodes.BAD_REQUEST, errorCode, errorMessage)
     }
-
   }
 }

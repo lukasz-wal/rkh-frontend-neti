@@ -53,4 +53,5 @@ export default {
     ? process.env.VALID_META_ALLOCATOR_ADDRESSES.split(',').map((address) => address.trim())
     : ['0x386f08f6E8E4647B871415EBFB858b1e377d9ab2'],
 
+  EVM_RPC_URL: process.env.EVM_RPC_URL || 'http://localhost:8545',
 }
