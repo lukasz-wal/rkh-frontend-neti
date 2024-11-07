@@ -1,4 +1,5 @@
-import { ApplicationStatus } from '@src/domain/application/application'
+import { ApplicationStatus, ApplicationInstruction } from '@src/domain/application/application'
+
 
 interface ApplicationDetails {
   id: string
@@ -21,11 +22,11 @@ interface ApplicationDetails {
     approvalThreshold?: number
     approvalMessageId?: number
   }
-  allocationInstruction?: {
-    method: string[]
-    amount: number[]
-    timestamp: number[]
-  }
+  applicationInstruction?: ApplicationInstruction,
+  datacapInfo?: {
+    latestDatacap: number,
+    latestUpdateBlock: number,
+  },
 }
 
 export { ApplicationDetails }

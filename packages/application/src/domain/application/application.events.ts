@@ -27,7 +27,7 @@ export class ApplicationCreated extends Event {
     public allocationProjected12MonthsUsage: string,
     public allocationBookkeepingRepo: string,
     public applicationInstructionMethod: string[],
-    public alloctaionInstructionAmount: number[],
+    public applicationInstructionAmount: number[],
     public type: string,
     public datacap: number,
   ) {

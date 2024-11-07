@@ -59,6 +59,7 @@ import { GetApplicationsQueryHandler } from './application/queries/get-applicati
 import { EditApplicationCommandHandler } from './application/use-cases/edit-application/edit-application.command'
 import { UpdateDatacapAllocationCommandHandler } from './application/use-cases/update-datacap-allocation/update-datacap-allocation'
 import { UpdateMetaAllocatorApprovalsCommandHandler } from './application/use-cases/update-ma-approvals/update-ma-approvals.command'
+import { CreateRefreshApplicationCommandHandler } from './application/use-cases/create-application/create-refresh-application.command'
 
 
 export const initialize = async (): Promise<Container> => {
@@ -100,8 +101,8 @@ export const initialize = async (): Promise<Container> => {
 
   // Commands
   container.bind<ICommandHandler<ICommand>>(TYPES.CommandHandler).to(CreateApplicationCommandHandler)
+  container.bind<ICommandHandler<ICommand>>(TYPES.CommandHandler).to(CreateRefreshApplicationCommandHandler)
   container.bind<ICommandHandler<ICommand>>(TYPES.CommandHandler).to(EditApplicationCommandHandler)
-
   container.bind<ICommandHandler<ICommand>>(TYPES.CommandHandler).to(SubmitKYCResultCommandHandler)
   container.bind<ICommandHandler<ICommand>>(TYPES.CommandHandler).to(SubmitGovernanceReviewResultCommandHandler)
   container.bind<ICommandHandler<ICommand>>(TYPES.CommandHandler).to(UpdateRKHApprovalsCommandHandler)

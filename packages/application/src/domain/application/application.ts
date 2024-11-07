@@ -93,8 +93,6 @@ export class DatacapAllocator extends AggregateRoot {
   // Requested fields: timestamp, amount, method, contract (if ma allocator)
   // Granted fields: timestamp, amount, method, contract (if ma allocator), txHash
 
-  public allocationInstructionMethod: string[]
-  public allocationInstructionAmount: number[]
   public applicationInstructionMethod: string[] = []
   public applicationInstructionAmount: number[] = []
 

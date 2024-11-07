@@ -39,12 +39,18 @@ export class PullRequestService {
         throw error
       }
     }
-
+    let title: string
+    if (application.refresh) {
+      title = `Refresh allocator: ${application.applicantName}`
+    } else {
+      title = `Add new allocator: ${application.applicantName}`
+    }
     this._logger.debug(`Creating pull request for application: ${application.guid}`)
+    this._logger.debug(`Pull request title: ${title}`)
     const pullRequest = await this._githubClient.createPullRequest(
       config.GITHUB_OWNER,
       config.GITHUB_REPO,
-      `Add new allocator: ${application.applicantName}`,
+      title,
       this._messageService.generatePullRequestMessage(application),
       branchName,
       'main',
@@ -55,7 +61,6 @@ export class PullRequestService {
         },
       ],
     )
-
     this._logger.debug(`Creating comment on pull request: ${pullRequest.number}`)
     const prComment = await this._githubClient.createPullRequestComment(
       config.GITHUB_OWNER,
@@ -74,11 +79,17 @@ export class PullRequestService {
 
   async updatePullRequest(application: DatacapAllocator): Promise<void> {
     this._logger.debug(`Updating pull request message: ${application.applicationPullRequest.prNumber}`)
+    let title: string
+    if (application.refresh) {
+      title = `Refresh allocator: ${application.applicantName}`
+    } else {
+      title = `Add new allocator: ${application.applicantName}`
+    }
     await this._githubClient.updatePullRequest(
       config.GITHUB_OWNER,
       config.GITHUB_REPO,
       application.applicationPullRequest.prNumber,
-      `Add new allocator: ${application.applicantName}`,
+      title,
       this._messageService.generatePullRequestMessage(application),
     )
 

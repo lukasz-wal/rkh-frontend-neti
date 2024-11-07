@@ -41,7 +41,7 @@ export class ApplicationEditedEventHandler implements IEventHandler<ApplicationE
       address: event.applicantAddress,
       github: event.applicantGithubHandle,
       location: event.applicantLocation,
-      allocationInstruction: {
+      applicationInstruction: {
         method: event.applicationInstructionMethod,
         amount: event.applicationInstructionAmount,
       }
@@ -66,7 +66,7 @@ export class ApplicationPullRequestUpdatedEventHandler implements IEventHandler<
   async handle(event: ApplicationPullRequestUpdated): Promise<void> {
     await this._repository.update({
       id: event.aggregateId,
-      status: ApplicationStatus.KYC_PHASE,
+      status: event.status || ApplicationStatus.KYC_PHASE,
       applicationDetails: {
         pullRequestUrl: event.prUrl,
         pullRequestNumber: event.prNumber,
