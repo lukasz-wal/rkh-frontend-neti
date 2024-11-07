@@ -1,5 +1,6 @@
 import { Event } from '@filecoin-plus/core'
 import { KYCApprovedData, KYCRejectedData } from '@src/domain/types'
+import { ApplicationStatus } from './application'
 
 export class ApplicationCreated extends Event {
   eventName = ApplicationCreated.name
@@ -90,15 +91,18 @@ export class ApplicationPullRequestUpdated extends Event {
   aggregateName = 'allocator'
 
   public timestamp: Date
+  public status?: ApplicationStatus
 
   constructor(
     allocatorId: string,
     public prNumber: number,
     public prUrl: string,
     public commentId: number,
+    status?: ApplicationStatus,
   ) {
     super(allocatorId)
     this.timestamp = new Date()
+    this.status = status
   }
 }
 

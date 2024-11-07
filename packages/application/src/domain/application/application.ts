@@ -82,6 +82,17 @@ export class DatacapAllocator extends AggregateRoot {
   public allocationDataTypes: string[]
   public allocationProjected12MonthsUsage: string
   public allocationBookkeepingRepo: string
+  // TODO: make allocationInstruction a list of dicts
+  // TODO: add another field that says which contract you want to use
+  // TODO: add another field that tells us whether allocation has been requested and/or granted
+  // by the contract
+
+  // Option 2:
+  // rename allocationInstruction to allocationEvents
+  // list of dicts with two possible schemas (Requested, Granted)
+  // Requested fields: timestamp, amount, method, contract (if ma allocator)
+  // Granted fields: timestamp, amount, method, contract (if ma allocator), txHash
+
   public allocationInstructionMethod: string[]
   public allocationInstructionAmount: number[]
 
@@ -90,6 +101,7 @@ export class DatacapAllocator extends AggregateRoot {
   public type: string
   public datacap: number
   public datacapAmount: number
+  public refresh?: boolean
 
   public rkhApprovalThreshold: number = 2
   public rkhApprovals: string[] = []
@@ -219,10 +231,31 @@ export class DatacapAllocator extends AggregateRoot {
     )
   }
 
-  setApplicationPullRequest(pullRequestNumber: number, pullRequestUrl: string, commentId: number) {
-    this.ensureValidApplicationStatus([ApplicationStatus.SUBMISSION_PHASE])
-
-    this.applyChange(new ApplicationPullRequestUpdated(this.guid, pullRequestNumber, pullRequestUrl, commentId))
+  setApplicationPullRequest(
+    pullRequestNumber: number,
+    pullRequestUrl: string,
+    commentId: number,
+    refresh: boolean = false,
+  ) {
+    if (!refresh) {
+      this.ensureValidApplicationStatus([ApplicationStatus.SUBMISSION_PHASE])
+      this.applyChange(new ApplicationPullRequestUpdated(
+        this.guid,
+        pullRequestNumber,
+        pullRequestUrl,
+        commentId,
+        ApplicationStatus.KYC_PHASE,
+      ))
+    } else {
+      this.ensureValidApplicationStatus([ApplicationStatus.GOVERNANCE_REVIEW_PHASE])
+      this.applyChange(new ApplicationPullRequestUpdated(
+        this.guid,
+        pullRequestNumber,
+        pullRequestUrl,
+        commentId,
+        ApplicationStatus.GOVERNANCE_REVIEW_PHASE,
+      ))
+    }
   }
 
   approveKYC(data: KYCApprovedData) {
