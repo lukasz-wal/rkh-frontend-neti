@@ -33,8 +33,8 @@ export class CreateApplicationCommand extends Command {
   public readonly allocationDataTypes: string[]
   public readonly allocationProjected12MonthsUsage: string
   public readonly allocationBookkeepingRepo: string
-  public readonly allocationInstructionMethod: string[]
-  public readonly allocationInstructionAmount: number[]
+  public readonly applicationInstructionMethod: string[]
+  public readonly applicationInstructionAmount: number[]
 
   public readonly type: string
   public readonly datacap: number
@@ -95,8 +95,8 @@ export class CreateApplicationCommandHandler implements ICommandHandler<CreateAp
         allocationDataTypes: command.allocationDataTypes,
         allocationProjected12MonthsUsage: command.allocationProjected12MonthsUsage,
         allocationBookkeepingRepo: command.allocationBookkeepingRepo,
-        allocationInstructionMethod: command.allocationInstructionMethod,
-        allocationInstructionAmount: command.allocationInstructionAmount,
+        applicationInstructionMethod: command.applicationInstructionMethod,
+        applicationInstructionAmount: command.applicationInstructionAmount,
         type: command.type,
         datacap: command.datacap,
       })

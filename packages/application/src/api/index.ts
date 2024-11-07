@@ -59,8 +59,8 @@ async function main() {
   await subscribeApplicationSubmissions(container)
   await subscribeApplicationEdits(container)
   await subscribeGovernanceReviews(container)
-  await subscribeRKHApprovals(container)
-  await subscribeDatacapAllocations(container)
+  // await subscribeRKHApprovals(container)
+  // await subscribeDatacapAllocations(container)
   await subscribeMetaAllocatorApprovals(container)
 
   // Start the API server
