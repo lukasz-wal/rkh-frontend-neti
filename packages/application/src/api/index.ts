@@ -21,6 +21,8 @@ import { subscribeDatacapAllocations } from '@src/application/use-cases/update-d
 import { subscribeApplicationEdits } from '@src/application/use-cases/edit-application/subscribe-application-edits.service'
 import { subscribeGovernanceReviews } from '@src/application/use-cases/submit-governance-review/subscribe-governance-reviews.service'
 import { subscribeMetaAllocatorApprovals } from '@src/application/use-cases/update-ma-approvals/subscribe-ma-approvals.service'
+import { subscribeRefreshMetaAllocator } from '@src/application/use-cases/refresh-ma-datacap/subscribe-refresh-ma.service'
+import { subscribeRefreshRKH } from '@src/application/use-cases/refresh-rkh-datacap/subscribe-refresh-rkh.service'
 
 async function main() {
   // Initialize the container
@@ -62,6 +64,8 @@ async function main() {
   // await subscribeRKHApprovals(container)
   // await subscribeDatacapAllocations(container)
   await subscribeMetaAllocatorApprovals(container)
+  await subscribeRefreshMetaAllocator(container)
+  await subscribeRefreshRKH(container)
 
   // Start the API server
   apiServer.listen(config.API_PORT, () => console.log('The application is initialised on the port %s', config.API_PORT))
