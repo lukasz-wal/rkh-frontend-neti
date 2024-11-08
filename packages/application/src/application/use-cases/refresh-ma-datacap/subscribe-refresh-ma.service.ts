@@ -6,6 +6,7 @@ import config from '@src/config'
 import { ethers } from 'ethers';
 import { MongoClient } from 'mongodb'
 import { CreateRefreshApplicationCommand } from '../create-application/create-refresh-application.command'
+import { ApplicationAllocator } from '@src/domain/application/application'
 
 
 const ALLOWANCE_CHANGED_EVENT_ABI = [
@@ -200,11 +201,7 @@ export async function fetchCurrentDatacap(contractAddress: string, allocatorAddr
     ]
     const contract = new ethers.Contract(contractAddress, functionABI, provider)
     const allowance = await contract.allowance(allocatorAddress)
-    // TODO: allowance is  BigNumber { _hex: '0x64', _isBigNumber: true }
-    // conver it to a number
-
     const allowanceNumber = allowance.toNumber()
-
     return allowanceNumber
 
 }
@@ -319,19 +316,37 @@ export async function submitRefreshMetaAllocatorCommand(
         logger.debug(`Application status not APPROVED for allocator: ${allocatorAddress}`)
         return
     }
-    // Ensure applicationInstruction is definesubmitRefreshMetaAllocatorCommandd and has length > 0
+    // Ensure applicationInstruction is defined
     if (!applicationDetails.applicationInstruction) {
         logger.debug(`Missing applicaitonInstruction for allocator: ${allocatorAddress}`)
         return
     }
-    // NOTE: If status is APPROVED then not possible for applicationInstructionLength to be 0
-    const applicationInstructionLength = applicationDetails.applicationInstruction.amount.length
-    if (applicationInstructionLength === 0) {
+    let instructionAmounts: number[], instructionMethods: string[]
+    // Ensure valid applicationInstruction amounts and methods
+    try {
+        instructionAmounts = applicationDetails.applicationInstruction.amount
+        instructionMethods = applicationDetails.applicationInstruction.method
+        if (instructionAmounts.length !== instructionMethods.length) {
+            logger.debug(`Mismatched lengths for instruction amounts and methods for allocator: ${allocatorAddress}`)
+            return
+        }
+        if (instructionAmounts.length === 0) {
+            logger.debug(`Missing applicationInstruction for allocator: ${allocatorAddress}`)
+            return
+        }
+    } catch (error) {
         logger.debug(`Missing applicationInstruction for allocator: ${allocatorAddress}`)
         return
     }
+    const applicationInstructionLength = instructionAmounts.length
+    const applicationInstructionMethod = instructionMethods[applicationInstructionLength - 1]
+    if (applicationInstructionMethod !== ApplicationAllocator.META_ALLOCATOR) {
+        logger.debug(`Invalid applicationInstruction method for allocator: ${allocatorAddress}`)
+        return
+    }
+
     const currentDatacap = datacapInfo.latestDatacap
-    const initialDatacap = applicationDetails.applicationInstruction.amount[applicationInstructionLength - 1]
+    const initialDatacap = instructionAmounts[applicationInstructionLength - 1]
     logger.debug(`Current Datacap: ${currentDatacap}, Initial Datacap: ${initialDatacap}`)
 
     try {
