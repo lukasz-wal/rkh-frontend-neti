@@ -8,6 +8,7 @@ import config from '@src/config'
 import { CreateRefreshApplicationCommand } from '../create-application/create-refresh-application.command'
 import { IApplicationDetailsRepository } from '@src/infrastructure/respositories/application-details.repository'
 import { ApplicationDetails } from '@src/infrastructure/respositories/application-details.types'
+import { ApplicationAllocator } from '@src/domain/application/application'
 
 
 const schema = {
@@ -58,13 +59,31 @@ export async function submitRefreshRKHAllocatorCommand(
         logger.debug(`Missing applicationInstruction`)
         return
     }
-    // NOTE: If status is APPROVED then not possible for applicationInstructionLength to be 0
-    const applicationInstructionLength = applicationDetails.applicationInstruction.amount.length
-    if (applicationInstructionLength === 0) {
-        logger.debug(`Missing applicationInstruction`)
+    let instructionAmounts: number[], instructionMethods: string[]
+    // Ensure valid applicationInstruction amounts and methods
+    try {
+        instructionAmounts = applicationDetails.applicationInstruction.amount
+        instructionMethods = applicationDetails.applicationInstruction.method
+        if (instructionAmounts.length !== instructionMethods.length) {
+            logger.debug('Mismatched lengths for instruction amounts and methods')
+            return
+        }
+        if (instructionAmounts.length === 0) {
+            logger.debug('Missing applicationInstruction.')
+            return
+        }
+    } catch (error) {
+        logger.debug('Missing applicationInstruction.')
         return
     }
-    const initialDatacap = applicationDetails.applicationInstruction.amount[applicationInstructionLength - 1]    
+    // Ensure instruction method is RKH_ALLOCATOR
+    const applicationInstructionLength = instructionAmounts.length
+    const applicationInstructionMethod = instructionMethods[applicationInstructionLength - 1]
+    if (applicationInstructionMethod !== ApplicationAllocator.RKH_ALLOCATOR) {
+        logger.debug('Invalid applicationInstruction method')
+        return
+    }
+    const initialDatacap = instructionAmounts[applicationInstructionLength - 1]
     // Ensure initialDatacap is a number and defined
     if (typeof initialDatacap !== 'number' || !initialDatacap) {
         logger.debug(`Invalid initialDatacap: ${initialDatacap}`)
