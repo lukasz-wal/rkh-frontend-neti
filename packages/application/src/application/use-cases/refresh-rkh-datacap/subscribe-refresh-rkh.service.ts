@@ -5,7 +5,6 @@ import { ILotusClient } from '@src/infrastructure/clients/lotus'
 import { TYPES } from '@src/types'
 import { methods as m } from '@keyko-io/filecoin-verifier-tools'
 import config from '@src/config'
-import { MongoClient } from 'mongodb'
 import { CreateRefreshApplicationCommand } from '../create-application/create-refresh-application.command'
 import { IApplicationDetailsRepository } from '@src/infrastructure/respositories/application-details.repository'
 import { ApplicationDetails } from '@src/infrastructure/respositories/application-details.types'
@@ -18,31 +17,6 @@ const schema = {
     value: 'bigint',
 }
 const methods = m.testnet // TODO: Make this configurable
-
-
-export async function dbFilterQuery(
-    databaseName: string,
-    collectionName: string,
-    filterField?: string,
-    filterValue?: any
-): Promise<any[]> {
-    const client = new MongoClient(config.MONGODB_URI);
-    const query = {};
-    if (filterField && filterValue !== undefined) {
-        query[filterField] = filterValue;
-    }
-    try {
-        await client.connect();
-        const database = client.db(databaseName);
-        const collection = database.collection(collectionName);
-        const documents = await collection.find(query).toArray();
-        return documents;
-    } catch (error) {
-        return [];
-    } finally {
-        await client.close();
-    }
-}
 
 
 export async function fetchCurrentDatacapCache(container: Container): Promise<Map<string, bigint>> {
@@ -117,7 +91,6 @@ export async function submitRefreshRKHAllocatorCommand(
 
 
 export async function subscribeRefreshRKH(container: Container) {
-    const MIN_THRESHOLD_PCT = 25
     const logger = container.get<Logger>(TYPES.Logger)
     const commandBus = container.get<ICommandBus>(TYPES.CommandBus)
 
@@ -139,7 +112,7 @@ export async function subscribeRefreshRKH(container: Container) {
             await submitRefreshRKHAllocatorCommand(
                 applicationDetails,
                 currentDatacapCache,
-                MIN_THRESHOLD_PCT,
+                config.REFRESH_MIN_THRESHOLD_PCT,
                 commandBus,
                 logger,
             )
@@ -152,29 +125,3 @@ export async function subscribeRefreshRKH(container: Container) {
     }
 
 }
-
-
-// {
-//     _id: new ObjectId('6723b7ccc0deb96920cb108a'),
-//     applicationId: 'rec4ElVgSs3kQGWTF',
-//     address: '0xd66684AC13a43Dd09e03d799A18C1Fbc4DF33Be9',
-//     datacap: null,
-//     github: 'asynctomatic',
-//     id: 'rec4ElVgSs3kQGWTF',
-//     location: [ 'Europe' ],
-//     name: 'Three Sigma',
-//     number: 1337,
-//     organization: 'Three Sigma',
-//     status: 'APPROVED',
-//     type: null,
-//     actorId: '0xd66684AC13a43Dd09e03d799A18C1Fbc4DF33Be9',
-//     applicationDetails: {
-//       pullRequestUrl: 'https://api.github.com/repos/threesigmaxyz/Allocator-Registry/pulls/329',
-//       pullRequestNumber: 329
-//     },
-//     applicationInstruction: { method: [ 'META_ALLOCATOR' ], amount: [ 100 ] },
-//     metaAllocator: {
-//       blockNumber: 4,
-//       txHash: '0x09c5434691f7d76b0f00e344fd0fc5969356fb0e6b844b66b782a10b56b81d12'
-//     }
-//   }
