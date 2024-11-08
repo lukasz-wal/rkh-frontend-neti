@@ -10,19 +10,18 @@ import { IApplicationDetailsRepository } from '@src/infrastructure/respositories
 import { ApplicationDetails } from '@src/infrastructure/respositories/application-details.types'
 
 
-const VERIFIED_REGISTRY_ACTOR_ADDRESS = 'f06'
 const schema = {
     type: 'hamt',
     key: 'address',
     value: 'bigint',
 }
-const methods = m.testnet // TODO: Make this configurable
+const methods = m.testnet
 
 
 export async function fetchCurrentDatacapCache(container: Container): Promise<Map<string, bigint>> {
     const lotusClient = container.get<ILotusClient>(TYPES.LotusClient)
     const head = await lotusClient.getChainHead()
-    const actor = await lotusClient.getActor(VERIFIED_REGISTRY_ACTOR_ADDRESS, head.Cids)
+    const actor = await lotusClient.getActor(config.VERIFIED_REGISTRY_ACTOR_ADDRESS, head.Cids)
     const verifiers = (await lotusClient.getChainNode(`${actor.Head['/']}/1`)).Obj
     const dta = methods.decode(schema, verifiers)
     const datacapCache = new Map<string, bigint>()

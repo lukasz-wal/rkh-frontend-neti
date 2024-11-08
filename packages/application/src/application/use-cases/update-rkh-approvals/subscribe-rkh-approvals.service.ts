@@ -8,7 +8,6 @@ import { UpdateRKHApprovalsCommand } from './update-rkh-approvals.command'
 import { IApplicationDetailsRepository } from '@src/infrastructure/respositories/application-details.repository'
 
 const RHK_MULTISIG_ACTOR_ADDRESS = 'f080'
-const VERIFIED_REGISTRY_ACTOR_ADDRESS = 'f06'
 const VERIFIED_REGISTRY_ACTOR_METHODS = {
   ADD_VERIFIER: 2,
 }
@@ -33,7 +32,7 @@ export async function subscribeRKHApprovals(container: Container) {
   setInterval(async () => {
     const pendingTxs = (await api.pendingTransactions(RHK_MULTISIG_ACTOR_ADDRESS))?.filter(
       (tx: any) =>
-        tx?.tx.to == VERIFIED_REGISTRY_ACTOR_ADDRESS && tx?.tx.method == VERIFIED_REGISTRY_ACTOR_METHODS.ADD_VERIFIER,
+        tx?.tx.to == config.VERIFIED_REGISTRY_ACTOR_ADDRESS && tx?.tx.method == VERIFIED_REGISTRY_ACTOR_METHODS.ADD_VERIFIER,
     )
     logger.info(`Found ${pendingTxs.length} pending transactions`)
 

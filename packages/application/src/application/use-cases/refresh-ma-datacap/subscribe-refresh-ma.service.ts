@@ -86,7 +86,7 @@ type DatacapAllocatedEvent = {
 export function ensureSubscribeRefreshMetaAllocatorConfig() {
     const expectedConfigVars = [
         'SUBSCRIBE_REFRESH_META_ALLOCATOR_POLLING_INTERVAL',
-        'VALID_META_ALLOCATOR_ADDRESSES',
+        'META_ALLOCATOR_CONTRACT_ADDRESS',
         'EVM_RPC_URL',
         'MONGODB_URI',
     ]
@@ -263,15 +263,11 @@ export async function updateDatacapInfo(
     collectionName: string,
     fromBlock: number,
 ): Promise<Map<string, any>> {
-    // TODO: Potentially move 'META_ALLOCATOR_CONTRACT_ADDRESS' to config
-    const META_ALLOCATOR_CONTRACT_ADDRESS = '0x15A9D9b81E3c67b95Ffedfb4416D25a113C8c6df'
-
     const { allocatorAddresses: allocatorsToUpdate, lastBlock } = await fetchAllocatorsToUpdate(fromBlock)
     const datacapMap = new Map<string, any>()
 
     for (let allocatorAddress of allocatorsToUpdate) {
-        // TODO: config.META_ALLOCATOR_CONTRACT_ADDRESS
-        const currentDatacap = await fetchCurrentDatacap(META_ALLOCATOR_CONTRACT_ADDRESS, allocatorAddress)
+        const currentDatacap = await fetchCurrentDatacap(config.META_ALLOCATOR_CONTRACT_ADDRESS, allocatorAddress)
         datacapMap.set(allocatorAddress, {
             datacapInfo: {
                 latestDatacap: currentDatacap,
@@ -351,7 +347,6 @@ export async function submitRefreshMetaAllocatorCommand(
 
 
 export async function subscribeRefreshMetaAllocator(container: Container) {
-    const MIN_THRESHOLD_PCT = 25
     const logger = container.get<Logger>(TYPES.Logger)
     const commandBus = container.get<ICommandBus>(TYPES.CommandBus)
     const repository = container.get<IApplicationDetailsRepository>(TYPES.ApplicationDetailsRepository)
@@ -381,7 +376,7 @@ export async function subscribeRefreshMetaAllocator(container: Container) {
             await submitRefreshMetaAllocatorCommand(
                 allocatorAddress,
                 allocatorData.datacapInfo,
-                MIN_THRESHOLD_PCT,
+                config.REFRESH_MIN_THRESHOLD_PCT,
                 repository,
                 commandBus,
                 logger,
