@@ -21,7 +21,7 @@ import {
 } from '@src/domain/application/application.events'
 import { TYPES } from '@src/types'
 import { IApplicationDetailsRepository } from '@src/infrastructure/respositories/application-details.repository'
-import { ApplicationStatus, ApplicationAllocator } from '@src/domain/application/application'
+import { ApplicationStatus, ApplicationAllocator, ApplicationInstructionStatus, ApplicationInstruction } from '@src/domain/application/application'
 import { ApplicationDetails } from '@src/infrastructure/respositories/application-details.types'
 
 @injectable()
@@ -41,10 +41,12 @@ export class ApplicationEditedEventHandler implements IEventHandler<ApplicationE
       address: event.applicantAddress,
       github: event.applicantGithubHandle,
       location: event.applicantLocation,
-      applicationInstruction: {
-        method: event.applicationInstructionMethod,
-        amount: event.applicationInstructionAmount,
-      }
+      // xDONE
+      applicationInstructions: event.applicationInstructions
+      // applicationInstruction: {
+      //   method: event.applicationInstructionMethod,
+      //   amount: event.applicationInstructionAmount,
+      // }
     } as Partial<ApplicationDetails>
 
     if (event.standardizedAllocations?.length) {
@@ -162,15 +164,20 @@ export class GovernanceReviewApprovedEventHandler implements IEventHandler<Gover
   constructor(@inject(TYPES.Db) private readonly _db: Db) { }
 
   async handle(event: GovernanceReviewApproved): Promise<void> {
-    const status = event.allocationMethod === ApplicationAllocator.META_ALLOCATOR
+    const applicationInstructions = event.applicationInstructions
+    const lastInstruction = applicationInstructions[applicationInstructions.length - 1]
+    const lastInstructionMethod = lastInstruction.method
+
+    const status = lastInstructionMethod === ApplicationAllocator.META_ALLOCATOR
       ? ApplicationStatus.META_APPROVAL_PHASE
-      : ApplicationStatus.RKH_APPROVAL_PHASE;
+      : ApplicationStatus.RKH_APPROVAL_PHASE
 
     await this._db.collection('applicationDetails').updateOne(
       { id: event.aggregateId },
       {
         $set: {
           status: status,
+          applicationInstructions: applicationInstructions,
         },
       },
     )
@@ -190,6 +197,7 @@ export class GovernanceReviewRejectedEventHandler implements IEventHandler<Gover
       {
         $set: {
           status: ApplicationStatus.REJECTED,
+          applicationInstructions: event.applicationInstructions,
         },
       },
     )
@@ -227,6 +235,7 @@ export class MetaAllocatorApprovalCompletedEventHandler implements IEventHandler
       {
         $set: {
           status: ApplicationStatus.APPROVED,
+          applicationInstructions: event.applicationInstructions,
           metaAllocator: {
             blockNumber: event.blockNumber,
             txHash: event.txHash,
@@ -294,6 +303,7 @@ export class RKHApprovalCompletedEventHandler implements IEventHandler<RKHApprov
       {
         $set: {
           status: ApplicationStatus.APPROVED,
+          applicationInstructions: event.applicationInstructions,
         },
       },
     )

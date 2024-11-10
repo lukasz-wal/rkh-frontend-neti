@@ -58,8 +58,16 @@ export type ApplicationApplicantData = {
 }
 
 export type ApplicationInstruction = {
-  method: string[]
-  amount: number[]
+  method: string
+  amount: number
+  timestamp?: number
+  status?: string
+}
+
+export enum ApplicationInstructionStatus {
+  GRANTED = 'GRANTED',
+  DENIED = 'DENIED',
+  PENDING = 'PENDING',
 }
 
 export class DatacapAllocator extends AggregateRoot {
@@ -82,19 +90,7 @@ export class DatacapAllocator extends AggregateRoot {
   public allocationDataTypes: string[]
   public allocationProjected12MonthsUsage: string
   public allocationBookkeepingRepo: string
-  // TODO: make allocationInstruction a list of dicts
-  // TODO: add another field that says which contract you want to use
-  // TODO: add another field that tells us whether allocation has been requested and/or granted
-  // by the contract
-
-  // Option 2:
-  // rename allocationInstruction to allocationEvents
-  // list of dicts with two possible schemas (Requested, Granted)
-  // Requested fields: timestamp, amount, method, contract (if ma allocator)
-  // Granted fields: timestamp, amount, method, contract (if ma allocator), txHash
-
-  public applicationInstructionMethod: string[] = []
-  public applicationInstructionAmount: number[] = []
+  public applicationInstructions: ApplicationInstruction[] = []
 
   public applicationStatus: ApplicationStatus
 
@@ -133,8 +129,7 @@ export class DatacapAllocator extends AggregateRoot {
     allocationDataTypes: string[]
     allocationProjected12MonthsUsage: string
     allocationBookkeepingRepo: string
-    applicationInstructionMethod: string[]
-    applicationInstructionAmount: number[]
+    applicationInstructions: ApplicationInstruction[]
     type: string
     datacap: number
   }): DatacapAllocator {
@@ -158,8 +153,7 @@ export class DatacapAllocator extends AggregateRoot {
         params.allocationDataTypes,
         params.allocationProjected12MonthsUsage,
         params.allocationBookkeepingRepo,
-        params.applicationInstructionMethod,
-        params.applicationInstructionAmount,
+        params.applicationInstructions,
         params.type,
         params.datacap,
       ),
@@ -184,8 +178,7 @@ export class DatacapAllocator extends AggregateRoot {
     allocationDataTypes?: string[]
     allocationProjected12MonthsUsage?: string
     allocationBookkeepingRepo?: string
-    applicationInstructionMethod?: string[]
-    applicationInstructionAmount?: number[]
+    applicationInstructions?: ApplicationInstruction[]
   }) {
     this.ensureValidApplicationStatus([
       ApplicationStatus.SUBMISSION_PHASE,
@@ -212,8 +205,7 @@ export class DatacapAllocator extends AggregateRoot {
         params.allocationDataTypes,
         params.allocationProjected12MonthsUsage,
         params.allocationBookkeepingRepo,
-        params.applicationInstructionMethod,
-        params.applicationInstructionAmount,
+        params.applicationInstructions,
       ),
     )
   }
@@ -272,28 +264,33 @@ export class DatacapAllocator extends AggregateRoot {
   }
 
   approveGovernanceReview() {
-    this.ensureValidApplicationStatus([ApplicationStatus.GOVERNANCE_REVIEW_PHASE])
-    this.ensureValidApplicationInstructionMethod([
+    this.ensureValidApplicationStatus([ApplicationStatus.GOVERNANCE_REVIEW_PHASE])    
+    this.ensureValidApplicationInstructions([
       ApplicationAllocator.META_ALLOCATOR,
       ApplicationAllocator.RKH_ALLOCATOR,
     ])
-
-    const allocationMethod = this.applicationInstructionMethod[this.applicationInstructionMethod.length - 1];
-    this.applyChange(new GovernanceReviewApproved(this.guid, allocationMethod))
-
-    if (allocationMethod === ApplicationAllocator.META_ALLOCATOR) {
+    // NOTE: 'GRANTED' happens at MetaAllocatorApprovalCompleted or RKHApprovalCompleted
+    const lastInstructionIndex = this.applicationInstructions.length - 1
+    this.applicationInstructions[lastInstructionIndex].status = ApplicationInstructionStatus.PENDING
+    this.applicationInstructions[lastInstructionIndex].timestamp = Math.floor(Date.now() / 1000)
+    this.applyChange(new GovernanceReviewApproved(this.guid, this.applicationInstructions))
+    if (this.applicationInstructions[lastInstructionIndex].method === ApplicationAllocator.META_ALLOCATOR) {
       this.applyChange(new MetaAllocatorApprovalStarted(this.guid))
-      // this.applyChange(new MetaAllocatorApprovalCompleted(this.guid, 0, '0x'))
     } else {
       this.applyChange(new RKHApprovalStarted(this.guid, 2)) // TODO: Hardcoded 2 for multisig threshold
     }
-
   }
 
   rejectGovernanceReview() {
     this.ensureValidApplicationStatus([ApplicationStatus.GOVERNANCE_REVIEW_PHASE])
-
-    this.applyChange(new GovernanceReviewRejected(this.guid))
+    this.ensureValidApplicationInstructions([
+      ApplicationAllocator.META_ALLOCATOR,
+      ApplicationAllocator.RKH_ALLOCATOR,
+    ])
+    const lastInstructionIndex = this.applicationInstructions.length - 1
+    this.applicationInstructions[lastInstructionIndex].status = ApplicationInstructionStatus.DENIED
+    this.applicationInstructions[lastInstructionIndex].timestamp = Math.floor(Date.now() / 1000)
+    this.applyChange(new GovernanceReviewRejected(this.guid, this.applicationInstructions))
   }
 
   updateRKHApprovals(messageId: number, approvals: string[]) {
@@ -305,12 +302,26 @@ export class DatacapAllocator extends AggregateRoot {
   }
 
   completeMetaAllocatorApproval(blockNumber: number, txHash: string) {
-    this.applyChange(new MetaAllocatorApprovalCompleted(this.guid, blockNumber, txHash))
+    this.ensureValidApplicationInstructions([
+      ApplicationAllocator.META_ALLOCATOR,
+      ApplicationAllocator.RKH_ALLOCATOR,
+    ])
+    const lastInstructionIndex = this.applicationInstructions.length - 1
+    this.applicationInstructions[lastInstructionIndex].status = ApplicationInstructionStatus.GRANTED
+    this.applicationInstructions[lastInstructionIndex].timestamp = Math.floor(Date.now() / 1000)
+    this.applyChange(new MetaAllocatorApprovalCompleted(this.guid, blockNumber, txHash, this.applicationInstructions))
   }
 
   completeRKHApproval() {
     this.ensureValidApplicationStatus([ApplicationStatus.RKH_APPROVAL_PHASE])
-    this.applyChange(new RKHApprovalCompleted(this.guid))
+    this.ensureValidApplicationInstructions([
+      ApplicationAllocator.META_ALLOCATOR,
+      ApplicationAllocator.RKH_ALLOCATOR,
+    ])
+    const lastInstructionIndex = this.applicationInstructions.length - 1
+    this.applicationInstructions[lastInstructionIndex].status = ApplicationInstructionStatus.GRANTED
+    this.applicationInstructions[lastInstructionIndex].timestamp = Math.floor(Date.now() / 1000)    
+    this.applyChange(new RKHApprovalCompleted(this.guid, this.applicationInstructions))
   }
 
   updateDatacapAllocation(datacap: number) {
@@ -357,8 +368,7 @@ export class DatacapAllocator extends AggregateRoot {
     this.region = event.applicantLocation || this.region
     this.allocationStandardizedAllocations = event.standardizedAllocations || this.allocationStandardizedAllocations
 
-    this.applicationInstructionMethod = event.applicationInstructionMethod || this.applicationInstructionMethod
-    this.applicationInstructionAmount = event.applicationInstructionAmount || this.applicationInstructionAmount
+    this.applicationInstructions = event.applicationInstructions || this.applicationInstructions
   }
 
   applyAllocatorMultisigUpdated(event: AllocatorMultisigUpdated) {
@@ -451,26 +461,29 @@ export class DatacapAllocator extends AggregateRoot {
     }
   }
 
-  private ensureValidApplicationInstructionMethod(
+  private ensureValidApplicationInstructions(
     expectedInstructionMethods: ApplicationAllocator[],
     errorCode: string = '5308',
     errorMessage: string = 'Invalid operation for the current phase',
   ): void {
 
-    // Ensure length of applicationInstructionMethod is greater than 0 and consistent with other instruction details
-    console.log('this.applicationInstructionMethod', this.applicationInstructionMethod)
-    console.log('this.applicationInstructionAmount', this.applicationInstructionAmount)
-    if (
-      this.applicationInstructionMethod.length === 0 ||
-      this.applicationInstructionMethod.length !== this.applicationInstructionAmount.length
-    ) {
-      throw new ApplicationError(StatusCodes.BAD_REQUEST, errorCode, 'Mismatch or empty instruction data')
+    if (this.applicationInstructions.length === 0) {
+      throw new ApplicationError(StatusCodes.BAD_REQUEST, errorCode, 'Empty instruction data')
     }
 
-    // Ensure that allocationMethod is in expectedInstructionMethods else throw an error
-    const allocationMethod = this.applicationInstructionMethod[this.applicationInstructionMethod.length - 1]
-    if (!expectedInstructionMethods.includes(allocationMethod as ApplicationAllocator)) {
+    const lastInstruction = this.applicationInstructions[this.applicationInstructions.length - 1];
+    let instructionMethod: string
+    let instructionAmount: number
+    try {
+      instructionMethod = lastInstruction.method
+      instructionAmount = lastInstruction.amount
+    } catch (error) {
+      throw new ApplicationError(StatusCodes.BAD_REQUEST, errorCode, 'Latest instruction data is invalid')
+    }
+
+    if (!expectedInstructionMethods.includes(instructionMethod as ApplicationAllocator)) {
       throw new ApplicationError(StatusCodes.BAD_REQUEST, errorCode, errorMessage)
     }
+
   }
 }

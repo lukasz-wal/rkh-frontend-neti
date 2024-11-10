@@ -8,7 +8,7 @@ import config from '@src/config'
 import { CreateRefreshApplicationCommand } from '../create-application/create-refresh-application.command'
 import { IApplicationDetailsRepository } from '@src/infrastructure/respositories/application-details.repository'
 import { ApplicationDetails } from '@src/infrastructure/respositories/application-details.types'
-import { ApplicationAllocator } from '@src/domain/application/application'
+import { ApplicationAllocator, ApplicationInstruction } from '@src/domain/application/application'
 
 
 const schema = {
@@ -54,38 +54,33 @@ export async function submitRefreshRKHAllocatorCommand(
         logger.debug(`Invalid actorId: ${actorId}`)
         return
     }
-    // Ensure applicationInstruction is definesubmitRefreshMetaAllocatorCommandd and has length > 0
-    if (!applicationDetails.applicationInstruction) {
-        logger.debug(`Missing applicationInstruction`)
+    // Ensure applicationInstruction is defined
+    if (!applicationDetails.applicationInstructions) {
+        logger.debug('Missing applicationInstructions.')
         return
     }
-    let instructionAmounts: number[], instructionMethods: string[]
-    // Ensure valid applicationInstruction amounts and methods
+    // Ensure lastInstruction method and amount exists
+    let applicationInstructionsLength: number
+    let lastInstruction: ApplicationInstruction
+    let lastInstructionMethod: string
+    let lastInstructionAmount: number
     try {
-        instructionAmounts = applicationDetails.applicationInstruction.amount
-        instructionMethods = applicationDetails.applicationInstruction.method
-        if (instructionAmounts.length !== instructionMethods.length) {
-            logger.debug('Mismatched lengths for instruction amounts and methods')
-            return
-        }
-        if (instructionAmounts.length === 0) {
-            logger.debug('Missing applicationInstruction.')
-            return
-        }
+        applicationInstructionsLength = applicationDetails.applicationInstructions.length
+        lastInstruction = applicationDetails.applicationInstructions[applicationInstructionsLength - 1]
+        lastInstructionMethod = lastInstruction.method
+        lastInstructionAmount = lastInstruction.amount
     } catch (error) {
-        logger.debug('Missing applicationInstruction.')
+        logger.debug('Invalid applicationInstructions.')
         return
     }
-    // Ensure instruction method is RKH_ALLOCATOR
-    const applicationInstructionLength = instructionAmounts.length
-    const applicationInstructionMethod = instructionMethods[applicationInstructionLength - 1]
-    if (applicationInstructionMethod !== ApplicationAllocator.RKH_ALLOCATOR) {
+    // Ensure instruction method is RKH_ALLOCATOR 
+    if (lastInstructionMethod !== ApplicationAllocator.RKH_ALLOCATOR) {
         logger.debug('Invalid applicationInstruction method')
         return
     }
-    const initialDatacap = instructionAmounts[applicationInstructionLength - 1]
+    const initialDatacap = lastInstructionAmount
     // Ensure initialDatacap is a number and defined
-    if (typeof initialDatacap !== 'number' || !initialDatacap) {
+    if (typeof initialDatacap !== 'number' || isNaN(initialDatacap)) {
         logger.debug(`Invalid initialDatacap: ${initialDatacap}`)
         return
     }

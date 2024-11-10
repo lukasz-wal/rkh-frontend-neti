@@ -405,8 +405,6 @@ async function testSubmitRefreshMetaAllocatorCommand(container: Container) {
     const allocatorAddress = '0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266'
     const contractAddress = '0x15A9D9b81E3c67b95Ffedfb4416D25a113C8c6df'
     const allocatorPrivateKey = '0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80'
-
-    const MIN_THRESHOLD_PCT = 25
     const datacapUpdateAmount = 100
 
     const logger = container.get<Logger>(TYPES.Logger)
@@ -430,7 +428,7 @@ async function testSubmitRefreshMetaAllocatorCommand(container: Container) {
     )
 
     // Ensure currentDatacap is below the minimum threshold:
-    const initialDatacap = (100 / MIN_THRESHOLD_PCT) * currentDatacap
+    const initialDatacap = (100 / config.REFRESH_MIN_THRESHOLD_PCT) * currentDatacap
 
     // Ensure status is 'APPROVED' and 'applicationInstruction' is present:
     await repository.update({
@@ -444,10 +442,12 @@ async function testSubmitRefreshMetaAllocatorCommand(container: Container) {
         type: 'type',
         datacap: 0,
         status: ApplicationStatus.APPROVED,
-        applicationInstruction: {
-            amount: [initialDatacap],
-            method: [ApplicationAllocator.META_ALLOCATOR],
-        }
+        applicationInstructions: [
+            {
+                amount: initialDatacap,
+                method: ApplicationAllocator.META_ALLOCATOR,
+            }
+        ]
     })
 
     const allocatorRepository = container.get<IDatacapAllocatorRepository>(TYPES.DatacapAllocatorRepository)
@@ -472,7 +472,7 @@ async function testSubmitRefreshMetaAllocatorCommand(container: Container) {
         await submitRefreshMetaAllocatorCommand(
             allocatorAddress,
             allocatorData.datacapInfo,
-            MIN_THRESHOLD_PCT,
+            config.REFRESH_MIN_THRESHOLD_PCT,
             repository,
             commandBus,
             logger,

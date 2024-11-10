@@ -22,7 +22,7 @@ interface ApplicationDetails {
     approvalThreshold?: number
     approvalMessageId?: number
   }
-  applicationInstruction?: ApplicationInstruction,
+  applicationInstructions?: ApplicationInstruction[],
   datacapInfo?: {
     latestDatacap: number,
     latestUpdateBlock: number,

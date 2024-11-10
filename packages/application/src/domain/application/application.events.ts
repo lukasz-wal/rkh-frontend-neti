@@ -1,6 +1,6 @@
 import { Event } from '@filecoin-plus/core'
 import { KYCApprovedData, KYCRejectedData } from '@src/domain/types'
-import { ApplicationStatus } from './application'
+import { ApplicationInstruction, ApplicationStatus } from './application'
 
 export class ApplicationCreated extends Event {
   eventName = ApplicationCreated.name
@@ -26,8 +26,7 @@ export class ApplicationCreated extends Event {
     public allocationDataTypes: string[],
     public allocationProjected12MonthsUsage: string,
     public allocationBookkeepingRepo: string,
-    public applicationInstructionMethod: string[],
-    public applicationInstructionAmount: number[],
+    public applicationInstructions: ApplicationInstruction[],
     public type: string,
     public datacap: number,
   ) {
@@ -60,8 +59,7 @@ export class ApplicationEdited extends Event {
     public dataTypes?: string[],
     public projected12MonthsUsage?: string,
     public allocationBookkeepingRepo?: string,
-    public applicationInstructionMethod?: string[],
-    public applicationInstructionAmount?: number[],
+    public applicationInstructions?: ApplicationInstruction[],
   ) {
     super(allocatorId)
     this.timestamp = new Date()
@@ -168,7 +166,7 @@ export class GovernanceReviewApproved extends Event {
 
   constructor(
     allocatorId: string,
-    public allocationMethod: string,
+    public applicationInstructions: ApplicationInstruction[],
   ) {
     super(allocatorId)
   }
@@ -180,7 +178,10 @@ export class GovernanceReviewRejected extends Event {
 
   public timestamp: Date
 
-  constructor(allocatorId: string) {
+  constructor(
+    allocatorId: string,
+    public applicationInstructions: ApplicationInstruction[],
+  ) {
     super(allocatorId)
   }
 }
@@ -226,6 +227,7 @@ export class MetaAllocatorApprovalCompleted extends Event {
     allocatorId: string,
     public blockNumber: number,
     public txHash: string,
+    public applicationInstructions: ApplicationInstruction[],
   ) {
     super(allocatorId)
     this.timestamp = new Date()
@@ -256,7 +258,10 @@ export class RKHApprovalCompleted extends Event {
 
   public timestamp: Date
 
-  constructor(allocatorId: string) {
+  constructor(
+    allocatorId: string,
+    public applicationInstructions: ApplicationInstruction[],
+  ) {
     super(allocatorId)
     this.timestamp = new Date()
   }

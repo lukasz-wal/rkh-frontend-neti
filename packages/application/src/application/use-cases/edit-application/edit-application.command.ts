@@ -24,8 +24,8 @@ export class EditApplicationCommand extends Command {
   public readonly allocationDataTypes: string[]
   public readonly allocationProjected12MonthsUsage: string
   public readonly allocationBookkeepingRepo: string
-  public readonly applicationInstructionMethod: string[]
-  public readonly applicationInstructionAmount: number[]
+  public readonly applicationInstructions: ApplicationInstruction[]
+  
 
   /**
    * Creates a new EditApplicationCommand instance.
@@ -49,45 +49,42 @@ export class EditApplicationCommandHandler implements ICommandHandler<EditApplic
   ) { }
 
   ensureValidApplicationInstruction(
-    prevApplicationInstruction: ApplicationInstruction,
-    currApplicationInstruction: ApplicationInstruction,
-  ): ApplicationInstruction {
+    prevApplicationInstructions: ApplicationInstruction[],
+    currApplicationInstructions: ApplicationInstruction[],
+  ): ApplicationInstruction[] {
 
-    if (!prevApplicationInstruction) {
-      prevApplicationInstruction = { method: [], amount: [] }
+    if (!prevApplicationInstructions) {
+      prevApplicationInstructions = []
     }
-
     // If currApplicationInstruction is empty default to prevApplicationInstruction
-    if (!currApplicationInstruction) {
-      return prevApplicationInstruction
+    if (!currApplicationInstructions) {
+      return prevApplicationInstructions
     }
-
-    // Ensure method and amount arrays have the same length:
-    if (currApplicationInstruction.method.length !== currApplicationInstruction.amount.length) {
-      return prevApplicationInstruction;
-    }
-
     // Ensure instruction arrays length >= previous instruction arrays length
-    if (currApplicationInstruction.method.length < prevApplicationInstruction.method.length) {
-      return prevApplicationInstruction;
+    if (currApplicationInstructions.length < prevApplicationInstructions.length) {
+      return prevApplicationInstructions
     }
-
-    // Ensure each method is valid
+    // Ensure each method and amount is valid
     const validMethods = [ApplicationAllocator.META_ALLOCATOR, ApplicationAllocator.RKH_ALLOCATOR];
-    for (let method of currApplicationInstruction.method) {
-      if (!validMethods.includes(method as ApplicationAllocator)) {
-        return prevApplicationInstruction;
+    for (let currApplicationInstruction of currApplicationInstructions) {
+      let currInstructionMethod: string
+      let currInstructionAmount: number
+      try {
+        currInstructionMethod = currApplicationInstruction.method
+        currInstructionAmount = currApplicationInstruction.amount
+      } catch (error) {
+        return prevApplicationInstructions
+      }
+      if (!validMethods.includes(currInstructionMethod as ApplicationAllocator)) {
+        return prevApplicationInstructions
+      }
+      if (!Number.isInteger(currInstructionAmount) || currInstructionAmount <= 0) {
+        return prevApplicationInstructions
       }
     }
 
-    // Ensure each amount is a positive integer
-    for (let amount of currApplicationInstruction.amount) {
-      if (!Number.isInteger(amount) || amount <= 0) {
-        return prevApplicationInstruction;
-      }
-    }
+    return currApplicationInstructions
 
-    return currApplicationInstruction
   }
 
   async handle(command: EditApplicationCommand): Promise<void> {
@@ -98,17 +95,9 @@ export class EditApplicationCommandHandler implements ICommandHandler<EditApplic
       throw new Error('Application not found')
     }
 
-    const prevApplicationInstruction = {
-      method: application.applicationInstructionMethod,
-      amount: application.applicationInstructionAmount,
-    }
-    const currApplicationInstruction = {
-      method: command.applicationInstructionMethod,
-      amount: command.applicationInstructionAmount
-    }
-    console.log('prevApplicationInstruction', prevApplicationInstruction)
-    console.log('currApplicationInstruction', currApplicationInstruction)
-    const validApplicationInstruction = this.ensureValidApplicationInstruction(prevApplicationInstruction, currApplicationInstruction)
+    const prevApplicationInstructions = application.applicationInstructions
+    const currApplicationInstructions = command.applicationInstructions
+    const validApplicationInstructions = this.ensureValidApplicationInstruction(prevApplicationInstructions, currApplicationInstructions)
 
     await application.edit({
       applicationNumber: command.applicationNumber,
@@ -127,8 +116,7 @@ export class EditApplicationCommandHandler implements ICommandHandler<EditApplic
       allocationDataTypes: command.allocationDataTypes,
       allocationProjected12MonthsUsage: command.allocationProjected12MonthsUsage,
       allocationBookkeepingRepo: command.allocationBookkeepingRepo,
-      applicationInstructionMethod: validApplicationInstruction.method,
-      applicationInstructionAmount: validApplicationInstruction.amount,
+      applicationInstructions: validApplicationInstructions,
     })
     this.logger.info(`Application ${command.applicationId} edited successfully`)
 

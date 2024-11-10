@@ -91,23 +91,19 @@ async function main() {
 
     1. PR Application JSON the following is added:
 
-    "allocation_instruction": {
-        "method": [],
-        "amount": [],
-        "timestamp": []
-    }
+    "application_instructions": []
 
     2. Database is updated with 'address' equals to 'APPLICANT_ADDRESS'
     3. Database is updated with:
 
-    allocationInstruction: { method: [], amount: [], timestamp: [] }
+    applicationInstructions: []
     */
 
     const container = await initialize()
 
     console.log('Testing application creation...')
-    const timestamp = Math.floor(Date.now() / 1000);
-    const applicationId = `app-test-${timestamp}`;
+    const timestamp = Math.floor(Date.now() / 1000)
+    const applicationId = `app-test-${timestamp}`
     await createApplicationTest(container, applicationId)
 
     // const applicationId = 'app-test-1730107971'

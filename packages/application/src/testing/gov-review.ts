@@ -32,24 +32,24 @@ async function main() {
     3. Call allocator.approveGovernanceReview()
     4. Check if status becomes RKH_APPROVAL_PHASE | META_APPROVAL_PHASE
 
-    TODO(s):
-    
-    - Remove uneccessary code (guid 2) approval events
-    - Error handling (add throw() statements)
-
     */
 
-    let applicationId = 'app-test-1730202038'
+    let applicationId = 'app-test-1731240427'
     const testEdit = false
-
-    const applicationInstructionDict = {
-        method: ['RKH_ALLOCATOR', 'META_ALLOCATOR'],
-        amount: [10, 20],
-        timestamp: [0, 1]
-    }
+    const applicationInstructions = [
+        {
+            method: 'RKH_ALLOCATOR',
+            amount: 10,
+            timestamp: 0
+        },
+        {
+            method: 'META_ALLOCATOR',
+            amount: 20,
+            timestamp: 1
+        }
+    ]
 
     // let applicationId;
-
     const container = await initialize()
     const logger = container.get<Logger>(TYPES.Logger)
 
@@ -65,6 +65,8 @@ async function main() {
     }
 
     const applicationDetailsRepository = container.get<IApplicationDetailsRepository>(TYPES.ApplicationDetailsRepository)
+    // const applications = await applicationDetailsRepository.getAll()
+    // console.log("Applications: ", applications.length)
 
     if (!applicationId) {
         const timestamp = Math.floor(Date.now() / 1000)
@@ -90,7 +92,7 @@ async function main() {
         await editApplicationTest(
             container,
             applicationId,
-            applicationInstructionDict,
+            applicationInstructions,
         )
     }
 
@@ -100,12 +102,12 @@ async function main() {
         status: ApplicationStatus.GOVERNANCE_REVIEW_PHASE,
     }
     if (!testEdit) {
-        updated.allocationInstruction = applicationInstructionDict
+        updated.applicationInstructions = applicationInstructions
     }
     await applicationDetailsRepository.update(updated)
 
     let updatedApplicationDetails: any = await applicationDetailsRepository.getById(applicationId)
-    console.log("Allocation instructions: ", updatedApplicationDetails.allocationInstruction)
+    console.log("Application instructions: ", updatedApplicationDetails.applicationInstructions)
     console.log(`Status of ${applicationId} updated to:`, updatedApplicationDetails.status)
 
     // 4. Call allocator.approveGovernanceReview()
@@ -113,14 +115,14 @@ async function main() {
     const allocator = await allocatorRepository.getById(applicationId)
 
     if (!testEdit) {
-        allocator.applicationInstructionAmount = applicationInstructionDict.amount
-        allocator.applicationInstructionMethod = applicationInstructionDict.method
+        allocator.applicationInstructions = applicationInstructions
     }
     allocator.applicationStatus = ApplicationStatus.GOVERNANCE_REVIEW_PHASE
 
     allocator.approveGovernanceReview()
-    allocatorRepository.save(allocator, -1)  // needed for event handlers to trigger
-
+    // .save will update the PR with the new status
+    // .save also required for event handlers to trigger
+    allocatorRepository.save(allocator, -1)
     await new Promise(resolve => setTimeout(resolve, 1000))
 
     updatedApplicationDetails = await applicationDetailsRepository.getById(applicationId)

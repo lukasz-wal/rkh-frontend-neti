@@ -4,7 +4,7 @@ import { inject, injectable } from 'inversify'
 import { ILotusClient } from '@src/infrastructure/clients/lotus'
 import { TYPES } from '@src/types'
 import { PullRequestService } from '@src/application/services/pull-request.service'
-import { DatacapAllocator, IDatacapAllocatorRepository } from '@src/domain/application/application'
+import { ApplicationInstruction, DatacapAllocator, IDatacapAllocatorRepository } from '@src/domain/application/application'
 
 type Result<T> = {
   success: boolean
@@ -15,7 +15,6 @@ type Result<T> = {
 export class CreateApplicationCommand extends Command {
   public readonly applicationId: string
   public readonly applicationNumber: number
-
   public readonly applicantName: string
   public readonly applicantLocation: string
   public readonly applicantGithubHandle: string
@@ -23,7 +22,6 @@ export class CreateApplicationCommand extends Command {
   public readonly applicantAddress: string
   public readonly applicantOrgName: string
   public readonly applicantOrgAddresses: string[]
-
   public readonly allocationStandardizedAllocations: string[]
   public readonly allocationTargetClients: string[]
   public readonly allocationRequiredReplicas: string
@@ -33,12 +31,9 @@ export class CreateApplicationCommand extends Command {
   public readonly allocationDataTypes: string[]
   public readonly allocationProjected12MonthsUsage: string
   public readonly allocationBookkeepingRepo: string
-  public readonly applicationInstructionMethod: string[]
-  public readonly applicationInstructionAmount: number[]
-
+  public readonly applicationInstructions: ApplicationInstruction[]
   public readonly type: string
   public readonly datacap: number
-
   public readonly allocatorMultisigAddress?: string
 
   /**
@@ -95,8 +90,7 @@ export class CreateApplicationCommandHandler implements ICommandHandler<CreateAp
         allocationDataTypes: command.allocationDataTypes,
         allocationProjected12MonthsUsage: command.allocationProjected12MonthsUsage,
         allocationBookkeepingRepo: command.allocationBookkeepingRepo,
-        applicationInstructionMethod: command.applicationInstructionMethod,
-        applicationInstructionAmount: command.applicationInstructionAmount,
+        applicationInstructions: command.applicationInstructions || [],
         type: command.type,
         datacap: command.datacap,
       })

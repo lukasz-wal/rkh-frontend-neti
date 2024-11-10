@@ -15,6 +15,7 @@ import { IGithubClient } from '@src/infrastructure/clients/github'
 import { ApplicationPullRequestFile } from '@src/application/services/pull-request.types'
 import { EditApplicationCommand } from '@src/application/use-cases/edit-application/edit-application.command'
 import config from '@src/config'
+import { ApplicationAllocator, ApplicationInstruction } from '@src/domain/application/application'
 
 
 const MONGO_URI = 'mongodb+srv://filecoin-plus:m6CEYieBTc0Y7kLs@ragnarokdemocluster.4zqzb.mongodb.net'
@@ -43,7 +44,7 @@ async function fetchApplicationDocumentById(applicationId: string, databaseName:
 export async function editApplicationTest(
     container: Container,
     targetApplicationId: string,
-    applicationInstructionDict: { method: string[], amount: number[], timestamp: number[] },
+    applicationInstructions: ApplicationInstruction[],
 ) {
 
     const commandBus = container.get<ICommandBus>(TYPES.CommandBus)
@@ -86,7 +87,6 @@ export async function editApplicationTest(
         const command = new EditApplicationCommand({
             applicationId: application.id,
             applicationNumber: applicationPullRequestFile.application_number,
-
             applicantName: applicationPullRequestFile.name,
             applicantLocation: applicationPullRequestFile.location,
             applicantGithubHandle: applicationPullRequestFile.poc.github_user,
@@ -100,14 +100,11 @@ export async function editApplicationTest(
             allocationTargetClients: applicationPullRequestFile.application.target_clients,
             allocationRequiredReplicas: applicationPullRequestFile.application.required_replicas,
             allocationRequiredStorageProviders: applicationPullRequestFile.application.required_sps,
-
             allocationTooling: applicationPullRequestFile.application.tooling,
             allocationDataTypes: applicationPullRequestFile.application.data_types,
             allocationProjected12MonthsUsage: applicationPullRequestFile.application['12m_requested'],
             allocationBookkeepingRepo: applicationPullRequestFile.application.allocation_bookkeeping,
-
-            applicationInstructionMethod: applicationInstructionDict.method,
-            applicationInstructionAmount: applicationInstructionDict.amount,
+            applicationInstructions: applicationInstructions,
         })
 
         await commandBus.send(command)
@@ -122,38 +119,33 @@ async function main() {
 
     Assumption: PR has been made to update the JSON with:
 
-    "allocation_instruction": {
-        "method": ['rkh-allocator', 'meta-allocator'],
-        "amount": [10, 20],
-        "timestamp": [0, 1]
-    }
+    "application_instructions": [
+        {method: 'rkh-allocator', amount: 10, timestamp: 0},
+        {method: 'meta-allocator', amount: 20, timestamp: 1}
+    ]
 
     Expected output:
     
     MongoDB document now contains:
 
-    allocationInstruction: {
-        method: [ 'rkh-allocator', 'meta-allocator' ],
-        amount: [ 10, 20 ],
-        timestamp: [ 0, 1 ]
-    }
-
-    TODO: Simulate an actual PR with an edit
+    applicationInstructions: [
+        {method: 'rkh-allocator', amount: 10, timestamp: 0},
+        {method: 'meta-allocator', amount: 20, timestamp: 1}
+    ]
     */
 
     const container = await initialize()    
-    const targetApplicationId = 'app-test-1730107971'
+    const targetApplicationId = 'app-test-1731240427'
 
-    const newApplicationInstructionDict = {
-        method: ['rkh-allocator', 'meta-allocator'],
-        amount: [10, 20],
-        timestamp: [0, 1]
-    }
+    const newApplicationInstructions = [
+        {method: ApplicationAllocator.RKH_ALLOCATOR, amount: 10, timestamp: 0},
+        {method: ApplicationAllocator.META_ALLOCATOR, amount: 20, timestamp: 1}
+    ]
 
     await editApplicationTest(
         container,
         targetApplicationId,
-        newApplicationInstructionDict,
+        newApplicationInstructions,
     )
 
     console.log("Checking updated application document...")

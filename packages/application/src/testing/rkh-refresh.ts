@@ -37,7 +37,6 @@ async function testSubmitRefreshRKHAllocatorCommand(
     currentDatacap: bigint,
     container: Container
 ) {
-    const MIN_THRESHOLD_PCT = 25
     const allocatorAddress = '0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266'
 
     const currentDatacapCache = new Map<string, bigint>()
@@ -48,7 +47,7 @@ async function testSubmitRefreshRKHAllocatorCommand(
     const repository = container.get<IApplicationDetailsRepository>(TYPES.ApplicationDetailsRepository)
 
     // Ensure currentDatacap is below the minimum threshold:
-    const initialDatacap = (100 / MIN_THRESHOLD_PCT) * Number(currentDatacap)
+    const initialDatacap = (100 / config.REFRESH_MIN_THRESHOLD_PCT) * Number(currentDatacap)
     // await deleteByAddressAll(allocatorAddress, 'filecoin-plus', 'applicationDetails')
 
     // Ensure the following:
@@ -67,10 +66,12 @@ async function testSubmitRefreshRKHAllocatorCommand(
         type: 'type',
         datacap: 0,
         status: ApplicationStatus.APPROVED,
-        applicationInstruction: {
-            amount: [initialDatacap],
-            method: [ApplicationAllocator.RKH_ALLOCATOR],
-        }
+        applicationInstructions: [
+            {
+                amount: initialDatacap,
+                method: ApplicationAllocator.RKH_ALLOCATOR,
+            }
+        ]
     })
 
     const allocatorRepository = container.get<IDatacapAllocatorRepository>(TYPES.DatacapAllocatorRepository)
@@ -97,7 +98,7 @@ async function testSubmitRefreshRKHAllocatorCommand(
         await submitRefreshRKHAllocatorCommand(
             applicationDetails,
             currentDatacapCache,
-            MIN_THRESHOLD_PCT,
+            config.REFRESH_MIN_THRESHOLD_PCT,
             commandBus,
             logger,
         )
