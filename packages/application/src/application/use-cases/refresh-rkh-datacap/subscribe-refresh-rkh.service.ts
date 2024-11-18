@@ -21,6 +21,7 @@ const methods = m.testnet
 
 export async function fetchCurrentDatacapCache(container: Container): Promise<Map<string, bigint>> {
     const lotusClient = container.get<ILotusClient>(TYPES.LotusClient)
+
     const head = await lotusClient.getChainHead()
     const actor = await lotusClient.getActor(config.VERIFIED_REGISTRY_ACTOR_ADDRESS, head.Cids)
     const verifiers = (await lotusClient.getChainNode(`${actor.Head['/']}/1`)).Obj
@@ -118,6 +119,7 @@ export async function subscribeRefreshRKH(container: Container) {
         logger.info("Subscribing to Refresh RKH...")
 
         const currentDatacapCache = await fetchCurrentDatacapCache(container)
+        console.log('currentDatacapCache', currentDatacapCache)
         const applicationDetailsRepository = container.get<IApplicationDetailsRepository>(TYPES.ApplicationDetailsRepository)
         const applications = await applicationDetailsRepository.getAll()
 

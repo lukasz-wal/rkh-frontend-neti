@@ -60,7 +60,10 @@ export function mapApplicationToPullRequestFile(application: DatacapAllocator): 
       slack: application.applicantSlackHandle,
       github_user: application.applicantGithubHandle,
     },
-    application_instructions: application.applicationInstructions || [],
+    application_instructions: application.applicationInstructions.map(instruction => ({
+      method: instruction.method,
+      amount: instruction.amount,
+    })) || [],
     pathway_addresses: application.allocatorMultisigAddress
       ? {
           msig: application.allocatorMultisigAddress,

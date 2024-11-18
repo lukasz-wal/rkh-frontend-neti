@@ -23,6 +23,7 @@ import { subscribeGovernanceReviews } from '@src/application/use-cases/submit-go
 import { subscribeMetaAllocatorApprovals } from '@src/application/use-cases/update-ma-approvals/subscribe-ma-approvals.service'
 import { subscribeRefreshMetaAllocator } from '@src/application/use-cases/refresh-ma-datacap/subscribe-refresh-ma.service'
 import { subscribeRefreshRKH } from '@src/application/use-cases/refresh-rkh-datacap/subscribe-refresh-rkh.service'
+import { subscribeMetaAllocatorAllowances } from '@src/application/use-cases/refresh-application/subscribe-refresh-ma.service'
 
 async function main() {
   // Initialize the container
@@ -41,6 +42,11 @@ async function main() {
   server.setErrorConfig((app: Application) => {
     app.use(errorHandler)
   })
+
+  // Delete de db documents for applications
+  const db = container.get<Db>(TYPES.Db)
+  // await db.collection('applicationDetails').deleteMany({})
+  // await db.collection('datacap-allocator-events').deleteMany({})
 
   // Bind the API server to the container
   const apiServer = server.build()
@@ -64,8 +70,9 @@ async function main() {
   // await subscribeRKHApprovals(container)
   // await subscribeDatacapAllocations(container)
   await subscribeMetaAllocatorApprovals(container)
-  await subscribeRefreshMetaAllocator(container)
-  await subscribeRefreshRKH(container)
+  // await subscribeRefreshMetaAllocator(container)
+  await subscribeMetaAllocatorAllowances(container)
+  // await subscribeRefreshRKH(container)
 
   // Start the API server
   apiServer.listen(config.API_PORT, () => console.log('The application is initialised on the port %s', config.API_PORT))

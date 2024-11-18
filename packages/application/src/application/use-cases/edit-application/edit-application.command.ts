@@ -97,7 +97,10 @@ export class EditApplicationCommandHandler implements ICommandHandler<EditApplic
 
     const prevApplicationInstructions = application.applicationInstructions
     const currApplicationInstructions = command.applicationInstructions
+    console.log('prevApplicationInstructions', prevApplicationInstructions)
+    console.log('currApplicationInstructions', currApplicationInstructions)
     const validApplicationInstructions = this.ensureValidApplicationInstruction(prevApplicationInstructions, currApplicationInstructions)
+    console.log('validApplicationInstructions', validApplicationInstructions)
 
     await application.edit({
       applicationNumber: command.applicationNumber,

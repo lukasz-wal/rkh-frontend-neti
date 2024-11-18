@@ -29,6 +29,7 @@ import {
   RKHApprovalsUpdated,
   MetaAllocatorApprovalStarted,
   MetaAllocatorApprovalCompleted,
+  DatacapRefreshRequested,
 } from '@src/domain/application/application.events'
 import { TYPES } from '@src/types'
 import {
@@ -47,6 +48,7 @@ import {
   RKHApprovalsUpdatedEventHandler,
   MetaAllocatorApprovalStartedEventHandler,
   MetaAllocatorApprovalCompletedEventHandler,
+  DatacapRefreshRequestedEventHandler,
 } from './application/events/handlers'
 import { UpdateRKHApprovalsCommandHandler } from './application/use-cases/update-rkh-approvals/update-rkh-approvals.command'
 import { SubmitGovernanceReviewResultCommandHandler } from './application/use-cases/submit-governance-review/submit-governance-review.command'
@@ -98,6 +100,8 @@ export const initialize = async (): Promise<Container> => {
   
   container.bind<IEventHandler<MetaAllocatorApprovalStarted>>(TYPES.Event).to(MetaAllocatorApprovalStartedEventHandler)
   container.bind<IEventHandler<MetaAllocatorApprovalCompleted>>(TYPES.Event).to(MetaAllocatorApprovalCompletedEventHandler)
+
+  container.bind<IEventHandler<DatacapRefreshRequested>>(TYPES.Event).to(DatacapRefreshRequestedEventHandler)
 
   // Commands
   container.bind<ICommandHandler<ICommand>>(TYPES.CommandHandler).to(CreateApplicationCommandHandler)

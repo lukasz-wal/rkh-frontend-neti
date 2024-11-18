@@ -24,7 +24,11 @@ export class DatacapAllocatorRepository
 
   async save(aggregateRoot: DatacapAllocator, expectedVersion: number) {
     if (aggregateRoot.getUncommittedEvents().length > 0) {
-      this.pullRequestService.updatePullRequest(aggregateRoot)
+      try {
+        this.pullRequestService.updatePullRequest(aggregateRoot)
+      } catch (error) {
+        console.log('error updating pull request', error)
+      }
     }
     return super.save(aggregateRoot, expectedVersion)
   }

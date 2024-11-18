@@ -4,7 +4,7 @@ import { inject, injectable } from 'inversify'
 import { ILotusClient } from '@src/infrastructure/clients/lotus'
 import { TYPES } from '@src/types'
 import { PullRequestService } from '@src/application/services/pull-request.service'
-import { ApplicationInstruction, DatacapAllocator, IDatacapAllocatorRepository } from '@src/domain/application/application'
+import { DatacapAllocator, IDatacapAllocatorRepository } from '@src/domain/application/application'
 
 type Result<T> = {
   success: boolean
@@ -31,7 +31,6 @@ export class CreateApplicationCommand extends Command {
   public readonly allocationDataTypes: string[]
   public readonly allocationProjected12MonthsUsage: string
   public readonly allocationBookkeepingRepo: string
-  public readonly applicationInstructions: ApplicationInstruction[]
   public readonly type: string
   public readonly datacap: number
   public readonly allocatorMultisigAddress?: string
@@ -90,7 +89,6 @@ export class CreateApplicationCommandHandler implements ICommandHandler<CreateAp
         allocationDataTypes: command.allocationDataTypes,
         allocationProjected12MonthsUsage: command.allocationProjected12MonthsUsage,
         allocationBookkeepingRepo: command.allocationBookkeepingRepo,
-        applicationInstructions: command.applicationInstructions || [],
         type: command.type,
         datacap: command.datacap,
       })
@@ -101,9 +99,12 @@ export class CreateApplicationCommandHandler implements ICommandHandler<CreateAp
       }
       this.logger.info("Creating pull request...")
 
-      const pullRequest = await this.pullRequestService.createPullRequest(allocator)
-      allocator.setApplicationPullRequest(pullRequest.number, pullRequest.url, pullRequest.commentId)
-
+      try {
+        const pullRequest = await this.pullRequestService.createPullRequest(allocator)
+        allocator.setApplicationPullRequest(pullRequest.number, pullRequest.url, pullRequest.commentId)
+      } catch (error) {
+        this.logger.error('Unable to create application pull request. The application already exists.')
+      }
       await this.repository.save(allocator, -1)
 
       return {

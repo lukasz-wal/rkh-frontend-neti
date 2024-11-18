@@ -23,7 +23,7 @@ export class PullRequestService {
   ) {}
 
   async createPullRequest(application: DatacapAllocator): Promise<PullRequest> {
-    const branchName = `filecoin-plus-bot/application/${application.guid}`
+    const branchName = `filecoin-plus-bot/${application.guid}/${application.grantCycle}`
     this._logger.debug(`Creating branch: ${branchName}`)
 
     try {
@@ -40,7 +40,7 @@ export class PullRequestService {
       }
     }
     let title: string
-    if (application.refresh) {
+    if (application.applicationInstructions.length > 1) {
       title = `Refresh allocator: ${application.applicantName}`
     } else {
       title = `Add new allocator: ${application.applicantName}`
@@ -85,15 +85,23 @@ export class PullRequestService {
     } else {
       title = `Add new allocator: ${application.applicantName}`
     }
+
     await this._githubClient.updatePullRequest(
       config.GITHUB_OWNER,
       config.GITHUB_REPO,
       application.applicationPullRequest.prNumber,
       title,
       this._messageService.generatePullRequestMessage(application),
+      [
+        {
+          path: `allocators/${application.guid}.json`,
+          content: JSON.stringify(mapApplicationToPullRequestFile(application), null, 2),
+        },
+      ],
     )
 
     this._logger.debug(`Updating pull request comment: ${application.applicationPullRequest.commentId}`)
+    console.log(application.applicationInstructions)
     await this._githubClient.updatePullRequestComment(
       config.GITHUB_OWNER,
       config.GITHUB_REPO,

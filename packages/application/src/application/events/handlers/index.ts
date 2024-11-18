@@ -18,6 +18,7 @@ import {
   RKHApprovalsUpdated,
   MetaAllocatorApprovalStarted,
   MetaAllocatorApprovalCompleted,
+  DatacapRefreshRequested,
 } from '@src/domain/application/application.events'
 import { TYPES } from '@src/types'
 import { IApplicationDetailsRepository } from '@src/infrastructure/respositories/application-details.repository'
@@ -325,6 +326,36 @@ export class DatacapAllocationUpdatedEventHandler implements IEventHandler<Datac
       id: event.aggregateId,
       status: ApplicationStatus.APPROVED,
       datacap: event.datacap,
+    })
+  }
+}
+
+@injectable()
+export class DatacapRefreshRequestedEventHandler implements IEventHandler<DatacapRefreshRequested> {
+  public event = DatacapRefreshRequested.name
+
+  constructor(
+    @inject(TYPES.ApplicationDetailsRepository) private readonly _repository: IApplicationDetailsRepository,
+  ) { }
+
+  async handle(event: DatacapRefreshRequested) {
+    console.log('DatacapRefreshRequestedEventHandler', event)
+
+    const currentDetails = await this._repository.getById(event.aggregateId)
+    const updatedInstructions = [
+      ...(currentDetails.applicationInstructions || []),
+      {
+        method: event.method,
+        amount: event.amount,
+        status: ApplicationInstructionStatus.PENDING,
+        timestamp: event.timestamp.getTime(),
+      }
+    ]
+
+    await this._repository.update({
+      id: event.aggregateId,
+      status: ApplicationStatus.GOVERNANCE_REVIEW_PHASE,
+      applicationInstructions: updatedInstructions,
     })
   }
 }

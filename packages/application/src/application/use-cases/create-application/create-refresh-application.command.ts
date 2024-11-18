@@ -18,7 +18,6 @@ export class CreateRefreshApplicationCommand extends Command {
         public readonly applicationId: string,
     ) {
         super()
-        console.log("Initialized CreateRefreshApplicationCommand...")
     }
 }
 
@@ -66,15 +65,17 @@ export class CreateRefreshApplicationCommandHandler implements ICommandHandler<C
     }
     try {
       this.logger.info("Creating refresh application pull request...")      
-      allocator.applicationStatus = ApplicationStatus.GOVERNANCE_REVIEW_PHASE
       // TODO: Emit RefreshSubmssionStarted event => logs to database
       // allocator.applyGovernanceReviewStarted(new GovernanceReviewStarted(allocator.guid))
 
       // NOTE: A 'refresh' flag was added to allocator. If 'true' it enables createPullRequest
       // and updatePullRequest to set the correct title.
       allocator.refresh = true // Set refresh flag
+      
       const pullRequest = await this.pullRequestService.createPullRequest(allocator)
       allocator.setApplicationPullRequest(pullRequest.number, pullRequest.url, pullRequest.commentId, allocator.refresh)
+      allocator.requestDatacapRefresh()
+      
       await this.repository.save(allocator, -1)
       allocator.refresh = false  // Reset refresh flag
 

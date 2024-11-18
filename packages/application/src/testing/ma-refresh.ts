@@ -11,7 +11,6 @@ import { ILotusClient } from '@src/infrastructure/clients/lotus'
 import { TYPES } from '@src/types'
 import { methods as m } from '@keyko-io/filecoin-verifier-tools'
 import { initialize } from '@src/startup'
-import { peekCollection, fetchDocuments } from './utils/mongo'
 import {
     fetchAllowanceChangedEvents,
     fetchDatacapAllocatedEvents,

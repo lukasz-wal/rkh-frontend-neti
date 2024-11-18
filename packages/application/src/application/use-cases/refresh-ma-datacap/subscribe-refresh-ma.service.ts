@@ -203,7 +203,6 @@ export async function fetchCurrentDatacap(contractAddress: string, allocatorAddr
     const allowance = await contract.allowance(allocatorAddress)
     const allowanceNumber = allowance.toNumber()
     return allowanceNumber
-
 }
 
 
@@ -312,10 +311,10 @@ export async function submitRefreshMetaAllocatorCommand(
         return
     }
     // Ensure status is APPROVED
-    if (applicationDetails.status !== 'APPROVED') {
-        logger.debug(`Application status not APPROVED for allocator: ${allocatorAddress}`)
-        return
-    }
+    // if (applicationDetails.status !== 'APPROVED') {
+    //     logger.debug(`Application status not APPROVED for allocator: ${allocatorAddress}`)
+    //     return
+    // }
     // Ensure applicationInstruction is defined
     if (!applicationDetails.applicationInstructions) {
         logger.debug(`Missing applicaitonInstruction for allocator: ${allocatorAddress}`)
@@ -382,6 +381,7 @@ export async function subscribeRefreshMetaAllocator(container: Container) {
         const datacapMap = await updateDatacapInfo('filecoin-plus', 'applicationDetails', lastBlock + 1)
 
         for (let [allocatorAddress, allocatorData] of datacapMap) {
+            console.log(`Checking allocator: ${allocatorAddress}`)
             await submitRefreshMetaAllocatorCommand(
                 allocatorAddress,
                 allocatorData.datacapInfo,
