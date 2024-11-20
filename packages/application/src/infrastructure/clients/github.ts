@@ -36,6 +36,7 @@ export interface IGithubClient {
     pullNumber: number,
     title?: string,
     body?: string,
+    files?: { path: string; content: string }[],
   ): Promise<PullRequest>
 
   closePullRequest(owner: string, repo: string, pullNumber: number): Promise<void>
@@ -147,14 +148,7 @@ export class GithubClient implements IGithubClient {
   ): Promise<PullRequest> {
     // Create or update files in the branch
     for (const file of files) {
-      await this.octokit.repos.createOrUpdateFileContents({
-        owner,
-        repo,
-        path: file.path,
-        message: `Add/update ${file.path}`,
-        content: Buffer.from(file.content).toString('base64'),
-        branch: head,
-      })
+      await this.createOrUpdateFile(owner, repo, file.path, file.content, head)
     }
 
     // Create the pull request
@@ -176,7 +170,20 @@ export class GithubClient implements IGithubClient {
     pullNumber: number,
     title?: string,
     body?: string,
+    files?: { path: string; content: string }[],
   ): Promise<PullRequest> {
+    // Update files if provided
+    if (files) {
+      // Get the PR details to get the head branch
+      const pr = await this.getPullRequest(owner, repo, pullNumber)
+      const headBranch = pr.head.ref
+
+      // Update each file in the branch
+      for (const file of files) {
+        await this.createOrUpdateFile(owner, repo, file.path, file.content, headBranch)
+      }
+    }
+
     const updateParams: {
       owner: string
       repo: string
@@ -318,5 +325,33 @@ export class GithubClient implements IGithubClient {
       console.error(`Error fetching file content: ${error.message}`)
       throw error
     }
+  }
+
+  async createOrUpdateFile(
+    owner: string,
+    repo: string,
+    path: string,
+    content: string,
+    branch: string
+  ): Promise<void> {
+    let sha: string | undefined
+
+    try {
+      // Try to get existing file to obtain its SHA
+      const existingFile = await this.getFile(owner, repo, path, branch)
+      sha = existingFile.sha
+    } catch (error) {
+      // File doesn't exist yet, which is fine
+    }
+
+    await this.octokit.repos.createOrUpdateFileContents({
+      owner,
+      repo,
+      path,
+      message: `Add/update ${path}`,
+      content: Buffer.from(content).toString('base64'),
+      branch,
+      ...(sha ? { sha } : {}), // Include SHA only if file exists
+    })
   }
 }

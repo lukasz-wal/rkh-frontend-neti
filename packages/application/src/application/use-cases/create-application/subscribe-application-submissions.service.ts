@@ -6,7 +6,7 @@ import { IAirtableClient } from '@src/infrastructure/clients/airtable'
 import { TYPES } from '@src/types'
 import config from '@src/config'
 
-const MIN_APPLICATION_NUMBER = 1000
+const MIN_APPLICATION_NUMBER = 1001
 const MAX_APPLICATION_NUMBER = 9999
 
 export async function subscribeApplicationSubmissions(container: Container) {
@@ -78,4 +78,8 @@ function mapRecordToCommand(record: any): CreateApplicationCommand {
 
     allocatorMultisigAddress: record.fields['Multisig Address'] as string | undefined,
   })
+}
+
+export function mapRecordToCommandTest(record: any): CreateApplicationCommand {
+  return mapRecordToCommand(record);
 }

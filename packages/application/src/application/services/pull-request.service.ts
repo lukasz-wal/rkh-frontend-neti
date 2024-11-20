@@ -23,7 +23,7 @@ export class PullRequestService {
   ) {}
 
   async createPullRequest(application: DatacapAllocator): Promise<PullRequest> {
-    const branchName = `filecoin-plus-bot/application/${application.guid}`
+    const branchName = `filecoin-plus-bot/${application.guid}/${application.grantCycle}`
     this._logger.debug(`Creating branch: ${branchName}`)
 
     try {
@@ -39,12 +39,18 @@ export class PullRequestService {
         throw error
       }
     }
-
+    let title: string
+    if (application.applicationInstructions.length > 1) {
+      title = `Refresh allocator: ${application.applicantName}`
+    } else {
+      title = `Add new allocator: ${application.applicantName}`
+    }
     this._logger.debug(`Creating pull request for application: ${application.guid}`)
+    this._logger.debug(`Pull request title: ${title}`)
     const pullRequest = await this._githubClient.createPullRequest(
       config.GITHUB_OWNER,
       config.GITHUB_REPO,
-      `Add new allocator: ${application.applicantName}`,
+      title,
       this._messageService.generatePullRequestMessage(application),
       branchName,
       'main',
@@ -55,7 +61,6 @@ export class PullRequestService {
         },
       ],
     )
-
     this._logger.debug(`Creating comment on pull request: ${pullRequest.number}`)
     const prComment = await this._githubClient.createPullRequestComment(
       config.GITHUB_OWNER,
@@ -74,15 +79,29 @@ export class PullRequestService {
 
   async updatePullRequest(application: DatacapAllocator): Promise<void> {
     this._logger.debug(`Updating pull request message: ${application.applicationPullRequest.prNumber}`)
+    let title: string
+    if (application.refresh) {
+      title = `Refresh allocator: ${application.applicantName}`
+    } else {
+      title = `Add new allocator: ${application.applicantName}`
+    }
+
     await this._githubClient.updatePullRequest(
       config.GITHUB_OWNER,
       config.GITHUB_REPO,
       application.applicationPullRequest.prNumber,
-      `Add new allocator: ${application.applicantName}`,
+      title,
       this._messageService.generatePullRequestMessage(application),
+      [
+        {
+          path: `allocators/${application.guid}.json`,
+          content: JSON.stringify(mapApplicationToPullRequestFile(application), null, 2),
+        },
+      ],
     )
 
     this._logger.debug(`Updating pull request comment: ${application.applicationPullRequest.commentId}`)
+    console.log(application.applicationInstructions)
     await this._githubClient.updatePullRequestComment(
       config.GITHUB_OWNER,
       config.GITHUB_REPO,

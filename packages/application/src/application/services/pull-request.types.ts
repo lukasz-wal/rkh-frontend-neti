@@ -1,4 +1,4 @@
-import { DatacapAllocator } from '@src/domain/application/application'
+import { ApplicationInstruction, DatacapAllocator } from '@src/domain/application/application'
 
 export type ApplicationPullRequestFile = {
   application_number: number
@@ -26,6 +26,7 @@ export type ApplicationPullRequestFile = {
     slack: string
     github_user: string
   }
+  application_instructions: ApplicationInstruction[],
   pathway_addresses?: {
     msig: string
     signer: string[]
@@ -59,6 +60,10 @@ export function mapApplicationToPullRequestFile(application: DatacapAllocator): 
       slack: application.applicantSlackHandle,
       github_user: application.applicantGithubHandle,
     },
+    application_instructions: application.applicationInstructions.map(instruction => ({
+      method: instruction.method,
+      amount: instruction.amount,
+    })) || [],
     pathway_addresses: application.allocatorMultisigAddress
       ? {
           msig: application.allocatorMultisigAddress,

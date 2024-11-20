@@ -28,7 +28,7 @@ export async function subscribeApplicationEdits(container: Container) {
             logger.warn(`No GitHub PR found for application: ${application.id}`)
             continue
           }
-          console.log(application.applicationDetails?.pullRequestUrl)
+          logger.info(application.applicationDetails?.pullRequestUrl)
 
           // Fetch the PR details
           const prDetails = await githubClient.getPullRequest(
@@ -79,6 +79,7 @@ export async function subscribeApplicationEdits(container: Container) {
             allocationDataTypes: applicationPullRequestFile.application.data_types,
             allocationProjected12MonthsUsage: applicationPullRequestFile.application['12m_requested'],
             allocationBookkeepingRepo: applicationPullRequestFile.application.allocation_bookkeeping,
+            applicationInstructions: applicationPullRequestFile.application_instructions,
           })
           await commandBus.send(command)
         } catch (error: any) {

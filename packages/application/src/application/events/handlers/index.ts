@@ -16,10 +16,13 @@ import {
   RKHApprovalCompleted,
   RKHApprovalStarted,
   RKHApprovalsUpdated,
+  MetaAllocatorApprovalStarted,
+  MetaAllocatorApprovalCompleted,
+  DatacapRefreshRequested,
 } from '@src/domain/application/application.events'
 import { TYPES } from '@src/types'
 import { IApplicationDetailsRepository } from '@src/infrastructure/respositories/application-details.repository'
-import { ApplicationStatus } from '@src/domain/application/application'
+import { ApplicationStatus, ApplicationAllocator, ApplicationInstructionStatus, ApplicationInstruction } from '@src/domain/application/application'
 import { ApplicationDetails } from '@src/infrastructure/respositories/application-details.types'
 
 @injectable()
@@ -39,6 +42,12 @@ export class ApplicationEditedEventHandler implements IEventHandler<ApplicationE
       address: event.applicantAddress,
       github: event.applicantGithubHandle,
       location: event.applicantLocation,
+      // xDONE
+      applicationInstructions: event.applicationInstructions
+      // applicationInstruction: {
+      //   method: event.applicationInstructionMethod,
+      //   amount: event.applicationInstructionAmount,
+      // }
     } as Partial<ApplicationDetails>
 
     if (event.standardizedAllocations?.length) {
@@ -60,7 +69,7 @@ export class ApplicationPullRequestUpdatedEventHandler implements IEventHandler<
   async handle(event: ApplicationPullRequestUpdated): Promise<void> {
     await this._repository.update({
       id: event.aggregateId,
-      status: ApplicationStatus.KYC_PHASE,
+      status: event.status || ApplicationStatus.KYC_PHASE,
       applicationDetails: {
         pullRequestUrl: event.prUrl,
         pullRequestNumber: event.prNumber,
@@ -91,7 +100,7 @@ export class KYCStartedEventHandler implements IEventHandler<KYCStarted> {
 
   constructor(
     @inject(TYPES.ApplicationDetailsRepository) private readonly _repository: IApplicationDetailsRepository,
-  ) {}
+  ) { }
 
   async handle(event: KYCStarted): Promise<void> {
     this._repository.update({
@@ -107,7 +116,7 @@ export class KYCApprovedEventHandler implements IEventHandler<KYCApproved> {
 
   constructor(
     @inject(TYPES.ApplicationDetailsRepository) private readonly _repository: IApplicationDetailsRepository,
-  ) {}
+  ) { }
 
   async handle(event: KYCApproved): Promise<void> {
     await this._repository.update({
@@ -123,7 +132,7 @@ export class KYCRejectedEventHandler implements IEventHandler<KYCRejected> {
 
   constructor(
     @inject(TYPES.ApplicationDetailsRepository) private readonly _repository: IApplicationDetailsRepository,
-  ) {}
+  ) { }
 
   async handle(event: KYCRejected): Promise<void> {
     await this._repository.update({
@@ -139,7 +148,7 @@ export class GovernanceReviewStartedEventHandler implements IEventHandler<Govern
 
   constructor(
     @inject(TYPES.ApplicationDetailsRepository) private readonly _repository: IApplicationDetailsRepository,
-  ) {}
+  ) { }
 
   async handle(event: GovernanceReviewStarted): Promise<void> {
     await this._repository.update({
@@ -153,15 +162,23 @@ export class GovernanceReviewStartedEventHandler implements IEventHandler<Govern
 export class GovernanceReviewApprovedEventHandler implements IEventHandler<GovernanceReviewApproved> {
   public event = GovernanceReviewApproved.name
 
-  constructor(@inject(TYPES.Db) private readonly _db: Db) {}
+  constructor(@inject(TYPES.Db) private readonly _db: Db) { }
 
   async handle(event: GovernanceReviewApproved): Promise<void> {
-    // Update allocator status in the database
+    const applicationInstructions = event.applicationInstructions
+    const lastInstruction = applicationInstructions[applicationInstructions.length - 1]
+    const lastInstructionMethod = lastInstruction.method
+
+    const status = lastInstructionMethod === ApplicationAllocator.META_ALLOCATOR
+      ? ApplicationStatus.META_APPROVAL_PHASE
+      : ApplicationStatus.RKH_APPROVAL_PHASE
+
     await this._db.collection('applicationDetails').updateOne(
       { id: event.aggregateId },
       {
         $set: {
-          status: ApplicationStatus.RKH_APPROVAL_PHASE,
+          status: status,
+          applicationInstructions: applicationInstructions,
         },
       },
     )
@@ -172,7 +189,7 @@ export class GovernanceReviewApprovedEventHandler implements IEventHandler<Gover
 export class GovernanceReviewRejectedEventHandler implements IEventHandler<GovernanceReviewRejected> {
   public event = GovernanceReviewRejected.name
 
-  constructor(@inject(TYPES.Db) private readonly _db: Db) {}
+  constructor(@inject(TYPES.Db) private readonly _db: Db) { }
 
   async handle(event: GovernanceReviewRejected): Promise<void> {
     // Update allocator status in the database
@@ -181,10 +198,54 @@ export class GovernanceReviewRejectedEventHandler implements IEventHandler<Gover
       {
         $set: {
           status: ApplicationStatus.REJECTED,
+          applicationInstructions: event.applicationInstructions,
         },
       },
     )
   }
+}
+
+@injectable()
+export class MetaAllocatorApprovalStartedEventHandler implements IEventHandler<MetaAllocatorApprovalStarted> {
+  public event = MetaAllocatorApprovalStarted.name
+
+  constructor(
+    @inject(TYPES.ApplicationDetailsRepository) private readonly _repository: IApplicationDetailsRepository,
+  ) {}
+
+  async handle(event: MetaAllocatorApprovalStarted): Promise<void> {
+    console.log('MetaAllocatorApprovalStartedEventHandler', event)
+    await this._repository.update({
+      id: event.aggregateId,
+      status: ApplicationStatus.META_APPROVAL_PHASE,
+    })
+  }
+
+}
+
+@injectable()
+export class MetaAllocatorApprovalCompletedEventHandler implements IEventHandler<MetaAllocatorApprovalCompleted> {
+  public event = MetaAllocatorApprovalCompleted.name
+
+  constructor(@inject(TYPES.Db) private readonly _db: Db) { }
+
+  async handle(event: MetaAllocatorApprovalCompleted) {
+    console.log('MetaAllocatorApprovalCompletedEventHandler', event)
+    await this._db.collection('applicationDetails').updateOne(
+      { id: event.aggregateId },
+      {
+        $set: {
+          status: ApplicationStatus.APPROVED,
+          applicationInstructions: event.applicationInstructions,
+          metaAllocator: {
+            blockNumber: event.blockNumber,
+            txHash: event.txHash,
+          },
+        },
+      },
+    )
+  }
+
 }
 
 @injectable()
@@ -193,7 +254,7 @@ export class RKHApprovalStartedEventHandler implements IEventHandler<RKHApproval
 
   constructor(
     @inject(TYPES.ApplicationDetailsRepository) private readonly _repository: IApplicationDetailsRepository,
-  ) {}
+  ) { }
 
   async handle(event: RKHApprovalStarted): Promise<void> {
     await this._repository.update({
@@ -213,7 +274,7 @@ export class RKHApprovalsUpdatedEventHandler implements IEventHandler<RKHApprova
 
   constructor(
     @inject(TYPES.ApplicationDetailsRepository) private readonly _repository: IApplicationDetailsRepository,
-  ) {}
+  ) { }
 
   async handle(event: RKHApprovalsUpdated) {
     console.log('RKHApprovalsUpdatedEventHandler', event)
@@ -234,7 +295,7 @@ export class RKHApprovalsUpdatedEventHandler implements IEventHandler<RKHApprova
 export class RKHApprovalCompletedEventHandler implements IEventHandler<RKHApprovalCompleted> {
   public event = RKHApprovalCompleted.name
 
-  constructor(@inject(TYPES.Db) private readonly _db: Db) {}
+  constructor(@inject(TYPES.Db) private readonly _db: Db) { }
 
   async handle(event: RKHApprovalCompleted) {
     // Update allocator status in the database
@@ -243,6 +304,7 @@ export class RKHApprovalCompletedEventHandler implements IEventHandler<RKHApprov
       {
         $set: {
           status: ApplicationStatus.APPROVED,
+          applicationInstructions: event.applicationInstructions,
         },
       },
     )
@@ -255,7 +317,7 @@ export class DatacapAllocationUpdatedEventHandler implements IEventHandler<Datac
 
   constructor(
     @inject(TYPES.ApplicationDetailsRepository) private readonly _repository: IApplicationDetailsRepository,
-  ) {}
+  ) { }
 
   async handle(event: DatacapAllocationUpdated) {
     console.log('DatacapAllocationUpdatedEventHandler', event)
@@ -264,6 +326,36 @@ export class DatacapAllocationUpdatedEventHandler implements IEventHandler<Datac
       id: event.aggregateId,
       status: ApplicationStatus.APPROVED,
       datacap: event.datacap,
+    })
+  }
+}
+
+@injectable()
+export class DatacapRefreshRequestedEventHandler implements IEventHandler<DatacapRefreshRequested> {
+  public event = DatacapRefreshRequested.name
+
+  constructor(
+    @inject(TYPES.ApplicationDetailsRepository) private readonly _repository: IApplicationDetailsRepository,
+  ) { }
+
+  async handle(event: DatacapRefreshRequested) {
+    console.log('DatacapRefreshRequestedEventHandler', event)
+
+    const currentDetails = await this._repository.getById(event.aggregateId)
+    const updatedInstructions = [
+      ...(currentDetails.applicationInstructions || []),
+      {
+        method: event.method,
+        amount: event.amount,
+        status: ApplicationInstructionStatus.PENDING,
+        timestamp: event.timestamp.getTime(),
+      }
+    ]
+
+    await this._repository.update({
+      id: event.aggregateId,
+      status: ApplicationStatus.GOVERNANCE_REVIEW_PHASE,
+      applicationInstructions: updatedInstructions,
     })
   }
 }

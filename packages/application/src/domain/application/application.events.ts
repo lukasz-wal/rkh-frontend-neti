@@ -1,5 +1,6 @@
 import { Event } from '@filecoin-plus/core'
 import { KYCApprovedData, KYCRejectedData } from '@src/domain/types'
+import { ApplicationInstruction, ApplicationStatus } from './application'
 
 export class ApplicationCreated extends Event {
   eventName = ApplicationCreated.name
@@ -57,6 +58,7 @@ export class ApplicationEdited extends Event {
     public dataTypes?: string[],
     public projected12MonthsUsage?: string,
     public allocationBookkeepingRepo?: string,
+    public applicationInstructions?: ApplicationInstruction[],
   ) {
     super(allocatorId)
     this.timestamp = new Date()
@@ -86,15 +88,18 @@ export class ApplicationPullRequestUpdated extends Event {
   aggregateName = 'allocator'
 
   public timestamp: Date
+  public status?: ApplicationStatus
 
   constructor(
     allocatorId: string,
     public prNumber: number,
     public prUrl: string,
     public commentId: number,
+    status?: ApplicationStatus,
   ) {
     super(allocatorId)
     this.timestamp = new Date()
+    this.status = status
   }
 }
 
@@ -158,7 +163,10 @@ export class GovernanceReviewApproved extends Event {
 
   public timestamp: Date
 
-  constructor(allocatorId: string) {
+  constructor(
+    allocatorId: string,
+    public applicationInstructions: ApplicationInstruction[],
+  ) {
     super(allocatorId)
   }
 }
@@ -169,7 +177,10 @@ export class GovernanceReviewRejected extends Event {
 
   public timestamp: Date
 
-  constructor(allocatorId: string) {
+  constructor(
+    allocatorId: string,
+    public applicationInstructions: ApplicationInstruction[],
+  ) {
     super(allocatorId)
   }
 }
@@ -190,6 +201,38 @@ export class RKHApprovalStarted extends Event {
     this.timestamp = new Date()
   }
 }
+
+export class MetaAllocatorApprovalStarted extends Event {
+  eventName = MetaAllocatorApprovalStarted.name
+  aggregateName = 'allocator'
+  
+  public timestamp: Date
+
+  constructor(
+    allocatorId: string,
+  ) {
+    super(allocatorId)
+    this.timestamp = new Date()
+  }
+}
+
+export class MetaAllocatorApprovalCompleted extends Event {
+  eventName = MetaAllocatorApprovalCompleted.name
+  aggregateName = 'allocator'
+
+  public timestamp: Date
+
+  constructor(
+    allocatorId: string,
+    public blockNumber: number,
+    public txHash: string,
+    public applicationInstructions: ApplicationInstruction[],
+  ) {
+    super(allocatorId)
+    this.timestamp = new Date()
+  }
+}
+
 
 export class RKHApprovalsUpdated extends Event {
   eventName = RKHApprovalsUpdated.name
@@ -214,7 +257,10 @@ export class RKHApprovalCompleted extends Event {
 
   public timestamp: Date
 
-  constructor(allocatorId: string) {
+  constructor(
+    allocatorId: string,
+    public applicationInstructions: ApplicationInstruction[],
+  ) {
     super(allocatorId)
     this.timestamp = new Date()
   }
@@ -229,6 +275,22 @@ export class DatacapAllocationUpdated extends Event {
   constructor(
     allocatorId: string,
     public datacap: number,
+  ) {
+    super(allocatorId)
+    this.timestamp = new Date()
+  }
+}
+
+export class DatacapRefreshRequested extends Event {
+  eventName = DatacapRefreshRequested.name
+  aggregateName = 'allocator'
+
+  public timestamp: Date
+
+  constructor(
+    allocatorId: string,
+    public amount: number,
+    public method: string,
   ) {
     super(allocatorId)
     this.timestamp = new Date()

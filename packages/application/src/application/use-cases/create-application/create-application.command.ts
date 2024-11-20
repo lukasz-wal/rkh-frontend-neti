@@ -15,7 +15,6 @@ type Result<T> = {
 export class CreateApplicationCommand extends Command {
   public readonly applicationId: string
   public readonly applicationNumber: number
-
   public readonly applicantName: string
   public readonly applicantLocation: string
   public readonly applicantGithubHandle: string
@@ -23,19 +22,17 @@ export class CreateApplicationCommand extends Command {
   public readonly applicantAddress: string
   public readonly applicantOrgName: string
   public readonly applicantOrgAddresses: string[]
-
   public readonly allocationStandardizedAllocations: string[]
   public readonly allocationTargetClients: string[]
   public readonly allocationRequiredReplicas: string
   public readonly allocationRequiredStorageProviders: string
+  public readonly allocationTooallocationTargetClientsling: string[]
   public readonly allocationTooling: string[]
   public readonly allocationDataTypes: string[]
   public readonly allocationProjected12MonthsUsage: string
   public readonly allocationBookkeepingRepo: string
-
   public readonly type: string
   public readonly datacap: number
-
   public readonly allocatorMultisigAddress?: string
 
   /**
@@ -84,7 +81,6 @@ export class CreateApplicationCommandHandler implements ICommandHandler<CreateAp
         applicantAddress: command.applicantAddress,
         applicantOrgName: command.applicantOrgName,
         applicantOrgAddresses: command.applicantOrgAddresses,
-
         allocationStandardizedAllocations: command.allocationStandardizedAllocations,
         allocationTargetClients: command.allocationTargetClients,
         allocationRequiredReplicas: command.allocationRequiredReplicas,
@@ -101,10 +97,14 @@ export class CreateApplicationCommandHandler implements ICommandHandler<CreateAp
         const actorId = await this.lotusClient.getActorId(command.allocatorMultisigAddress)
         allocator.setAllocatorMultisig(actorId, command.allocatorMultisigAddress, 2, ['s1', 's2'])
       }
+      this.logger.info("Creating pull request...")
 
-      const pullRequest = await this.pullRequestService.createPullRequest(allocator)
-      allocator.setApplicationPullRequest(pullRequest.number, pullRequest.url, pullRequest.commentId)
-
+      try {
+        const pullRequest = await this.pullRequestService.createPullRequest(allocator)
+        allocator.setApplicationPullRequest(pullRequest.number, pullRequest.url, pullRequest.commentId)
+      } catch (error) {
+        this.logger.error('Unable to create application pull request. The application already exists.')
+      }
       await this.repository.save(allocator, -1)
 
       return {

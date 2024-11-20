@@ -27,6 +27,9 @@ import {
   RKHApprovalCompleted,
   RKHApprovalStarted,
   RKHApprovalsUpdated,
+  MetaAllocatorApprovalStarted,
+  MetaAllocatorApprovalCompleted,
+  DatacapRefreshRequested,
 } from '@src/domain/application/application.events'
 import { TYPES } from '@src/types'
 import {
@@ -43,6 +46,9 @@ import {
   RKHApprovalCompletedEventHandler,
   RKHApprovalStartedEventHandler,
   RKHApprovalsUpdatedEventHandler,
+  MetaAllocatorApprovalStartedEventHandler,
+  MetaAllocatorApprovalCompletedEventHandler,
+  DatacapRefreshRequestedEventHandler,
 } from './application/events/handlers'
 import { UpdateRKHApprovalsCommandHandler } from './application/use-cases/update-rkh-approvals/update-rkh-approvals.command'
 import { SubmitGovernanceReviewResultCommandHandler } from './application/use-cases/submit-governance-review/submit-governance-review.command'
@@ -54,6 +60,9 @@ import { SubmitKYCResultCommandHandler } from './application/use-cases/submit-ky
 import { GetApplicationsQueryHandler } from './application/queries/get-applications/get-applications.query'
 import { EditApplicationCommandHandler } from './application/use-cases/edit-application/edit-application.command'
 import { UpdateDatacapAllocationCommandHandler } from './application/use-cases/update-datacap-allocation/update-datacap-allocation'
+import { UpdateMetaAllocatorApprovalsCommandHandler } from './application/use-cases/update-ma-approvals/update-ma-approvals.command'
+import { CreateRefreshApplicationCommandHandler } from './application/use-cases/create-application/create-refresh-application.command'
+
 
 export const initialize = async (): Promise<Container> => {
   const container = new Container()
@@ -88,15 +97,22 @@ export const initialize = async (): Promise<Container> => {
   container.bind<IEventHandler<RKHApprovalsUpdated>>(TYPES.Event).to(RKHApprovalsUpdatedEventHandler)
   container.bind<IEventHandler<RKHApprovalCompleted>>(TYPES.Event).to(RKHApprovalCompletedEventHandler)
   container.bind<IEventHandler<DatacapAllocationUpdated>>(TYPES.Event).to(DatacapAllocationUpdatedEventHandler)
+  
+  container.bind<IEventHandler<MetaAllocatorApprovalStarted>>(TYPES.Event).to(MetaAllocatorApprovalStartedEventHandler)
+  container.bind<IEventHandler<MetaAllocatorApprovalCompleted>>(TYPES.Event).to(MetaAllocatorApprovalCompletedEventHandler)
+
+  container.bind<IEventHandler<DatacapRefreshRequested>>(TYPES.Event).to(DatacapRefreshRequestedEventHandler)
 
   // Commands
   container.bind<ICommandHandler<ICommand>>(TYPES.CommandHandler).to(CreateApplicationCommandHandler)
+  container.bind<ICommandHandler<ICommand>>(TYPES.CommandHandler).to(CreateRefreshApplicationCommandHandler)
   container.bind<ICommandHandler<ICommand>>(TYPES.CommandHandler).to(EditApplicationCommandHandler)
-
   container.bind<ICommandHandler<ICommand>>(TYPES.CommandHandler).to(SubmitKYCResultCommandHandler)
   container.bind<ICommandHandler<ICommand>>(TYPES.CommandHandler).to(SubmitGovernanceReviewResultCommandHandler)
   container.bind<ICommandHandler<ICommand>>(TYPES.CommandHandler).to(UpdateRKHApprovalsCommandHandler)
   container.bind<ICommandHandler<ICommand>>(TYPES.CommandHandler).to(UpdateDatacapAllocationCommandHandler)
+  container.bind<ICommandHandler<ICommand>>(TYPES.CommandHandler).to(UpdateMetaAllocatorApprovalsCommandHandler)
+
   const commandBus = container.get<ICommandBus>(TYPES.CommandBus)
   container.getAll<ICommandHandler<ICommand>>(TYPES.CommandHandler).forEach((handler: ICommandHandler<ICommand>) => {
     commandBus.registerHandler(handler)
