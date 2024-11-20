@@ -3,15 +3,16 @@ import { createContext } from "react";
 import { Account } from "@/types/account";
 import { Connector } from "@/types/connector";
 
-export interface AccountContextType {
+interface AccountContextType {
   account: Account | null;
+  connectors: { [key: string]: Connector };
   connect: (connectorName: string, accountIndex?: number) => Promise<void>;
   disconnect: () => Promise<void>;
-  connectors: { [key: string]: Connector };
+  loadPersistedAccount: () => Promise<void>;
+
+  // Root Key Holder
   proposeAddVerifier: (verifierAddress: string, datacap: string) => Promise<string>;
   acceptVerifierProposal: (verifierAddress: string, datacap: string, fromAccount: string, transactionId: number) => Promise<string>;
-  // Add a new method to load the persisted account
-  loadPersistedAccount: () => Promise<void>;
 }
 
 export const AccountContext = createContext<AccountContextType | undefined>(undefined);

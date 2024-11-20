@@ -1,10 +1,9 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
-
 import "./globals.css";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { AccountProvider } from "@/providers/AccountProvider";
+import { Providers } from "./providers";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -12,7 +11,6 @@ export const metadata: Metadata = {
   title: "Fil+",
   description: "A dashboard managing your Fil+ applications",
 };
-
 
 export default function RootLayout({
   children,
@@ -22,10 +20,10 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={inter.className}>
-        <AccountProvider>
+        <Providers>
           <TooltipProvider>{children}</TooltipProvider>
           <Toaster />
-        </AccountProvider>
+        </Providers>
       </body>
     </html>
   );

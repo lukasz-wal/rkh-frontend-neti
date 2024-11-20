@@ -5,26 +5,30 @@ interface Environment {
   useTestData: boolean;
   rpcUrl: string;
   rpcToken: string;
+  metaAllocatorContractAddress: string;
 }
 
 const environments: { [key: string]: Environment } = {
   development: {
     apiBaseUrl: "http://localhost:3001/api/v1",
-    useTestData: true,
+    useTestData: false,
     rpcUrl: "http://localhost:8010/proxy/rpc/v1",
-    rpcToken: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJBbGxvdyI6WyJyZWFkIiwid3JpdGUiLCJzaWduIiwiYWRtaW4iXX0.n9KFQZGg1BN7X9Yz9uOvLwVHrZCIGrx8InX_DCBNnKY",
+    rpcToken: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJBbGxvdyI6WyJyZWFkIiwid3JpdGUiLCJzaWduIiwiYWRtaW4iXX0.Dbqn4zlC2cIQ9rJH06OZR1uZ4WUKHTwf2ziaW2RZczA",
+    metaAllocatorContractAddress: "0x15a9d9b81e3c67b95ffedfb4416d25a113c8c6df",
   },
   staging: {
     apiBaseUrl: "https://allocator-rkh-backend-utcn6.ondigitalocean.app/api/v1",
     useTestData: false,
     rpcUrl: "https://api.node.glif.io/rpc/v1",
     rpcToken: "UXggx8DyJeaIIIe1cJZdnDk4sIiTc0uF3vYJXlRsZEQ=",
+    metaAllocatorContractAddress: "0x386f08f6E8E4647B871415EBFB858b1e377d9ab2",
   },
   production: {
     apiBaseUrl: "https://allocator-rkh-backend-utcn6.ondigitalocean.app/api/v1",
     useTestData: false,
     rpcUrl: "https://api.node.glif.io/rpc/v1",
     rpcToken: "UXggx8DyJeaIIIe1cJZdnDk4sIiTc0uF3vYJXlRsZEQ=",
+    metaAllocatorContractAddress: "0x386f08f6E8E4647B871415EBFB858b1e377d9ab2",
   },
 };
 
@@ -85,5 +89,39 @@ export const testApplications: Application[] = [
     rkhApprovals: ['t0101'],
     rkhApprovalsThreshold: 2,
     rkhMessageId: 0,
+  },
+  {
+    id: "11a345def9de8776b74330e4",
+    number: 1103,
+    name: "Bob Johnson",
+    organization: "Future",
+    address: "f2pk34lqjjck5jgsbtd2dnvu5z6pm7tiuujvv6cuy",
+    github: "@bobjohnson",
+    country: "Europe",
+    region: "Europe",
+    type: "Manual",
+    datacap: "70 ",
+    actorId: "f03019909",
+    status: "RKH_APPROVAL_PHASE",
+    githubPrNumber: "127",
+    githubPrLink: "https://github.com/alicejohnson/test/pull/126",
+
+    rkhApprovals: [],
+    rkhApprovalsThreshold: 2
+  },
+  {
+    id: "12b345def9de8776b74330e5",
+    number: 1104,
+    name: "Peter Parker",
+    organization: "Future",
+    address: "0x999999cf1046e68e36E1aA2E0E07105eDDD1f08E",
+    github: "@peterparker",
+    country: "Europe",
+    region: "Europe",
+    type: "Manual",
+    datacap: "80 ",
+    status: "META_APPROVAL_PHASE",
+    githubPrNumber: "128",
+    githubPrLink: "https://github.com/peterparker/test/pull/128",
   }
 ];

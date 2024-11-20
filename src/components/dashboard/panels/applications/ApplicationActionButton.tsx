@@ -3,7 +3,8 @@ import { Button } from "../../../ui/button";
 import Link from "next/link";
 import { useAccount } from "@/hooks/useAccount";
 import { AccountRole } from "@/types/account";
-import SignTransactionButton from "../../../SignTransactionButton";
+import SignRkhTransactionButton from "@/components/sign/SignRkhTransactionButton";
+import SignMetaAllocatorTransactionButton from "@/components/sign/SignMetaAllocatorTransactionButton";
 
 interface ActionConfig {
   label: string;
@@ -31,17 +32,25 @@ function getActionConfig(application: Application, account?: { role: AccountRole
       };
 
     case "RKH_APPROVAL_PHASE":
+      console.log(application);
       const label = `(${application.rkhApprovals?.length ?? 0}/${application.rkhApprovalsThreshold ?? 2}) Approve`;
       if (account?.role !== AccountRole.ROOT_KEY_HOLDER && account?.role !== AccountRole.ADMIN) {
         return {
           label,
-          component: SignTransactionButton,
+          component: SignRkhTransactionButton,
           // disabled: true,
         };
       }
       return {
         label,
-        component: SignTransactionButton,
+        component: SignRkhTransactionButton,
+      };
+
+    case "META_APPROVAL_PHASE":
+      return {
+        label: "Approve",
+        component: SignMetaAllocatorTransactionButton,
+        disabled: account?.role ? [AccountRole.ROOT_KEY_HOLDER, AccountRole.ADMIN].includes(account.role) : true,
       };
 
     default:

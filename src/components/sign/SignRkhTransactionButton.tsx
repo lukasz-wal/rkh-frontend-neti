@@ -24,15 +24,15 @@ import {
 import { useAccount } from "@/hooks/useAccount";
 import { Application } from "@/types/application";
 
-interface SignTransactionButtonProps {
+interface SignRkhTransactionButtonProps {
   application: Application;
   text: string;
 }
 
-export default function SignTransactionButton({
+export default function SignRkhTransactionButton({
   application,
   text,
-}: SignTransactionButtonProps) {
+}: SignRkhTransactionButtonProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [isPending, setIsPending] = useState(false);
   const { account, proposeAddVerifier, acceptVerifierProposal } = useAccount();

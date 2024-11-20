@@ -19,6 +19,7 @@ const phases: ApplicationStatus[] = [
   "KYC_PHASE",
   "GOVERNANCE_REVIEW_PHASE",
   "RKH_APPROVAL_PHASE",
+  "META_APPROVAL_PHASE",
   "APPROVED",
   "REJECTED",
 ];
@@ -28,6 +29,7 @@ const phaseColors: Record<ApplicationStatus, string> = {
   KYC_PHASE: 'bg-blue-600',
   GOVERNANCE_REVIEW_PHASE: 'bg-yellow-600',
   RKH_APPROVAL_PHASE: 'bg-orange-600',
+  META_APPROVAL_PHASE: 'bg-orange-600',
   APPROVED: 'bg-green-600',
   REJECTED: 'bg-red-600',
 };
@@ -37,6 +39,7 @@ const phaseDescriptions: Record<ApplicationStatus, string> = {
   KYC_PHASE: 'Know Your Customer verification process',
   GOVERNANCE_REVIEW_PHASE: 'Application review by governance committee',
   RKH_APPROVAL_PHASE: 'Final approval by RKH',
+  META_APPROVAL_PHASE: 'Meta approval phase',
   APPROVED: 'Application approved',
   REJECTED: 'Application rejected',
 };
@@ -46,6 +49,7 @@ const phaseNames: Record<ApplicationStatus, string> = {
   KYC_PHASE: 'KYC',
   GOVERNANCE_REVIEW_PHASE: 'Review',
   RKH_APPROVAL_PHASE: 'RKH Approval',
+  META_APPROVAL_PHASE: 'Meta approval',
   APPROVED: 'Approved',
   REJECTED: 'Rejected',
 };

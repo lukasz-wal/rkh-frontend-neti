@@ -27,7 +27,12 @@ export class FilsnapConnector implements Connector {
         throw new Error(`Failed to get address: ${error}`);
       }
 
-      const role = await fetchRole(address);
+      let role: AccountRole;
+      try {
+        role = await fetchRole(address);
+      } catch (error) {
+        role = AccountRole.GUEST;
+      }
       this.account = {
         address,
         role,

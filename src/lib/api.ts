@@ -55,6 +55,9 @@ export async function fetchApplications(
       applications: result.data.results
         .map((allocator: any) => {
           try {
+            const instructionsLength = allocator?.applicationInstructions?.length;
+            const datacap = instructionsLength ? allocator?.applicationInstructions[instructionsLength - 1].amount : 5;
+
             return {
               id: allocator.id,
               number: allocator.number,
@@ -65,7 +68,7 @@ export async function fetchApplications(
               country: allocator.location?.[0] || "Unknown",
               region: allocator.location?.[1] || "Unknown",
               type: allocator.type,
-              datacap: allocator.datacap || 5,
+              datacap: datacap,
               createdAt: allocator.createdAt || "2021-09-01T00:00:00.000Z",
               status: allocator.status,
               actorId: allocator.actorId,
@@ -74,6 +77,7 @@ export async function fetchApplications(
               rkhApprovals: allocator.rkhPhase?.approvals,
               rkhApprovalsThreshold: allocator.rkhPhase?.approvalsThreshold,
               rkhMessageId: allocator.rkhPhase?.messageId,
+              allocationInstruction: allocator.allocationInstruction,
             };
           } catch (error) {
             console.error("Error processing application:", error);

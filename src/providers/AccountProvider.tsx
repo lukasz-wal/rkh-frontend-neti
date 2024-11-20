@@ -1,16 +1,18 @@
 "use client";
 
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useEffect } from "react";
+import { useConnect as useWagmiConnect, useDisconnect as useWagmiDisconnect, useAccount as useWagmiAccount } from "wagmi";
 
 import { AccountContext } from "@/contexts/AccountContext";
 
 import { Connector } from "@/types/connector";
 import { LedgerConnector } from "@/lib/connectors/ledger-connector";
 import { FilsnapConnector } from "@/lib/connectors/filsnap-connector";
-import { Account } from "@/types/account";
+import { Account, AccountRole } from "@/types/account";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { VerifyAPI } from "@keyko-io/filecoin-verifier-tools";
 import { env } from "@/config/environment";
+import { injected } from "wagmi/connectors";
 
 const queryClient = new QueryClient();
 
@@ -18,7 +20,32 @@ export const AccountProvider: React.FC<{
   children: React.ReactNode;
 }> = ({ children }) => {
   const [account, setAccount] = useState<Account | null>(null);
+  
+  // RKH connectors
   const [currentConnector, setCurrentConnector] = useState<Connector | null>(null);
+
+  // MetaAllocator connectors
+  const { address: wagmiAddress, status: wagmiStatus } = useWagmiAccount();
+  const { connect: wagmiConnect } = useWagmiConnect()
+  const { disconnect: wagmiDisconnect } = useWagmiDisconnect()
+
+  useEffect(() => {
+    if (wagmiStatus === "connected") {
+      setAccount({
+        address: wagmiAddress,
+        index: 0,
+        isConnected: true,
+        role: AccountRole.METADATA_ALLOCATOR,
+        wallet: {
+          type: "metamask",
+          sign: async (_message: any, _indexAccount: number) => "0x00",
+          getAccounts: async () => {
+            return [wagmiAddress];
+          }
+        }
+      });
+    }
+  }, [wagmiStatus, wagmiAddress]);
 
   // Registry of available connectors
   const connectors: { [key: string]: Connector } = {
@@ -36,14 +63,25 @@ export const AccountProvider: React.FC<{
   const connect = useCallback(
     async (connectorName: string, accountIndex?: number) => {
       try {
-        let connector = connectors[connectorName];
-
-        if (connectorName === "ledger" && accountIndex !== undefined) {
-          connector = new LedgerConnector(accountIndex);
+        switch (connectorName) {
+          case "metamask":
+            await wagmiConnect({
+              connector: injected()
+            });
+            break;
+          case "ledger":
+            const ledgerConnector = new LedgerConnector(accountIndex);
+            const ledgerAccount = await ledgerConnector.connect();
+            setAccount(ledgerAccount);
+            setCurrentConnector(ledgerConnector);
+            break;
+          case "filsnap":
+            const filsSnapConnector = new FilsnapConnector();
+            const filsSnapAccount = await filsSnapConnector.connect();
+            setAccount(filsSnapAccount);
+            setCurrentConnector(filsSnapConnector);
+            break;
         }
-        const acc = await connector.connect();
-        setAccount(acc);
-        setCurrentConnector(connector);
       } catch (error) {
         throw error;
       }
@@ -55,12 +93,19 @@ export const AccountProvider: React.FC<{
    * Disconnects the current connector.
    */
   const disconnect = useCallback(async () => {
-    if (currentConnector) {
+    // handle MetaAllocator disconnect
+    if (account?.role === AccountRole.METADATA_ALLOCATOR) {
+      await wagmiDisconnect();
+      setAccount(null);
+    }
+    
+    // handle RKH disconnect
+    else if (currentConnector) {
       await currentConnector.disconnect();
       setCurrentConnector(null);
       setAccount(null);
     }
-  }, [currentConnector]);
+  }, [account, currentConnector]);
 
   const proposeAddVerifier = useCallback(async (verifierAddress: string, datacap: string) => {
     if (!account?.wallet) {
