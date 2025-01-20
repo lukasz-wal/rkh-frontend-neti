@@ -3,7 +3,12 @@
 import { useEffect, useState } from "react";
 import ScaleLoader from "react-spinners/ScaleLoader";
 import { ExternalLink } from "lucide-react";
-import { useWriteContract, useWaitForTransactionReceipt } from "wagmi";
+import { useWriteContract, useWaitForTransactionReceipt, useAccount as useAccountWagmi, useSwitchChain } from "wagmi";
+import Safe, { Eip1193Provider } from '@safe-global/protocol-kit'
+import {
+  MetaTransactionData,
+  OperationType
+} from '@safe-global/types-kit'
 
 import { Button } from "@/components/ui/button";
 import {
@@ -25,6 +30,26 @@ import { useToast } from "@/components/ui/use-toast";
 import { useAccount } from "@/hooks";
 import { Application } from "@/types/application";
 import { env } from "@/config/environment";
+import { encodeFunctionData } from "viem/utils";
+
+const contractAbi = [{
+    "type": "function",
+    "name": "addAllowance",
+    "inputs": [
+    {
+        "name": "allocator",
+        "type": "address",
+        "internalType": "address"
+    },
+    {
+        "name": "amount",
+        "type": "uint256",
+        "internalType": "uint256"
+    }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+}]
 
 interface SignMetaAllocatorTransactionButtonProps {
     application: Application;
@@ -35,6 +60,8 @@ export default function SignMetaAllocatorTransactionButton({ application }: Sign
     
     const { account } = useAccount();
     const { toast } = useToast();
+    const { connector } = useAccountWagmi();
+    const { chains, switchChain } = useSwitchChain()
 
     const { writeContract, isPending, error: isError, data: hash, reset } = useWriteContract();
     const { isLoading: isConfirming, isSuccess: isConfirmed } = useWaitForTransactionReceipt({
@@ -69,24 +96,7 @@ export default function SignMetaAllocatorTransactionButton({ application }: Sign
     const addVerifier = async (verifierAddress: string, datacap: string) => {
         writeContract({
             address: env.metaAllocatorContractAddress as `0x${string}`,
-            abi: [{
-                "type": "function",
-                "name": "addAllowance",
-                "inputs": [
-                {
-                    "name": "allocator",
-                    "type": "address",
-                    "internalType": "address"
-                },
-                {
-                    "name": "amount",
-                    "type": "uint256",
-                    "internalType": "uint256"
-                }
-                ],
-                "outputs": [],
-                "stateMutability": "nonpayable"
-            }],
+            abi: contractAbi,
             functionName: "addAllowance",
             args: [
                 verifierAddress as `0x${string}`,
@@ -97,6 +107,48 @@ export default function SignMetaAllocatorTransactionButton({ application }: Sign
 
     const submitTransaction = async () => {
         await addVerifier(application.address, application.datacap);
+    }
+
+    const submitSafeTransaction = async () => {
+        switchChain({
+            chainId: chains[0].id
+        })
+        const safeAddress = "0x2e25A2f6bC2C0b7669DFB25180Ed57e07dAabe9e"
+
+        const provider = await connector?.getProvider();
+        const safeKit = await Safe.init({
+            provider: provider as Eip1193Provider,
+            safeAddress: safeAddress
+        })
+
+        const data = encodeFunctionData({
+            abi: contractAbi,
+            functionName: 'addAllowance',
+            args: [
+                application.address as `0x${string}`,
+                BigInt(application.datacap)
+            ],
+          })
+        console.log(data)
+
+        const safeTransactionData: MetaTransactionData = {
+            to: env.metaAllocatorContractAddress as `0x${string}`,
+            value: '0',
+            data: data,
+            operation: OperationType.Call
+        }
+        console.log(safeTransactionData)
+
+        const safeTransaction = await safeKit.createTransaction({
+            transactions: [safeTransactionData]
+        })
+        console.log(safeTransaction)
+
+        const signedSafeTransaction = await safeKit.signTransaction(safeTransaction)
+        console.log(signedSafeTransaction)
+
+        const executeTxResponse = await safeKit.executeTransaction(signedSafeTransaction)
+        console.log(executeTxResponse.hash)
     }
 
     return (
@@ -168,7 +220,7 @@ export default function SignMetaAllocatorTransactionButton({ application }: Sign
                 </div>
 
                 <div className="flex justify-center">
-                    <Button className="w-[150px]" disabled={isPending} onClick={submitTransaction}>
+                    <Button className="w-[150px]" disabled={isPending} onClick={submitSafeTransaction}>
                         {isPending ? "Submitting..." : "Submit"}
                     </Button>
                 </div>
