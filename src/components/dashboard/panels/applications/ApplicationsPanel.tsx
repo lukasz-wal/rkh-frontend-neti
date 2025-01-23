@@ -77,7 +77,17 @@ export function ApplicationsPanel({
               return (
                 <TableRow key={application.id}>
                   <TableCell className="hidden md:table-cell font-medium">
-                    {application.id}
+                    {application.githubPrNumber ? (
+                      <Link
+                        href={`https://github.com/filecoin-project/Allocator-Registry/pull/${application.githubPrNumber}`}
+                        target="_blank"
+                        className="text-blue-600 hover:text-blue-800 transition-colors underline"
+                      >
+                        {application.githubPrNumber}
+                      </Link>
+                    ) : (
+                      application.id
+                    )}
                   </TableCell>
                   <TableCell>{application.name}</TableCell>
                   <TableCell className="hidden md:table-cell">
