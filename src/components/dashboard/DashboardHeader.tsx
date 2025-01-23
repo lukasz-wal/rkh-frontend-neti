@@ -11,6 +11,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import MultipleSelector, { Option } from "@/components/ui/multiple-selector";
+import { Badge } from "@/components/ui/badge";
 
 const OPTIONS: Option[] = [
   { label: "SUBMISSION", value: "SUBMISSION" },
@@ -18,6 +19,16 @@ const OPTIONS: Option[] = [
   { label: "GOVERNANCE_REVIEW", value: "GOVERNANCE_REVIEW" },
   { label: "RKH_APPROVAL", value: "RKH_APPROVAL" },
 ];
+
+const FILTER_LABELS: Record<string, string> = {
+  SUBMISSION_PHASE: "Submission",
+  KYC_PHASE: "KYC",
+  GOVERNANCE_REVIEW_PHASE: "Governance Review",
+  RKH_APPROVAL_PHASE: "RKH Approval",
+  META_APPROVAL_PHASE: "Meta Approval",
+  APPROVED: "Approved",
+  REJECTED: "Rejected",
+};
 
 interface DashboardHeaderProps {
   searchTerm: string;
@@ -32,7 +43,15 @@ export function DashboardHeader({
   activeFilters,
   setActiveFilters,
 }: DashboardHeaderProps) {
-  const filters = ["Active", "Draft", "Archived"];
+  const filters: string[] = [
+    "SUBMISSION_PHASE",
+    "KYC_PHASE",
+    "GOVERNANCE_REVIEW_PHASE",
+    "RKH_APPROVAL_PHASE",
+    "META_APPROVAL_PHASE",
+    "APPROVED",
+    "REJECTED",
+  ];
 
   return (
     <header className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b bg-background px-4 sm:static sm:h-auto sm:border-0 sm:bg-transparent sm:px-6">
@@ -46,7 +65,41 @@ export function DashboardHeader({
           onChange={(e) => setSearchTerm(e.target.value)}
         />
       </div>
+
       <div className="ml-auto flex items-center gap-2">
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="outline" size="sm" className="h-7 gap-1">
+              <ListFilter className="h-3.5 w-3.5" />
+              <span className="sr-only sm:not-sr-only">Filters</span>
+              {activeFilters.length > 0 && (
+                <Badge variant="secondary" className="ml-1 h-4 px-1 text-xs">
+                  {activeFilters.length}
+                </Badge>
+              )}
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-[250px]">
+            <DropdownMenuLabel>Filter by status</DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            {filters.map((filter) => (
+              <DropdownMenuCheckboxItem
+                key={filter}
+                checked={activeFilters.includes(filter)}
+                onCheckedChange={(checked) => {
+                  if (checked) {
+                    setActiveFilters([...activeFilters, filter]);
+                  } else {
+                    setActiveFilters(activeFilters.filter((f) => f !== filter));
+                  }
+                }}
+              >
+                {FILTER_LABELS[filter]}
+              </DropdownMenuCheckboxItem>
+            ))}
+          </DropdownMenuContent>
+        </DropdownMenu>
+
         <Button size="sm" className="h-7 gap-1">
           <PlusCircle className="h-3.5 w-3.5" />
           <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">

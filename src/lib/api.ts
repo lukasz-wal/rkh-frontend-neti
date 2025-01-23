@@ -35,7 +35,7 @@ export async function fetchApplications(
     limit: pageLimit.toString(),
   });
 
-  filters.forEach((filter) => params.append("phase[]", filter));
+  filters.forEach((filter) => params.append("status[]", filter));
 
   if (searchTerm) {
     params.append("search", searchTerm);

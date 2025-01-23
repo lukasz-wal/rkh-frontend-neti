@@ -72,10 +72,12 @@ const columns: ColumnDef<Application>[] = [
     accessorKey: "status",
     header: "Status",
     cell: ({ row }) => (
-      <div className="flex justify-center"> {/* Added this wrapper */}
+      <div className="flex justify-center">
         <ApplicationStatusBadge application={row.original as Application} />
       </div>
     ),
+    filterFn: "equals", // Use a default filter function
+    enableColumnFilter: true, // Enable column filtering
   },
   //       <div className="capitalize">{row.getValue("status")}</div>
   {
