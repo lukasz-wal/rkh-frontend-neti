@@ -62,7 +62,7 @@ export function mapApplicationToPullRequestFile(application: DatacapAllocator): 
     },
     application_instructions: application.applicationInstructions.map(instruction => ({
       method: instruction.method,
-      amount: instruction.amount,
+      datacap_amount: instruction.datacap_amount,
     })) || [],
     pathway_addresses: application.allocatorMultisigAddress
       ? {

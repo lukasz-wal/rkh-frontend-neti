@@ -60,7 +60,7 @@ export type ApplicationApplicantData = {
 
 export type ApplicationInstruction = {
   method: string
-  amount: number
+  datacap_amount: number
   timestamp?: number
   status?: string
 }
@@ -348,7 +348,7 @@ export class DatacapAllocator extends AggregateRoot {
     this.ensureValidApplicationStatus([ApplicationStatus.APPROVED])
 
     const prevInstruction = this.applicationInstructions[this.applicationInstructions.length - 1]
-    const refreshAmount = prevInstruction.amount * 2
+    const refreshAmount = prevInstruction.datacap_amount * 2
     const refreshMethod = prevInstruction.method
 
     this.applyChange(new DatacapRefreshRequested(this.guid, refreshAmount, refreshMethod))
@@ -383,7 +383,7 @@ export class DatacapAllocator extends AggregateRoot {
     this.applicationInstructions = [
       {
         method: ApplicationAllocator.META_ALLOCATOR,
-        amount: 1337,
+        datacap_amount: 1,
         timestamp: event.timestamp.getTime(),
         status: ApplicationInstructionStatus.PENDING,
       },
@@ -493,7 +493,7 @@ export class DatacapAllocator extends AggregateRoot {
     this.applicationStatus = ApplicationStatus.GOVERNANCE_REVIEW_PHASE
     this.applicationInstructions.push({
       method: event.method,
-      amount: event.amount,
+      datacap_amount: event.amount,
       timestamp: event.timestamp.getTime(),
       status: ApplicationInstructionStatus.PENDING,
     })
@@ -525,7 +525,7 @@ export class DatacapAllocator extends AggregateRoot {
     let instructionAmount: number
     try {
       instructionMethod = lastInstruction.method
-      instructionAmount = lastInstruction.amount
+      instructionAmount = lastInstruction.datacap_amount
     } catch (error) {
       throw new ApplicationError(StatusCodes.BAD_REQUEST, errorCode, 'Latest instruction data is invalid')
     }

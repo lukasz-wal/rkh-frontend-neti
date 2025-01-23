@@ -346,7 +346,7 @@ export class DatacapRefreshRequestedEventHandler implements IEventHandler<Dataca
       ...(currentDetails.applicationInstructions || []),
       {
         method: event.method,
-        amount: event.amount,
+        datacap_amount: event.amount,
         status: ApplicationInstructionStatus.PENDING,
         timestamp: event.timestamp.getTime(),
       }

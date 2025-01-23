@@ -12,7 +12,6 @@ export class MessageService {
 ## Application Details
 | Field | Value |
 |-------|-------|
-| Number | \`${application.applicationNumber}\` |
 | Applicant | ${application.applicantName} |
 | Organization | ${application.applicantOrgName} |
 | Address | [${application.applicantAddress}](https://filfox.info/en/address/${encodeURIComponent(application.applicantAddress)}) |
@@ -24,7 +23,7 @@ export class MessageService {
 ## Grant Details
 | Field | Value |
 |-------|-------|
-| Datacap Amount | ${application.applicationInstructions[application.applicationInstructions.length - 1].amount} PiB |
+| Datacap Amount | ${application.applicationInstructions[application.applicationInstructions.length - 1].datacap_amount} PiB |
 | Allocation Method | ${application.applicationInstructions[application.applicationInstructions.length - 1].method} |
 
 ---
@@ -97,7 +96,7 @@ export class MessageService {
   private getKYCStatusMessage(application: DatacapAllocator): string {
     return `
 ### Next Steps
-1. Complete the KYC process at [our secure portal](https://flow-dev.togggle.io/fidl/kyc?applicationId=${application.guid})
+1. Complete the KYC process at [our secure portal](https://flow.togggle.io/fidl/kyc?applicationId=${application.guid})
    - **Name:** ${application.applicantName}
    - **GitHub Username:** ${application.applicantGithubHandle}
 2. Your application will be automatically updated once submitted
@@ -113,7 +112,7 @@ export class MessageService {
 Your application is currently under review by the Fil+ governance team.
 
 ### 📊 Current Request
-- Amount: \`${currentInstruction.amount} PiB\`
+- Amount: \`${currentInstruction.datacap_amount} PiB\`
 - Method: \`${currentInstruction.method}\`
 
 ### 📋 Review Guidelines
@@ -130,7 +129,7 @@ To modify the allocation parameters:
   "applicationInstructions": [
     // Previous instructions...
     {
-      "amount": "X", // Amount in PiB
+      "datacap_amount": "X", // Amount in PiB
       "method": "META_ALLOCATOR|RKH_ALLOCATOR"
     }
   ]

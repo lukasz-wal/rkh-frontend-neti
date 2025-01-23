@@ -443,7 +443,7 @@ async function testSubmitRefreshMetaAllocatorCommand(container: Container) {
         status: ApplicationStatus.APPROVED,
         applicationInstructions: [
             {
-                amount: initialDatacap,
+                datacap_amount: initialDatacap,
                 method: ApplicationAllocator.META_ALLOCATOR,
             }
         ]
