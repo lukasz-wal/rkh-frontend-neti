@@ -138,8 +138,8 @@ async function main() {
     const targetApplicationId = 'app-test-1731240427'
 
     const newApplicationInstructions = [
-        {method: ApplicationAllocator.RKH_ALLOCATOR, amount: 10, timestamp: 0},
-        {method: ApplicationAllocator.META_ALLOCATOR, amount: 20, timestamp: 1}
+        {method: ApplicationAllocator.RKH_ALLOCATOR, datacap_amount: 10, timestamp: 0},
+        {method: ApplicationAllocator.META_ALLOCATOR, datacap_amount: 20, timestamp: 1}
     ]
 
     await editApplicationTest(

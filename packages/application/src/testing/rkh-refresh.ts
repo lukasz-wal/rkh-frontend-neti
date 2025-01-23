@@ -68,7 +68,7 @@ async function testSubmitRefreshRKHAllocatorCommand(
         status: ApplicationStatus.APPROVED,
         applicationInstructions: [
             {
-                amount: initialDatacap,
+                datacap_amount: initialDatacap,
                 method: ApplicationAllocator.RKH_ALLOCATOR,
             }
         ]

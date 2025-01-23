@@ -39,12 +39,12 @@ async function main() {
     const applicationInstructions = [
         {
             method: 'RKH_ALLOCATOR',
-            amount: 10,
+            datacap_amount: 10,
             timestamp: 0
         },
         {
             method: 'META_ALLOCATOR',
-            amount: 20,
+            datacap_amount: 20,
             timestamp: 1
         }
     ]

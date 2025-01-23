@@ -55,7 +55,7 @@ export async function subscribeMetaAllocatorAllowances(container: Container) {
             }
 
             try {
-                const initialDatacap = allocator.applicationInstructions[allocator.applicationInstructions.length - 1].amount
+                const initialDatacap = allocator.applicationInstructions[allocator.applicationInstructions.length - 1].datacap_amount
                 logger.debug(`Current Datacap: ${currentDatacap}, Initial Datacap: ${initialDatacap}`)
                 const pct = (Number(currentDatacap) / Number(initialDatacap)) * 100
                 if (pct <= config.REFRESH_MIN_THRESHOLD_PCT) {

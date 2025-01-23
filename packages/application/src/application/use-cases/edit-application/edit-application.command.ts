@@ -71,7 +71,7 @@ export class EditApplicationCommandHandler implements ICommandHandler<EditApplic
       let currInstructionAmount: number
       try {
         currInstructionMethod = currApplicationInstruction.method
-        currInstructionAmount = currApplicationInstruction.amount
+        currInstructionAmount = currApplicationInstruction.datacap_amount
       } catch (error) {
         return prevApplicationInstructions
       }

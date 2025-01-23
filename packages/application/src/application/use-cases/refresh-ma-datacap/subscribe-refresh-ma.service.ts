@@ -329,7 +329,7 @@ export async function submitRefreshMetaAllocatorCommand(
         applicationInstructionsLength = applicationDetails.applicationInstructions.length
         lastInstruction = applicationDetails.applicationInstructions[applicationInstructionsLength - 1]
         lastInstructionMethod = lastInstruction.method
-        lastInstructionAmount = lastInstruction.amount
+        lastInstructionAmount = lastInstruction.datacap_amount
     } catch (error) {
         logger.debug('Invalid applicationInstructions.')
         return
