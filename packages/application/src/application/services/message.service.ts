@@ -23,7 +23,7 @@ export class MessageService {
 ## Grant Details
 | Field | Value |
 |-------|-------|
-| Datacap Amount | ${application.applicationInstructions[application.applicationInstructions.length - 1].datacap_amount} PiB |
+| DataCap Amount | ${application.applicationInstructions[application.applicationInstructions.length - 1].datacap_amount} PiB |
 | Allocation Method | ${application.applicationInstructions[application.applicationInstructions.length - 1].method} |
 
 ---
@@ -117,7 +117,7 @@ Your application is currently under review by the Fil+ governance team.
 
 ### 📋 Review Guidelines
 1. Verify applicant details and eligibility
-2. Assess datacap request:
+2. Assess DataCap request:
    - Is the amount appropriate for the use case?
    - Is the allocation method suitable?
    - Does the distribution strategy make sense?
@@ -165,7 +165,7 @@ Edit the latest entry in the JSON file and commit directly to this PR.
   private getApprovedStatusMessage(application: DatacapAllocator): string {
     return `
 ### Application Approved
-- Congratulations! Your application to become a datacap allocator has been approved
+- Congratulations! Your application to become a DataCap allocator has been approved
 - You will receive further instructions shortly
 
 > 🎉 Welcome to the Filecoin Plus community!
