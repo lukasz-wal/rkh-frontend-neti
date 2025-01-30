@@ -32,7 +32,7 @@ const environments: { [key: string]: Environment } = {
   },
 };
 
-const currentEnv = process.env.NEXT_PUBLIC_APP_ENV || "development";
+const currentEnv = process.env.NEXT_PUBLIC_APP_ENV || "production";
 
 export const env: Environment = environments[currentEnv];
 

@@ -8,6 +8,8 @@ RUN npm ci
 
 COPY . .
 
+ENV NEXT_PUBLIC_APP_ENV=production
+
 RUN npm run build
 
 # Production Stage 
