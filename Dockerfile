@@ -22,6 +22,7 @@ COPY --from=builder /app/.next/static ./.next/static
 
 # Set the environment variables (if needed)
 ENV NODE_ENV=production
+ENV NEXT_PUBLIC_APP_ENV=production
 
 EXPOSE 3000
 
