@@ -24,7 +24,7 @@ const environments: { [key: string]: Environment } = {
     metaAllocatorContractAddress: "0x386f08f6E8E4647B871415EBFB858b1e377d9ab2",
   },
   production: {
-    apiBaseUrl: "https://allocator-rkh-backend-utcn6.ondigitalocean.app/api/v1",
+    apiBaseUrl: "https://allocator-rkh-backend-utcn6.ondigitalocean.app/backend/api/v1",
     useTestData: false,
     rpcUrl: "https://api.node.glif.io/rpc/v1",
     rpcToken: "UXggx8DyJeaIIIe1cJZdnDk4sIiTc0uF3vYJXlRsZEQ=",
