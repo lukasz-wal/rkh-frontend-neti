@@ -15,7 +15,7 @@ const schema = {
   key: 'address',
   value: 'bigint',
 }
-const methods = m.testnet // TODO: Make this configurable
+const methods = m.mainnet // TODO: Make this configurable
 
 export async function subscribeDatacapAllocations(container: Container) {
   const lotusClient = container.get<ILotusClient>(TYPES.LotusClient)

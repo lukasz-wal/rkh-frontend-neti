@@ -9,7 +9,6 @@ import { ICommandBus, Logger } from '@filecoin-plus/core'
 import { Container } from 'inversify'
 import { ILotusClient } from '@src/infrastructure/clients/lotus'
 import { TYPES } from '@src/types'
-import { methods as m } from '@keyko-io/filecoin-verifier-tools'
 import { initialize } from '@src/startup'
 import {
     fetchAllowanceChangedEvents,

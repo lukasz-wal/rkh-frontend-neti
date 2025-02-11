@@ -16,7 +16,7 @@ const schema = {
     key: 'address',
     value: 'bigint',
 }
-const methods = m.testnet
+const methods = m.mainnet
 
 
 export async function fetchCurrentDatacapCache(container: Container): Promise<Map<string, bigint>> {
