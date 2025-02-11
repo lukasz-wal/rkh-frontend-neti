@@ -70,7 +70,22 @@ export class LotusClient implements ILotusClient {
   }
 
   async getActorId(address: string): Promise<string> {
-    return await this.api.cachedActorAddress(address)
+    return await this.cachedActorAddress(address)
+  }
+
+  private cacheAddress = {}
+  async cachedActorAddress(str : string) {
+    if (this.cacheAddress[str]) {
+      return this.cacheAddress[str]
+    }
+    try {
+      const headCids = (await this.getChainHead()).Cids
+      const ret = await this.request('Filecoin.StateLookupID', [str, headCids])
+      this.cacheAddress[str] = ret
+      return ret
+    } catch (err) {
+      return str
+    }
   }
 
   async getMultisig(id: string): Promise<Multisig> {
@@ -105,15 +120,15 @@ export class LotusClient implements ILotusClient {
   }
 
   async getChainHead(): Promise<any> {
-    return await this.api.getChainHead()
+    return await this.request('Filecoin.ChainHead', [])
   }
 
   async getActor(address: string, headCids: Cid[]): Promise<any> {
-    return await this.readClient.stateGetActor(address, headCids)
+    return await this.request('Filecoin.StateGetActor', [address, headCids])
   }
 
   async getChainNode(address: string): Promise<any> {
-    return await this.readClient.chainGetNode(address)
+    return await this.request('Filecoin.ChainGetNode', [address])
   }
 
   private async request(method: string, params: any[]) {
