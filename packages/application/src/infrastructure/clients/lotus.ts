@@ -56,7 +56,7 @@ export class LotusClient implements ILotusClient {
         },
       }),
       {},
-      true, //  // if node != Mainnet => testnet = true
+      false, //  // if node != Mainnet => testnet = true
     )
 
     this.readClient = new LotusRPC(
