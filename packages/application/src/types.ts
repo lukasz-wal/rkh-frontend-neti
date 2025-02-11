@@ -1,3 +1,5 @@
+export declare type Cid = { '/': string }
+
 export const TYPES = {
   ApiServer: Symbol('ApiServer'),
   AirtableClient: Symbol('AirtableClient'),

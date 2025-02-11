@@ -23,10 +23,7 @@
   },
   "dependencies": {
     "@filecoin-plus/core": "^1.0.0",
-    "@filecoin-shipyard/lotus-client-provider-nodejs": "^1.1.1",
-    "@filecoin-shipyard/lotus-client-schema": "^4.2.0",
     "@ipld/dag-cbor": "^9.2.1",
-    "@keyko-io/filecoin-verifier-tools": "^2.2.4",
     "@octokit/core": "^6.1.2",
     "@octokit/plugin-throttling": "^9.3.1",
     "@octokit/rest": "^21.0.0",

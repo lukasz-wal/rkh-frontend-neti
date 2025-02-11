@@ -1,13 +1,9 @@
 import { Logger } from '@filecoin-plus/core'
-import { VerifyAPI } from '@keyko-io/filecoin-verifier-tools'
 import axios from 'axios'
 import { inject, injectable } from 'inversify'
 import { nanoid } from 'nanoid'
 
-import { TYPES } from '@src/types'
-import { Cid, LotusRPC } from '@filecoin-shipyard/lotus-client-rpc'
-import { NodejsProvider as Provider } from '@filecoin-shipyard/lotus-client-provider-nodejs'
-import { mainnet } from '@filecoin-shipyard/lotus-client-schema'
+import { Cid, TYPES } from '@src/types'
 
 type PendingTx = {
   id: number
@@ -40,34 +36,12 @@ export interface LotusClientConfig {
 
 @injectable()
 export class LotusClient implements ILotusClient {
-  private readonly api: VerifyAPI
-  private readonly readClient: LotusRPC
-
   constructor(
     @inject(TYPES.Logger)
     private readonly logger: Logger,
     @inject(TYPES.LotusClientConfig)
     private readonly config: LotusClientConfig,
-  ) {
-    this.api = new VerifyAPI(
-      VerifyAPI.standAloneProvider(config.rpcUrl, {
-        token: async () => {
-          return config.authToken
-        },
-      }),
-      {},
-      false, //  // if node != Mainnet => testnet = true
-    )
-
-    this.readClient = new LotusRPC(
-      new Provider(config.rpcUrl, {
-        token: async () => {
-          return config.authToken
-        },
-      }),
-      { schema: mainnet.fullNode },
-    )
-  }
+  ) {}
 
   async getActorId(address: string): Promise<string> {
     return await this.cachedActorAddress(address)
@@ -124,7 +98,7 @@ export class LotusClient implements ILotusClient {
   }
 
   async getActor(address: string, headCids: Cid[]): Promise<any> {
-    return await this.request('Filecoin.StateGetActor', [address, headCids])
+    return await this.request('Filecoin.StateGetActor', [address, []])
   }
 
   async getChainNode(address: string): Promise<any> {
