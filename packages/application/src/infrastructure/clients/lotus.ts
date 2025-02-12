@@ -26,7 +26,7 @@ export interface ILotusClient {
   getMultisig(id: string): Promise<Multisig>
   getChainHead(): Promise<any>
   getActor(address: string, headCids: Cid[]): Promise<any>
-  getChainNode(address: string): Promise<any>
+  getChainObj(address: Cid): Promise<any>
 }
 
 export interface LotusClientConfig {
@@ -101,8 +101,8 @@ export class LotusClient implements ILotusClient {
     return await this.request('Filecoin.StateGetActor', [address, []])
   }
 
-  async getChainNode(address: string): Promise<any> {
-    return await this.request('Filecoin.ChainGetNode', [address])
+  async getChainObj(address: Cid): Promise<any> {
+    return await this.request('Filecoin.ChainReadObj', [address])
   }
 
   private async request(method: string, params: any[]) {

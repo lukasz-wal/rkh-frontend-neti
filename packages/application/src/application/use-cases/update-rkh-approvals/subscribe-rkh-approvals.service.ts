@@ -25,7 +25,7 @@ export async function subscribeRKHApprovals(container: Container) {
       },
     }),
     {},
-    false, // if node != Mainnet => testnet = true
+    true, // if node != Mainnet => testnet = true
   )
 
   logger.info('Subscribing to RKH proposals')

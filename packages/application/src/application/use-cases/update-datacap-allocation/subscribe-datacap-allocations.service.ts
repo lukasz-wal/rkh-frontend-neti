@@ -15,6 +15,14 @@ const schema = {
   key: 'address',
   value: 'bigint',
 }
+const verSchema = [
+  "address",
+  "cid",
+  "cid",
+  "cid",
+  "int",
+  "cid"
+]
 const methods = m.mainnet // TODO: Make this configurable
 
 export async function subscribeDatacapAllocations(container: Container) {
@@ -28,11 +36,13 @@ export async function subscribeDatacapAllocations(container: Container) {
   setInterval(async () => {
     const head = await lotusClient.getChainHead()
     const actor = await lotusClient.getActor(VERIFIED_REGISTRY_ACTOR_ADDRESS, head.Cids)
-    const verifiers = (await lotusClient.getChainNode(`${actor.Head['/']}/1`)).Obj
+    const verRegState = await lotusClient.getChainObj(actor.Head)
+    const verLnks = methods.decode(verSchema, verRegState)
+    const verifiers = (await lotusClient.getChainObj(verLnks[1])).Obj
 
     const dta = methods.decode(schema, verifiers)
     for (const it of await dta.asList(async (a) => {
-      const res = await lotusClient.getChainNode(a)
+      const res = await lotusClient.getChainObj(a)
       return res.Obj
     })) {
       if (datacapCache.get(it[0]) === it[1]) {
