@@ -29,7 +29,7 @@ export default function Home() {
                 <Link href="/dashboard">
                   <Button size="lg">Visit Dashboard</Button>
                 </Link>
-                <Link href="https://docs.filecoin.io/basics/how-storage-works/filecoin-plus/" target="_blank" rel="noopener noreferrer">
+                <Link href="https://fil.org/filplus" target="_blank" rel="noopener noreferrer">
                   <Button variant="outline" size="lg">Learn More</Button>
                 </Link>
               </div>
