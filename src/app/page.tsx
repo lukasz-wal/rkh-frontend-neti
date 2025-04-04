@@ -20,10 +20,10 @@ export default function Home() {
           <div className="container px-4 md:px-6 mx-auto">
             <div className="flex flex-col items-center space-y-6 text-center">
               <h1 className="text-4xl font-bold tracking-tighter sm:text-5xl md:text-6xl lg:text-7xl max-w-3xl">
-                Manage Your Fil+ Applications
+                Fil+ Allocator Application Portal
               </h1>
               <p className="mx-auto max-w-[700px] text-gray-500 md:text-xl dark:text-gray-400">
-                Streamline your Filecoin Plus application process with our intuitive dashboard. Track, manage, and optimize your journey to Filecoin Plus certification.
+                Apply to become a new Allocator, propose a MetaAllocator and track the progress of your process
               </p>
               <div className="flex flex-col sm:flex-row gap-4 mt-4">
                 <Link href="/dashboard">
