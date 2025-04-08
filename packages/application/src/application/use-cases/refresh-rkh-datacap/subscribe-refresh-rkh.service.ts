@@ -34,13 +34,14 @@ export async function fetchCurrentDatacapCache(container: Container): Promise<Ma
     const actor = await lotusClient.getActor(config.VERIFIED_REGISTRY_ACTOR_ADDRESS, head.Cids)
     const verRegState = await lotusClient.getChainObj(actor.Head)
     const verLnks = methods.decode(verSchema, verRegState)
-    const verifiers = (await lotusClient.getChainObj(verLnks[1])).Obj
+    const verifiers = (await lotusClient.getChainObj(verLnks[1]))
     const dta = methods.decode(schema, verifiers)
     const datacapCache = new Map<string, bigint>()
 
     for (const it of await dta.asList(async (a) => {
         const res = await lotusClient.getChainObj(a)
-        return res.Obj
+        //todo: decode?
+        return res
     })) {
         datacapCache.set(it[0], it[1])
     }
