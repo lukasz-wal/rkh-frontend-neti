@@ -9,6 +9,8 @@ import { UpdateRKHApprovalsCommand } from './update-rkh-approvals.command'
 import { IApplicationDetailsRepository } from '@src/infrastructure/respositories/application-details.repository'
 import cbor from "cbor";
 
+import cbor from "cbor";
+
 const RHK_MULTISIG_ACTOR_ADDRESS = 'f080'
 const VERIFIED_REGISTRY_ACTOR_METHODS = {
   ADD_VERIFIER: 2,
