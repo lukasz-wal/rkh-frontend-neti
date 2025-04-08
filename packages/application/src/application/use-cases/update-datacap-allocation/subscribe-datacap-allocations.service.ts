@@ -38,12 +38,12 @@ export async function subscribeDatacapAllocations(container: Container) {
     const actor = await lotusClient.getActor(VERIFIED_REGISTRY_ACTOR_ADDRESS, head.Cids)
     const verRegState = await lotusClient.getChainObj(actor.Head)
     const verLnks = methods.decode(verSchema, verRegState)
-    const verifiers = (await lotusClient.getChainObj(verLnks[1])).Obj
+    const verifiers = (await lotusClient.getChainObj(verLnks[1]))
 
     const dta = methods.decode(schema, verifiers)
     for (const it of await dta.asList(async (a) => {
       const res = await lotusClient.getChainObj(a)
-      return res.Obj
+      return res
     })) {
       if (datacapCache.get(it[0]) === it[1]) {
         logger.debug(`Datacap allocation for ${it[0]} is up to date`)
