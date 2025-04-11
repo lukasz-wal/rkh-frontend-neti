@@ -24,6 +24,7 @@
   "dependencies": {
     "@filecoin-plus/core": "^1.0.0",
     "@ipld/dag-cbor": "^9.2.1",
+    "cbor": "^5.0.2",
     "@keyko-io/filecoin-verifier-tools": "^2.2.4",
     "@octokit/core": "^6.1.2",
     "@octokit/plugin-throttling": "^9.3.1",

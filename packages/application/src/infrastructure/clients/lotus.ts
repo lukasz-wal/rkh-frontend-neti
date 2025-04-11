@@ -103,6 +103,7 @@ export class LotusClient implements ILotusClient {
 
   async getChainObj(address: Cid): Promise<string> {
     const resp = await this.request('Filecoin.ChainReadObj', [address])
+    console.log("lotus get chain obj: %s", JSON.stringify(resp))
     return resp.Obj
   }
 

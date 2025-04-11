@@ -7,6 +7,7 @@ import { methods as m } from '@keyko-io/filecoin-verifier-tools'
 import { UpdateDatacapAllocationCommand } from './update-datacap-allocation'
 import { IApplicationDetailsRepository } from '@src/infrastructure/respositories/application-details.repository'
 import config from '@src/config'
+import cbor from "cbor";
 
 const VERIFIED_REGISTRY_ACTOR_ADDRESS = 'f06'
 
@@ -37,10 +38,12 @@ export async function subscribeDatacapAllocations(container: Container) {
     const head = await lotusClient.getChainHead()
     const actor = await lotusClient.getActor(VERIFIED_REGISTRY_ACTOR_ADDRESS, head.Cids)
     const verRegState = await lotusClient.getChainObj(actor.Head)
-    const verLnks = methods.decode(verSchema, verRegState)
-    const verifiers = (await lotusClient.getChainObj(verLnks[1]))
+    const verRegStateDecoded = cbor.decode(verRegState)
+    const verLnks = methods.decode(verSchema, verRegStateDecoded)
+    const verifiers = await lotusClient.getChainObj(verLnks[1])
+    const verifiersDecoded = cbor.decode(verifiers)
 
-    const dta = methods.decode(schema, verifiers)
+    const dta = methods.decode(schema, verifiersDecoded)
     for (const it of await dta.asList(async (a) => {
       const res = await lotusClient.getChainObj(a)
       return res
