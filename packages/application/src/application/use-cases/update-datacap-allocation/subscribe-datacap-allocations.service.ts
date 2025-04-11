@@ -37,11 +37,9 @@ export async function subscribeDatacapAllocations(container: Container) {
   setInterval(async () => {
     const head = await lotusClient.getChainHead()
     const actor = await lotusClient.getActor(VERIFIED_REGISTRY_ACTOR_ADDRESS, head.Cids)
-    console.log('getting vr head')
     const verRegState = await lotusClient.getChainObj(actor.Head)
-    console.log('cbor decode vr head')
     const verRegStateDecoded = cbor.decode(verRegState)
-    console.log('schema vr head')
+    console.log('schema vr head: %s', JSON.stringify(verRegStateDecoded))
     const verLnks = methods.decode(verSchema, verRegStateDecoded)
     console.log('getting vr verifiers')
     const verifiers = await lotusClient.getChainObj(verLnks[1])
