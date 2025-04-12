@@ -46,9 +46,12 @@ export async function subscribeDatacapAllocations(container: Container) {
     const verifiers = await lotusClient.getChainObj(verLnks[1])
     console.log('cbor decode vr verifiers')
     const verifiersDecoded = cbor.decode(verifiers)
-    console.log('schema vr verifiers')
+    console.log('schema vr verifiers: %s', JSON.stringify(verifiersDecoded))
     const dta = methods.decode(schema, verifiersDecoded)
     for (const it of await dta.asList(async (a) => {
+      if (!a) {
+        return ['',[]]
+      }
       const res = await lotusClient.getChainObj(a)
       return res
     })) {
