@@ -3,7 +3,7 @@ import { Container } from 'inversify'
 
 import { ILotusClient } from '@src/infrastructure/clients/lotus'
 import { TYPES } from '@src/types'
-import { methods as m } from '@keyko-io/filecoin-verifier-tools'
+import { methods as m } from 'filecoin-verifier-tools'
 import config from '@src/config'
 import { CreateRefreshApplicationCommand } from '../create-application/create-refresh-application.command'
 import { IApplicationDetailsRepository } from '@src/infrastructure/respositories/application-details.repository'

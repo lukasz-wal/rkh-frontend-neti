@@ -1,10 +1,9 @@
 import { ICommandBus, Logger } from '@filecoin-plus/core'
-import { VerifyAPI } from '@keyko-io/filecoin-verifier-tools'
 import { Container } from 'inversify'
 
 import { ILotusClient } from '@src/infrastructure/clients/lotus'
 import { TYPES } from '@src/types'
-import { methods as m } from '@keyko-io/filecoin-verifier-tools'
+import { methods as m } from 'filecoin-verifier-tools'
 import config from '@src/config'
 import { UpdateRKHApprovalsCommand } from './update-rkh-approvals.command'
 import { IApplicationDetailsRepository } from '@src/infrastructure/respositories/application-details.repository'
