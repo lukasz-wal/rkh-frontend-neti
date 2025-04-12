@@ -24,9 +24,10 @@ const verSchema = [
   "int",
   "cid"
 ]
-const methods = m.mainnet // TODO: Make this configurable
 
 export async function subscribeDatacapAllocations(container: Container) {
+  const methods = (await m()).mainnet
+
   const lotusClient = container.get<ILotusClient>(TYPES.LotusClient)
   const commandBus = container.get<ICommandBus>(TYPES.CommandBus)
   const logger = container.get<Logger>(TYPES.Logger)

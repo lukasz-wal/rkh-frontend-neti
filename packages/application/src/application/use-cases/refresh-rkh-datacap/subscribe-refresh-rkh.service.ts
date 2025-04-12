@@ -24,10 +24,11 @@ const verSchema = [
     "int",
     "cid"
 ]
-const methods = m.mainnet
 
 
 export async function fetchCurrentDatacapCache(container: Container): Promise<Map<string, bigint>> {
+    const methods = (await m()).mainnet
+
     const lotusClient = container.get<ILotusClient>(TYPES.LotusClient)
 
     const head = await lotusClient.getChainHead()

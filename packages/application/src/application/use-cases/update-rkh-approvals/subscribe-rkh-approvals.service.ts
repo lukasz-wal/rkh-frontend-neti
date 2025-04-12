@@ -12,7 +12,6 @@ const RHK_MULTISIG_ACTOR_ADDRESS = 'f080'
 const VERIFIED_REGISTRY_ACTOR_METHODS = {
   ADD_VERIFIER: 2,
 }
-const methods = m.mainnet
 const msigSchema = [
   ["list", "address"], //signers
   "int", // num_approvals_threshold
@@ -33,6 +32,8 @@ type dTXN = {
 
 
 export async function subscribeRKHApprovals(container: Container) {
+  const methods = (await m()).mainnet
+
   const commandBus = container.get<ICommandBus>(TYPES.CommandBus)
   const logger = container.get<Logger>(TYPES.Logger)
   const applicationDetailsRepository = container.get<IApplicationDetailsRepository>(TYPES.ApplicationDetailsRepository)
