@@ -79,7 +79,7 @@ export default function Home() {
                   </li>
                 ))}
               </ul>
-              <Link href="https://airtable.com/app64ajISFdqLB7XK/pagJzPpLypcEH5Cd3/form" target="_blank" rel="noopener noreferrer" className="mt-8">
+              <Link href="https://airtable.com/appVmASv3V2GIds6v/pagI08VGIVczU97wK/form" target="_blank" rel="noopener noreferrer" className="mt-8">
                 <Button size="lg">Submit your application</Button>
               </Link>
             </div>

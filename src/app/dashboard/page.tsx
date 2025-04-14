@@ -58,7 +58,7 @@ export default function DashboardPage() {
         <Button variant="outline">
           <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
             <Link
-              href="https://airtable.com/app64ajISFdqLB7XK/pagJzPpLypcEH5Cd3/form"
+              href="https://airtable.com/appVmASv3V2GIds6v/pagI08VGIVczU97wK/form"
               target="_blank"
             >
               Apply
