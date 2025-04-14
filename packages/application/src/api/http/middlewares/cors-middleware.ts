@@ -3,8 +3,7 @@ import cors, { CorsOptions } from 'cors'
 const whitelist = [
   'http://localhost:3000',
   'https://localhost:3000',
-  'https://filecoin-plus-frontend.vercel.app',
-  'https://filecoin-plus-frontend-git-master-three-sigma.vercel.app',
+  'https://allocator-rkh-backend-utcn6.ondigitalocean.app',
 ]
 
 const corsOptions: CorsOptions = {
