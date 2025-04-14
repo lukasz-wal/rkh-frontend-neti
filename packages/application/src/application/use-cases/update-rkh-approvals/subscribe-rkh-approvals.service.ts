@@ -7,6 +7,7 @@ import { methods as m } from 'filecoin-verifier-tools'
 import config from '@src/config'
 import { UpdateRKHApprovalsCommand } from './update-rkh-approvals.command'
 import { IApplicationDetailsRepository } from '@src/infrastructure/respositories/application-details.repository'
+import cbor from "cbor";
 
 const RHK_MULTISIG_ACTOR_ADDRESS = 'f080'
 const VERIFIED_REGISTRY_ACTOR_METHODS = {
@@ -48,10 +49,13 @@ export async function subscribeRKHApprovals(container: Container) {
 
 
     const msigStateRaw = await lotusClient.getChainObj(actor.Head)
-    const msigData = methods.decode(msigSchema, msigStateRaw)
-    const pendingRaw = await lotusClient.getChainObj(msigData[6])
+    const msigStateCbor = cbor.decode(msigStateRaw)
+    const msigData = methods.decode(msigSchema, msigStateCbor)
 
-    const info = methods.decode(methods.pending, pendingRaw)
+    const pendingRaw = await lotusClient.getChainObj(msigData[6])
+    const pendingCbor = cbor.decode(pendingRaw)
+
+    const info = methods.decode(methods.pending, pendingCbor)
     const obj = await info.asObject(async a => {
       return await lotusClient.getChainObj(a)
     })

@@ -9,6 +9,7 @@ import { CreateRefreshApplicationCommand } from '../create-application/create-re
 import { IApplicationDetailsRepository } from '@src/infrastructure/respositories/application-details.repository'
 import { ApplicationDetails } from '@src/infrastructure/respositories/application-details.types'
 import { ApplicationAllocator, ApplicationInstruction } from '@src/domain/application/application'
+import cbor from "cbor";
 
 
 const schema = {
@@ -34,9 +35,11 @@ export async function fetchCurrentDatacapCache(container: Container): Promise<Ma
     const head = await lotusClient.getChainHead()
     const actor = await lotusClient.getActor(config.VERIFIED_REGISTRY_ACTOR_ADDRESS, head.Cids)
     const verRegState = await lotusClient.getChainObj(actor.Head)
-    const verLnks = methods.decode(verSchema, verRegState)
+    const verRegStateDecoded = cbor.decode(verRegState)
+    const verLnks = methods.decode(verSchema, verRegStateDecoded)
     const verifiers = (await lotusClient.getChainObj(verLnks[1]))
-    const dta = methods.decode(schema, verifiers)
+    const verifiersCbor = cbor.decode(verifiers)
+    const dta = methods.decode(schema, verifiersCbor)
     const datacapCache = new Map<string, bigint>()
 
     for (const it of await dta.asList(async (a) => {

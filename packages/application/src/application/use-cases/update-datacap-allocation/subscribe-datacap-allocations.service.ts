@@ -40,13 +40,9 @@ export async function subscribeDatacapAllocations(container: Container) {
     const actor = await lotusClient.getActor(VERIFIED_REGISTRY_ACTOR_ADDRESS, head.Cids)
     const verRegState = await lotusClient.getChainObj(actor.Head)
     const verRegStateDecoded = cbor.decode(verRegState)
-    console.log('schema vr head: %s', JSON.stringify(verRegStateDecoded))
     const verLnks = methods.decode(verSchema, verRegStateDecoded)
-    console.log('getting vr verifiers')
     const verifiers = await lotusClient.getChainObj(verLnks[1])
-    console.log('cbor decode vr verifiers')
     const verifiersDecoded = cbor.decode(verifiers)
-    console.log('schema vr verifiers: %s', JSON.stringify(verifiersDecoded))
     const dta = methods.decode(schema, verifiersDecoded)
     for (const it of await dta.asList(async (a) => {
       if (!a) {
