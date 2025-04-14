@@ -4,6 +4,7 @@ const whitelist = [
   'http://localhost:3000',
   'https://localhost:3000',
   'https://allocator-rkh-backend-utcn6.ondigitalocean.app',
+  'https://apply.allocator.tech',
 ]
 
 const corsOptions: CorsOptions = {
@@ -11,7 +12,7 @@ const corsOptions: CorsOptions = {
     if (whitelist.indexOf(origin) !== -1 || !origin) {
       callback(null, true)
     } else {
-      callback(new Error('Not allowed by CORS'))
+      callback(new Error('Not allowed by CORS for %s', origin))
     }
   },
 }
