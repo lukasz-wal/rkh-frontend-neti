@@ -1,13 +1,14 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { ClipboardIcon, UserCheckIcon, UsersIcon, KeyIcon, GithubIcon, TwitterIcon } from "lucide-react";
+import FilecoinPlusLogo from "@/components/branding/filecoinplus-logo";
 
 export default function Home() {
   return (
     <div className="flex flex-col min-h-screen bg-gray-50 dark:bg-gray-900">
       <header className="px-4 lg:px-6 h-16 flex items-center border-b bg-white dark:bg-gray-800">
-        <Link className="flex items-center justify-center" href="#">
-          <img className="h-8" src="/filecoin-plus.svg" alt="Fil+ Icon" />
+        <Link className="flex items-center justify-center" href="https://fil.org/filecoin-plus">
+          <FilecoinPlusLogo />
         </Link>
         <nav className="ml-auto flex gap-6">
           <Link className="text-sm font-medium hover:text-primary transition-colors" href="https://docs.filecoin.io/basics/how-storage-works/filecoin-plus" target="_blank" rel="noopener noreferrer">
