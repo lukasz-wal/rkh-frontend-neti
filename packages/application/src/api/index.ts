@@ -65,7 +65,7 @@ async function main() {
 
   // Start worker services
   await subscribeApplicationSubmissions(container)
-  // await subscribeApplicationEdits(container)
+  await subscribeApplicationEdits(container)
   // await subscribeGovernanceReviews(container)
   // await subscribeRKHApprovals(container)
   // await subscribeDatacapAllocations(container)

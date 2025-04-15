@@ -1,4 +1,5 @@
 import { ApplicationInstruction, DatacapAllocator } from '@src/domain/application/application'
+import { ApplicationDetailsRepository } from '@src/infrastructure/respositories/application-details.repository'
 
 export type ApplicationPullRequestFile = {
   application_number: number
@@ -33,27 +34,37 @@ export type ApplicationPullRequestFile = {
 }
 
 export function mapApplicationToPullRequestFile(application: DatacapAllocator): ApplicationPullRequestFile {
-  const lifeCycle = (application.applicationInstructions || []).slice(1).reduce(
+  const lifeCycle = (application.applicationInstructions || []).reduce(
     (acc, instruction, index) => {
-      const timestamp = instruction.timestamp ? new Date(instruction.timestamp * 1000).toISOString() : ''
+      const timestamp = instruction.timestamp ? instruction.timestamp.toString() : ''
       acc[`Audit ${index + 1}`] = [timestamp, instruction.datacap_amount.toString()]
       return acc
     },
     {} as { [key: string]: [string, string] },
   )
 
+  // Filter and map the status object
+  const mappedStatus: { [key: string]: string } = {}
+  if (application.status) {
+    for (const [key, value] of Object.entries(application.status)) {
+      if (value !== null && value !== undefined) {
+        mappedStatus[key] = String(value) // Convert value to string
+      }
+    }
+  }
+
   return {
-    application_number: 1337,
+    application_number: application?.applicationPullRequest?.prNumber || 1337,
     address: application.applicantAddress,
     name: application.applicantName,
     organization: application.applicantOrgName,
-    metapathway_type: 'Automatic',
-    ma_address: "TODO",
+    metapathway_type: 'MA',
+    ma_address: "0x15a9d9b81e3c67b95ffedfb4416d25a113c8c6df",
     associated_org_addresses: application.applicantOrgAddresses,
     application: {
       allocations: application.allocationStandardizedAllocations,
-      audit: [application.allocationAudit],
-      distribution: [application.allocationDistributionRequired],
+      audit: application.allocationAudit ? [application.allocationAudit] : [],
+      distribution: application.allocationDistributionRequired ? [application.allocationDistributionRequired] : [],
       required_sps: application.allocationRequiredStorageProviders,
       required_replicas: application.allocationRequiredReplicas,
       tooling: application.allocationTooling,
@@ -62,13 +73,7 @@ export function mapApplicationToPullRequestFile(application: DatacapAllocator): 
       allocation_bookkeeping: application.allocationBookkeepingRepo,
       client_contract_address: "",
     },
-    status: {
-      "Submitted": "timestamp",
-      "In Review": "timestamp",
-      "In Refresh": "timestamp",
-      "Approved": "timestamp",
-      "Declined": "timestamp",
-    },
+    status: mappedStatus,
     LifeCycle: lifeCycle,
     pathway_addresses: {
       msig: application.allocatorMultisigAddress || "",

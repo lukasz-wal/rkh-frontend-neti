@@ -122,22 +122,32 @@ Your application is currently under review by the Fil+ governance team.
    - Does the distribution strategy make sense?
 
 ### ✏️ Making Changes
-To modify the allocation parameters:
+You can propose changes to the DataCap amount or allocation method by editing the JSON file in this Pull Request.
+
+**Metapathway Options:**
+- \`metapathway_type\`: Can be either \`"MA"\` (Meta Allocator) or \`"RKH"\` (Root Key Holder).
+- \`ma_address\`: **Required only if** \`metapathway_type\` is set to \`"MA"\`. This should be the on-chain address of the Meta Allocator.
+
+**Editing the Amount:**
+To change the requested DataCap amount, modify the **last entry** in the \`LifeCycle\` object. Ensure this entry sets the new amount in PiB.
+
+**Example JSON Edit:**
 \`\`\`json
 {
-  "applicationInstructions": [
-    // Previous instructions...
-    {
-      "datacap_amount": "X", // Amount in PiB
-      "method": "META_ALLOCATOR|RKH_ALLOCATOR"
-    }
-  ]
+  // ... other fields ...
+  "metapathway_type": "MA", // Or "RKH"
+  "ma_address": "0x15a9d9b81e3c67b95ffedfb4416d25a113c8c6df", // Required if metapathway_type is "MA"
+  // ... other fields ...
+  "LifeCycle": {
+    // ... previous audits ...
+    "Audit <latest_number>": [ "2025-04-10T12:00:00Z", "5" ] // Edit this value for the new amount (e.g., 5 PiB)
+  }
 }
 \`\`\`
-Edit the latest entry in the JSON file and commit directly to this PR.
+Commit your changes directly to this PR after editing the JSON file.
 
-> 💬 Please be prepared to respond to any questions or requests for clarification
-> 🔧 Governance members: Approve the PR to move the application to the next phase
+> 💬 Please be prepared to respond to any questions or requests for clarification.
+> 🔧 Governance members: Approve the PR to move the application to the next phase.
 `
   }
 

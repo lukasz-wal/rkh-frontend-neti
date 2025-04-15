@@ -1,38 +1,29 @@
 import { Command, ICommandHandler, Logger } from '@filecoin-plus/core'
 import { inject, injectable } from 'inversify'
+
 import { ApplicationAllocator } from '@src/domain/application/application'
 import { ApplicationInstruction, IDatacapAllocatorRepository } from '@src/domain/application/application'
 import { TYPES } from '@src/types'
+import { ApplicationPullRequestFile } from '@src/application/services/pull-request.types'
 
 export class EditApplicationCommand extends Command {
   public readonly applicationId: string
-  public readonly applicationNumber: number
-
-  public readonly applicantName: string
-  public readonly applicantGithubHandle: string
-  public readonly applicantSlackHandle: string
-  public readonly applicantAddress: string
-  public readonly applicantOrgName: string
-  public readonly applicantOrgAddresses: string
-
-  public readonly allocationStandardizedAllocations: string[]
-  public readonly allocationTargetClients: string[]
-  public readonly allocationRequiredReplicas: string
-  public readonly allocationRequiredStorageProviders: string
-  public readonly allocationTooling: string[]
-  public readonly allocationDataTypes: string[]
-  public readonly allocationProjected12MonthsUsage: string
-  public readonly allocationBookkeepingRepo: string
-  public readonly applicationInstructions: ApplicationInstruction[]
-  
-
+  public readonly file: ApplicationPullRequestFile
   /**
    * Creates a new EditApplicationCommand instance.
-   * @param data - Partial data to initialize the command.
+   * @param applicationId - The application id.
+   * @param file - The application pull request file.
    */
-  constructor(data: Partial<EditApplicationCommand>) {
+  constructor({
+    applicationId,
+    file,
+  }: {
+    applicationId: string
+    file: ApplicationPullRequestFile
+  }) {
     super()
-    Object.assign(this, data)
+    this.applicationId = applicationId
+    this.file = file
   }
 }
 
@@ -87,7 +78,7 @@ export class EditApplicationCommandHandler implements ICommandHandler<EditApplic
   }
 
   async handle(command: EditApplicationCommand): Promise<void> {
-    this.logger.info(`Handling edit application command for application ${command.applicationId}`)
+    this.logger.info(`Handling edit application command for application ${command.file.application_number}`)
     const application = await this.repository.getById(command.applicationId)
     if (!application) {
       this.logger.error('Application not found')
@@ -95,30 +86,17 @@ export class EditApplicationCommandHandler implements ICommandHandler<EditApplic
     }
 
     const prevApplicationInstructions = application.applicationInstructions
-    const currApplicationInstructions = command.applicationInstructions
+    const currApplicationInstructions = Object.entries(command.file.LifeCycle).map(([_, value]) => ({
+      method: ApplicationAllocator.META_ALLOCATOR,
+      timestamp: parseInt(value[0]),
+      datacap_amount: parseInt(value[1]),
+    }))
     console.log('prevApplicationInstructions', prevApplicationInstructions)
     console.log('currApplicationInstructions', currApplicationInstructions)
     const validApplicationInstructions = this.ensureValidApplicationInstruction(prevApplicationInstructions, currApplicationInstructions)
     console.log('validApplicationInstructions', validApplicationInstructions)
 
-    await application.edit({
-      applicationNumber: command.applicationNumber,
-      applicantName: command.applicantName,
-      applicantGithubHandle: command.applicantGithubHandle,
-      applicantSlackHandle: command.applicantSlackHandle,
-      applicantAddress: command.applicantAddress,
-      applicantOrgName: command.applicantOrgName,
-      applicantOrgAddresses: command.applicantOrgAddresses,
-      allocationStandardizedAllocations: command.allocationStandardizedAllocations,
-      allocationTargetClients: command.allocationTargetClients,
-      allocationRequiredReplicas: command.allocationRequiredReplicas,
-      allocationRequiredStorageProviders: command.allocationRequiredStorageProviders,
-      allocationTooling: command.allocationTooling,
-      allocationDataTypes: command.allocationDataTypes,
-      allocationProjected12MonthsUsage: command.allocationProjected12MonthsUsage,
-      allocationBookkeepingRepo: command.allocationBookkeepingRepo,
-      applicationInstructions: validApplicationInstructions,
-    })
+    await application.edit(command.file)
     this.logger.info(`Application ${command.applicationId} edited successfully`)
 
     await this.repository.save(application, -1)

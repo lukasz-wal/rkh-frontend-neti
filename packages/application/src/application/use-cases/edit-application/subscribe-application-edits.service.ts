@@ -59,19 +59,7 @@ export async function subscribeApplicationEdits(container: Container) {
           // Update the application data
           const command = new EditApplicationCommand({
             applicationId: application.id,
-            applicationNumber: applicationPullRequestFile.application_number,
-
-            applicantName: applicationPullRequestFile.name,
-            applicantGithubHandle: applicationPullRequestFile.application.github_handles[0],
-            applicantAddress: applicationPullRequestFile.address,
-            applicantOrgName: applicationPullRequestFile.organization,
-            applicantOrgAddresses: applicationPullRequestFile.associated_org_addresses,
-            allocationStandardizedAllocations: applicationPullRequestFile.application.allocations,
-            allocationRequiredReplicas: applicationPullRequestFile.application.required_replicas,
-            allocationRequiredStorageProviders: applicationPullRequestFile.application.required_sps,
-            allocationTooling: applicationPullRequestFile.application.tooling,
-            allocationBookkeepingRepo: applicationPullRequestFile.application.allocation_bookkeeping,
-            // applicationInstructions: applicationPullRequestFile.LifeCycle,
+            file: applicationPullRequestFile,
           })
           await commandBus.send(command)
         } catch (error: any) {

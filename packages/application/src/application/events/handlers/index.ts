@@ -36,21 +36,22 @@ export class ApplicationEditedEventHandler implements IEventHandler<ApplicationE
   async handle(event: ApplicationEdited): Promise<void> {
     const updated = {
       id: event.aggregateId,
-      number: event.applicationNumber,
-      name: event.applicantName,
-      organization: event.applicantOrgName,
-      address: event.applicantAddress,
-      github: event.applicantGithubHandle,
+      number: event.file.application_number,
+      name: event.file.name,
+      organization: event.file.organization,
+      address: event.file.address,
+      github: event.file.application.github_handles[0],
       // xDONE
-      applicationInstructions: event.applicationInstructions
-      // applicationInstruction: {
-      //   method: event.applicationInstructionMethod,
-      //   amount: event.applicationInstructionAmount,
-      // }
+      applicationInstructions: Object.entries(event.file.LifeCycle).map(([_, value]) => ({
+        method: event.file.metapathway_type === "MA" ? ApplicationAllocator.META_ALLOCATOR : ApplicationAllocator.RKH_ALLOCATOR,
+        timestamp: parseInt(value[0]),
+        datacap_amount: parseInt(value[1]),
+      })),
     } as Partial<ApplicationDetails>
 
-    if (event.standardizedAllocations?.length) {
-      updated.datacap = parseInt(event.standardizedAllocations[0])
+    if (Object.keys(event.file.LifeCycle).length > 0) {
+      const key = `Audit ${Object.keys(event.file.LifeCycle).length}`
+      updated.datacap = parseInt(event.file.LifeCycle[key][1])
     }
 
     await this._repository.update(updated)
