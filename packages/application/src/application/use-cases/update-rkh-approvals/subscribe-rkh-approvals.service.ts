@@ -7,7 +7,6 @@ import { methods as m } from 'filecoin-verifier-tools'
 import config from '@src/config'
 import { UpdateRKHApprovalsCommand } from './update-rkh-approvals.command'
 import { IApplicationDetailsRepository } from '@src/infrastructure/respositories/application-details.repository'
-import cbor from "cbor";
 
 import cbor from "cbor";
 
