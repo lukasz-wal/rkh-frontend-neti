@@ -1,6 +1,7 @@
 import { Event } from '@filecoin-plus/core'
 import { KYCApprovedData, KYCRejectedData } from '@src/domain/types'
 import { ApplicationInstruction, ApplicationStatus } from './application'
+import { ApplicationPullRequestFile } from '@src/application/services/pull-request.types'
 
 export class ApplicationCreated extends Event {
   eventName = ApplicationCreated.name
@@ -12,22 +13,18 @@ export class ApplicationCreated extends Event {
     public guid: string,
     public applicationNumber: number,
     public applicantName: string,
-    public applicantLocation: string,
-    public applicantGithubHandle: string,
-    public applicantSlackHandle: string,
     public applicantAddress: string,
     public applicantOrgName: string,
-    public applicantOrgAddresses: string[],
-    public allocationStandardizedAllocations: string[],
-    public allocationTargetClients: string[],
-    public allocationRequiredReplicas: string,
+    public applicantOrgAddresses: string,
+    public allocationTrancheScheduleType: string,
+    public audit: string,
+    public distributionRequired: string,
     public allocationRequiredStorageProviders: string,
-    public allocationTooling: string[],
-    public allocationDataTypes: string[],
-    public allocationProjected12MonthsUsage: string,
-    public allocationBookkeepingRepo: string,
-    public type: string,
-    public datacap: number,
+    public allocationRequiredReplicas: string,
+    public datacapAllocationLimits: string,
+    public applicantGithubHandle: string,
+    public otherGithubHandles: string[],
+    public onChainAddressForDataCapAllocation: string,
   ) {
     super(guid)
     this.timestamp = new Date()
@@ -42,23 +39,7 @@ export class ApplicationEdited extends Event {
 
   constructor(
     allocatorId: string,
-    public applicationNumber?: number,
-    public applicantName?: string,
-    public applicantLocation?: string,
-    public applicantGithubHandle?: string,
-    public applicantSlackHandle?: string,
-    public applicantAddress?: string,
-    public applicantOrgName?: string,
-    public applicantOrgAddresses?: string[],
-    public standardizedAllocations?: string[],
-    public targetClients?: string[],
-    public requiredReplicas?: string,
-    public requiredStorageProviders?: string,
-    public tooling?: string[],
-    public dataTypes?: string[],
-    public projected12MonthsUsage?: string,
-    public allocationBookkeepingRepo?: string,
-    public applicationInstructions?: ApplicationInstruction[],
+    public file: ApplicationPullRequestFile,
   ) {
     super(allocatorId)
     this.timestamp = new Date()

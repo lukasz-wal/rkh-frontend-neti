@@ -1,32 +1,32 @@
 import { ApplicationInstruction, DatacapAllocator } from '@src/domain/application/application'
+import { ApplicationDetailsRepository } from '@src/infrastructure/respositories/application-details.repository'
 
 export type ApplicationPullRequestFile = {
   application_number: number
   address: string
   name: string
   organization: string
-  location: string
-  status: 'Active'
-  metapathway_type: 'Automatic'
-  associated_org_addresses: string[]
+  metapathway_type: string
+  ma_address: string
+  associated_org_addresses: string
   application: {
-    allocations: {
-      standardized: string[]
-    }
-    target_clients: string[]
+    allocations: string[]
+    audit: string[]
+    distribution: string[]
     required_sps: string
     required_replicas: string
-    tooling: any[]
-    data_types: string[]
-    '12m_requested': string
+    tooling: string[]
+    max_DC_client: string
     github_handles: string[]
     allocation_bookkeeping: string
+    client_contract_address: string
   }
-  poc: {
-    slack: string
-    github_user: string
+  status: {
+    [key: string]: string
   }
-  application_instructions: ApplicationInstruction[],
+  LifeCycle: {
+    [key: string]: [string, string]
+  }
   pathway_addresses?: {
     msig: string
     signer: string[]
@@ -34,41 +34,50 @@ export type ApplicationPullRequestFile = {
 }
 
 export function mapApplicationToPullRequestFile(application: DatacapAllocator): ApplicationPullRequestFile {
+  const lifeCycle = (application.applicationInstructions || []).reduce(
+    (acc, instruction, index) => {
+      const timestamp = instruction.timestamp ? instruction.timestamp.toString() : ''
+      acc[`Audit ${index + 1}`] = [timestamp, instruction.datacap_amount.toString()]
+      return acc
+    },
+    {} as { [key: string]: [string, string] },
+  )
+
+  // Filter and map the status object
+  const mappedStatus: { [key: string]: string } = {}
+  if (application.status) {
+    for (const [key, value] of Object.entries(application.status)) {
+      if (value !== null && value !== undefined) {
+        mappedStatus[key] = String(value) // Convert value to string
+      }
+    }
+  }
+
   return {
-    application_number: 1337,
+    application_number: application?.applicationPullRequest?.prNumber || 1337,
     address: application.applicantAddress,
     name: application.applicantName,
     organization: application.applicantOrgName,
-    location: application.applicantLocation,
-    status: 'Active',
-    metapathway_type: 'Automatic',
-    associated_org_addresses: [application.applicantAddress, ...application.applicantOrgAddresses],
+    metapathway_type: 'MA',
+    ma_address: "0x15a9d9b81e3c67b95ffedfb4416d25a113c8c6df",
+    associated_org_addresses: application.applicantOrgAddresses,
     application: {
-      allocations: {
-        standardized: application.allocationStandardizedAllocations,
-      },
-      target_clients: application.allocationTargetClients,
+      allocations: application.allocationStandardizedAllocations,
+      audit: application.allocationAudit ? [application.allocationAudit] : [],
+      distribution: application.allocationDistributionRequired ? [application.allocationDistributionRequired] : [],
       required_sps: application.allocationRequiredStorageProviders,
       required_replicas: application.allocationRequiredReplicas,
       tooling: application.allocationTooling,
-      data_types: application.allocationDataTypes,
-      '12m_requested': application.allocationProjected12MonthsUsage,
-      github_handles: [application.applicantGithubHandle],
+      max_DC_client: application.maxDcClient,
+      github_handles: [application.applicantGithubHandle, ...application.otherGithubHandles],
       allocation_bookkeeping: application.allocationBookkeepingRepo,
+      client_contract_address: "",
     },
-    poc: {
-      slack: application.applicantSlackHandle,
-      github_user: application.applicantGithubHandle,
+    status: mappedStatus,
+    LifeCycle: lifeCycle,
+    pathway_addresses: {
+      msig: application.allocatorMultisigAddress || "",
+      signer: application.allocatorMultisigSigners || [],
     },
-    application_instructions: application.applicationInstructions.map(instruction => ({
-      method: instruction.method,
-      datacap_amount: instruction.datacap_amount,
-    })) || [],
-    pathway_addresses: application.allocatorMultisigAddress
-      ? {
-          msig: application.allocatorMultisigAddress,
-          signer: application.allocatorMultisigSigners || [],
-        }
-      : undefined,
   }
 }

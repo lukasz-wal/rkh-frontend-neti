@@ -59,27 +59,7 @@ export async function subscribeApplicationEdits(container: Container) {
           // Update the application data
           const command = new EditApplicationCommand({
             applicationId: application.id,
-            applicationNumber: applicationPullRequestFile.application_number,
-
-            applicantName: applicationPullRequestFile.name,
-            applicantLocation: applicationPullRequestFile.location,
-            applicantGithubHandle: applicationPullRequestFile.poc.github_user,
-            applicantSlackHandle: applicationPullRequestFile.poc.slack,
-            applicantAddress: applicationPullRequestFile.address,
-            applicantOrgName: applicationPullRequestFile.organization,
-            applicantOrgAddresses: applicationPullRequestFile.associated_org_addresses.filter(
-              (address) => address !== applicationPullRequestFile.address,
-            ),
-            allocationStandardizedAllocations: applicationPullRequestFile.application.allocations.standardized,
-            allocationTargetClients: applicationPullRequestFile.application.target_clients,
-            allocationRequiredReplicas: applicationPullRequestFile.application.required_replicas,
-            allocationRequiredStorageProviders: applicationPullRequestFile.application.required_sps,
-
-            allocationTooling: applicationPullRequestFile.application.tooling,
-            allocationDataTypes: applicationPullRequestFile.application.data_types,
-            allocationProjected12MonthsUsage: applicationPullRequestFile.application['12m_requested'],
-            allocationBookkeepingRepo: applicationPullRequestFile.application.allocation_bookkeeping,
-            applicationInstructions: applicationPullRequestFile.application_instructions,
+            file: applicationPullRequestFile,
           })
           await commandBus.send(command)
         } catch (error: any) {

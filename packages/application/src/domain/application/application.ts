@@ -21,6 +21,7 @@ import {
   DatacapRefreshRequested,
 } from './application.events'
 import { KYCApprovedData, KYCRejectedData } from '@src/domain/types'
+import { ApplicationPullRequestFile } from '@src/application/services/pull-request.types'
 
 export interface IDatacapAllocatorRepository extends IRepository<DatacapAllocator> { }
 
@@ -88,9 +89,12 @@ export class DatacapAllocator extends AggregateRoot {
   public applicantSlackHandle: string
   public applicantAddress: string
   public applicantOrgName: string
-  public applicantOrgAddresses: string[]
+  public applicantOrgAddresses: string
+  public applicantOtherGithubHandles: string[]
 
   public allocationStandardizedAllocations: string[]
+  public allocationAudit: string
+  public allocationDistributionRequired: string
   public allocationTargetClients: string[]
   public allocationRequiredReplicas: string
   public allocationRequiredStorageProviders: string
@@ -98,6 +102,7 @@ export class DatacapAllocator extends AggregateRoot {
   public allocationDataTypes: string[]
   public allocationProjected12MonthsUsage: string
   public allocationBookkeepingRepo: string
+  public allocationMaxDcClient: string
   public applicationInstructions: ApplicationInstruction[] = []
 
   public applicationStatus: ApplicationStatus
@@ -117,6 +122,17 @@ export class DatacapAllocator extends AggregateRoot {
 
   public grantCycles: ApplicationGrantCycle[] = []
 
+  public allocationDatacapAllocationLimits: string
+  public onChainAddressForDataCapAllocation: string
+
+  public status: { [key: string]: number | null } = {
+    "Submitted": null,
+    "In Review": null,
+    "In Refresh": null,
+    "Approved": null,
+    "Declined": null,
+  }
+
   constructor(guid?: string) {
     super(guid)
   }
@@ -129,22 +145,18 @@ export class DatacapAllocator extends AggregateRoot {
     applicationId: string
     applicationNumber: number
     applicantName: string
-    applicantLocation: string
-    applicantGithubHandle: string
-    applicantSlackHandle: string
     applicantAddress: string
     applicantOrgName: string
-    applicantOrgAddresses: string[]
-    allocationStandardizedAllocations: string[]
-    allocationTargetClients: string[]
-    allocationRequiredReplicas: string
+    applicantOrgAddresses: string
+    allocationTrancheScheduleType: string
+    audit: string
+    distributionRequired: string
     allocationRequiredStorageProviders: string
-    allocationTooling: string[]
-    allocationDataTypes: string[]
-    allocationProjected12MonthsUsage: string
-    allocationBookkeepingRepo: string
-    type: string
-    datacap: number
+    allocationRequiredReplicas: string
+    datacapAllocationLimits: string
+    applicantGithubHandle: string
+    otherGithubHandles: string[]
+    onChainAddressForDataCapAllocation: string
   }): DatacapAllocator {
     const allocator = new DatacapAllocator(params.applicationId)
     allocator.applyChange(
@@ -152,46 +164,24 @@ export class DatacapAllocator extends AggregateRoot {
         allocator.guid,
         params.applicationNumber,
         params.applicantName,
-        params.applicantLocation,
-        params.applicantGithubHandle,
-        params.applicantSlackHandle,
         params.applicantAddress,
         params.applicantOrgName,
         params.applicantOrgAddresses,
-        params.allocationStandardizedAllocations,
-        params.allocationTargetClients,
-        params.allocationRequiredReplicas,
+        params.allocationTrancheScheduleType,
+        params.audit,
+        params.distributionRequired,
         params.allocationRequiredStorageProviders,
-        params.allocationTooling,
-        params.allocationDataTypes,
-        params.allocationProjected12MonthsUsage,
-        params.allocationBookkeepingRepo,
-        params.type,
-        params.datacap,
+        params.allocationRequiredReplicas,
+        params.datacapAllocationLimits,
+        params.applicantGithubHandle,
+        params.otherGithubHandles ?? [],
+        params.onChainAddressForDataCapAllocation
       ),
     )
     return allocator
   }
 
-  edit(params: {
-    applicationNumber?: number
-    applicantName?: string
-    applicantLocation?: string
-    applicantGithubHandle?: string
-    applicantSlackHandle?: string
-    applicantAddress?: string
-    applicantOrgName?: string
-    applicantOrgAddresses?: string[]
-    allocationStandardizedAllocations?: string[]
-    allocationTargetClients?: string[]
-    allocationRequiredReplicas?: string
-    allocationRequiredStorageProviders?: string
-    allocationTooling?: string[]
-    allocationDataTypes?: string[]
-    allocationProjected12MonthsUsage?: string
-    allocationBookkeepingRepo?: string
-    applicationInstructions?: ApplicationInstruction[]
-  }) {
+  edit(file: ApplicationPullRequestFile) {
     this.ensureValidApplicationStatus([
       ApplicationStatus.SUBMISSION_PHASE,
       ApplicationStatus.KYC_PHASE,
@@ -199,26 +189,7 @@ export class DatacapAllocator extends AggregateRoot {
     ])
 
     this.applyChange(
-      new ApplicationEdited(
-        this.guid,
-        params.applicationNumber,
-        params.applicantName,
-        params.applicantLocation,
-        params.applicantGithubHandle,
-        params.applicantSlackHandle,
-        params.applicantAddress,
-        params.applicantOrgName,
-        params.applicantOrgAddresses,
-        params.allocationStandardizedAllocations,
-        params.allocationTargetClients,
-        params.allocationRequiredReplicas,
-        params.allocationRequiredStorageProviders,
-        params.allocationTooling,
-        params.allocationDataTypes,
-        params.allocationProjected12MonthsUsage,
-        params.allocationBookkeepingRepo,
-        params.applicationInstructions,
-      ),
+      new ApplicationEdited(this.guid, file),
     )
   }
 
@@ -355,53 +326,82 @@ export class DatacapAllocator extends AggregateRoot {
   }
 
   applyApplicationCreated(event: ApplicationCreated) {
+    console.log('applyApplicationCreated', event)
     this.guid = event.guid
 
     this.applicationNumber = event.applicationNumber
     this.applicantName = event.applicantName
-    this.applicantLocation = event.applicantLocation
-    this.applicantGithubHandle = event.applicantGithubHandle
-    this.applicantSlackHandle = event.applicantSlackHandle
     this.applicantAddress = event.applicantAddress
     this.applicantOrgName = event.applicantOrgName
     this.applicantOrgAddresses = event.applicantOrgAddresses
+    this.applicantGithubHandle = event.applicantGithubHandle
+    this.otherGithubHandles = event.otherGithubHandles
 
-    this.allocationStandardizedAllocations = event.allocationStandardizedAllocations
-    this.allocationTargetClients = event.allocationTargetClients
-    this.allocationRequiredReplicas = event.allocationRequiredReplicas
+    this.allocationTrancheScheduleType = event.allocationTrancheScheduleType
+    this.audit = event.audit
+    this.distributionRequired = event.distributionRequired
     this.allocationRequiredStorageProviders = event.allocationRequiredStorageProviders
-    this.allocationTooling = event.allocationTooling
-    this.allocationDataTypes = event.allocationDataTypes
-    this.allocationProjected12MonthsUsage = event.allocationProjected12MonthsUsage
-    this.allocationBookkeepingRepo = event.allocationBookkeepingRepo
-
-    this.type = event.type
-    this.datacap = event.datacap
+    this.allocationRequiredReplicas = event.allocationRequiredReplicas
+    this.allocationTooling = []
+    this.datacapAllocationLimits = event.datacapAllocationLimits
+    this.onChainAddressForDataCapAllocation = event.onChainAddressForDataCapAllocation
 
     this.applicationStatus = ApplicationStatus.SUBMISSION_PHASE
 
     this.applicationInstructions = [
       {
         method: ApplicationAllocator.META_ALLOCATOR,
-        datacap_amount: 1,
+        datacap_amount: 5,
         timestamp: event.timestamp.getTime(),
         status: ApplicationInstructionStatus.PENDING,
       },
     ]
+
+    this.status = {
+      "Submitted": null,
+      "In Review": null,
+      "In Refresh": null,
+      "Approved": null,
+      "Declined": null,
+    }
   }
 
   applyApplicationEdited(event: ApplicationEdited) {
     console.log('applyApplicationEdited', event)
-    this.name = event.applicantName || this.name
-    this.organization = event.applicantOrgName || this.organization
-    this.address = event.applicantAddress || this.address
-    this.githubUsername = event.applicantGithubHandle || this.githubUsername
-    this.slackUsername = event.applicantSlackHandle || this.slackUsername
-    this.country = event.applicantLocation || this.country
-    this.region = event.applicantLocation || this.region
-    this.allocationStandardizedAllocations = event.standardizedAllocations || this.allocationStandardizedAllocations
 
-    this.applicationInstructions = event.applicationInstructions || this.applicationInstructions
+    this.applicantAddress = event.file.address || this.applicantAddress
+    this.applicantName = event.file.name || this.name
+    this.applicantOrgName = event.file.organization || this.organization
+    // TODO: metapathway_type: 'MA',
+    // TODO: ma_address: "0x15a9d9b81e3c67b95ffedfb4416d25a113c8c6df",
+    this.associatedOrgAddresses = event.file.associated_org_addresses || this.associatedOrgAddresses
+
+    this.allocationStandardizedAllocations = event.file.application.allocations || this.allocationStandardizedAllocations
+    this.allocationAudit = event.file.application.audit && event.file.application.audit.length > 0
+      ? event.file.application.audit[0]
+      : this.allocationAudit
+    this.allocationDistributionRequired = event.file.application.distribution && event.file.application.distribution.length > 0
+      ? event.file.application.distribution[0]
+      : this.allocationDistributionRequired
+    this.allocationRequiredReplicas = event.file.application.required_replicas || this.allocationRequiredReplicas
+    this.allocationRequiredStorageProviders = event.file.application.required_sps || this.allocationRequiredStorageProviders
+    this.allocationTooling = event.file.application.tooling || this.allocationTooling
+    this.allocationMaxDcClient = event.file.application.max_DC_client || this.allocationMaxDcClient
+    this.applicantGithubHandle = event.file.application.github_handles && event.file.application.github_handles.length > 0
+      ? event.file.application.github_handles[0]
+      : this.applicantGithubHandle
+    this.allocationBookkeepingRepo = event.file.application.allocation_bookkeeping || this.allocationBookkeepingRepo
+    // TODO: client_contract_address
+    this.onChainAddressForDataCapAllocation = event.file.application.client_contract_address || this.onChainAddressForDataCapAllocation
+    
+    this.allocatorMultisigAddress = event.file.pathway_addresses?.msig || this.allocatorMultisigAddress
+    this.allocatorMultisigSigners = event.file.pathway_addresses?.signer || this.allocatorMultisigSigners
+
+    this.applicationInstructions = Object.entries(event.file.LifeCycle).map(([_, value]) => ({
+      method: event.file.metapathway_type === "MA" ? ApplicationAllocator.META_ALLOCATOR : ApplicationAllocator.RKH_ALLOCATOR,
+      datacap_amount: parseInt(value[1]),
+      timestamp: parseInt(value[0]),
+    }))
   }
 
   applyAllocatorMultisigUpdated(event: AllocatorMultisigUpdated) {
@@ -433,7 +433,7 @@ export class DatacapAllocator extends AggregateRoot {
   }
 
   applyKYCApproved(_: KYCApproved) {
-    // TODO: ?
+    this.status["Submitted"] = Math.floor(Date.now() / 1000)
   }
 
   applyKYCRejected(_: KYCRejected) {

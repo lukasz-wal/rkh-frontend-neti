@@ -7,7 +7,6 @@ import { TYPES } from '@src/types'
 import { initialize } from '@src/startup'
 import { IApplicationDetailsRepository } from '@src/infrastructure/respositories/application-details.repository'
 import { createApplicationTest } from './create-app'
-import { editApplicationTest } from './edit-app'
 import { ApplicationStatus, IDatacapAllocatorRepository } from '@src/domain/application/application'
 import { IEventBus, Logger } from '@filecoin-plus/core'
 
@@ -86,15 +85,6 @@ async function main() {
     }
 
     console.log("Updating application with ID: ", applicationId)
-
-    // 2. Simulate governance review adding application instructions:
-    if (testEdit) {
-        await editApplicationTest(
-            container,
-            applicationId,
-            applicationInstructions,
-        )
-    }
 
     // 3. Update 'status' to ApplicationStatus.GOVERNANCE_REVIEW_PHASE
     const updated: any = {

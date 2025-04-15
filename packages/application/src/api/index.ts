@@ -70,7 +70,7 @@ async function main() {
   await subscribeRKHApprovals(container)
   await subscribeDatacapAllocations(container)
   await subscribeMetaAllocatorApprovals(container)
-  // await subscribeRefreshMetaAllocator(container)
+  await subscribeRefreshMetaAllocator(container)
   await subscribeMetaAllocatorAllowances(container)
   // await subscribeRefreshRKH(container)
 
