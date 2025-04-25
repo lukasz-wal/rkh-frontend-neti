@@ -62,7 +62,7 @@ function mapRecordToCommand(record: any): CreateApplicationCommand {
     allocationRequiredReplicas: record.fields['Replicas required, verified by CID checker'] as string,
     datacapAllocationLimits: record.fields['DataCap Allocation Limits'] as string,
     applicantGithubHandle: record.fields['Github User ID'] as string,
-    otherGithubHandles: record.fields['Additional GitHub Users'] as string[],
+    otherGithubHandles: record.fields['Additional GitHub Users'] as string,
     onChainAddressForDataCapAllocation: record.fields['On-chain address for DC Allocation'] as string,
   })
 }
