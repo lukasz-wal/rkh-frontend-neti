@@ -28,9 +28,9 @@ import Link from "next/link";
 import { useToast } from "../../../ui/use-toast";
 import { ApplicationStatusBadge } from "./ApplicationStatusBadge";
 import { ApplicationActionButton } from "./ApplicationActionButton";
-import {useAccount} from "@/hooks";
-import {AccountRole} from "@/types/account";
-import {approveKYC} from "@/lib/api";
+import { useAccount } from "@/hooks";
+import { AccountRole } from "@/types/account";
+import { approveKYC } from "@/lib/api";
 
 interface ApplicationsPanelProps {
   applications: Application[];
