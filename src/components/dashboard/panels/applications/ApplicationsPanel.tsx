@@ -138,7 +138,7 @@ export function ApplicationsPanel({
                             </Link>
                           </DropdownMenuItem>
                         )}
-                        {application.status === 'KYC_PHASE' && account?.role !== AccountRole.GOVERNANCE_TEAM && (
+                        {application.status === 'KYC_PHASE' && account?.role === AccountRole.GOVERNANCE_TEAM && (
                           <DropdownMenuItem>
                             <Button variant="ghost" className="p-0 font-normal" onClick={() => approveKYC(application.id)}>Approve KYC</Button>
                           </DropdownMenuItem>
