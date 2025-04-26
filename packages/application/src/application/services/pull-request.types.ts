@@ -69,7 +69,7 @@ export function mapApplicationToPullRequestFile(application: DatacapAllocator): 
       required_replicas: application.allocationRequiredReplicas,
       tooling: application.allocationTooling,
       max_DC_client: application.maxDcClient,
-      github_handles: [application.applicantGithubHandle, ...application.otherGithubHandles],
+      github_handles: [application.applicantGithubHandle, ...application.otherGithubHandles ?? []],
       allocation_bookkeeping: application.allocationBookkeepingRepo,
       client_contract_address: "",
     },
