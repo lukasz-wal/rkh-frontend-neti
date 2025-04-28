@@ -149,8 +149,8 @@ export class DatacapAllocator extends AggregateRoot {
     applicantOrgName: string
     applicantOrgAddresses: string
     allocationTrancheScheduleType: string
-    audit: string
-    distributionRequired: string
+    allocationAudit: string
+    allocationDistributionRequired: string
     allocationRequiredStorageProviders: string
     allocationRequiredReplicas: string
     datacapAllocationLimits: string
@@ -168,8 +168,8 @@ export class DatacapAllocator extends AggregateRoot {
         params.applicantOrgName,
         params.applicantOrgAddresses,
         params.allocationTrancheScheduleType,
-        params.audit,
-        params.distributionRequired,
+        params.allocationAudit,
+        params.allocationDistributionRequired,
         params.allocationRequiredStorageProviders,
         params.allocationRequiredReplicas,
         params.datacapAllocationLimits,
@@ -338,8 +338,8 @@ export class DatacapAllocator extends AggregateRoot {
     this.otherGithubHandles = event.otherGithubHandles
 
     this.allocationTrancheScheduleType = event.allocationTrancheScheduleType
-    this.audit = event.audit
-    this.distributionRequired = event.distributionRequired
+    this.allocationAudit = event.audit
+    this.allocationDistributionRequired = event.distributionRequired
     this.allocationRequiredStorageProviders = event.allocationRequiredStorageProviders
     this.allocationRequiredReplicas = event.allocationRequiredReplicas
     this.allocationTooling = []
