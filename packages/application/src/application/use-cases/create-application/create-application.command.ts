@@ -20,8 +20,8 @@ export class CreateApplicationCommand extends Command {
   public readonly applicantOrgName: string
   public readonly applicantOrgAddresses: string
   public readonly allocationTrancheScheduleType: string
-  public readonly audit: string
-  public readonly distributionRequired: string
+  public readonly allocationAudit: string
+  public readonly allocationDistributionRequired: string
   public readonly allocationRequiredStorageProviders: string
   public readonly allocationRequiredReplicas: string
   public readonly datacapAllocationLimits: string
@@ -86,8 +86,8 @@ export class CreateApplicationCommandHandler implements ICommandHandler<CreateAp
         applicantOrgName: command.applicantOrgName,
         applicantOrgAddresses: command.applicantOrgAddresses,
         allocationTrancheScheduleType: command.allocationTrancheScheduleType,
-        audit: command.audit,
-        distributionRequired: command.distributionRequired,
+        allocationAudit: command.allocationAudit,
+        allocationDistributionRequired: command.allocationDistributionRequired,
         allocationRequiredStorageProviders: command.allocationRequiredStorageProviders,
         allocationRequiredReplicas: command.allocationRequiredReplicas,
         datacapAllocationLimits: command.datacapAllocationLimits,
