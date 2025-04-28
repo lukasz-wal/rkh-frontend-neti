@@ -116,7 +116,7 @@ export async function fetchRole(address: string): Promise<AccountRole> {
 }
 
 export async function approveKYC(id: string) {
-  const url = `${API_BASE_URL}/applications/${id}`;
+  const url = `${API_BASE_URL}/applications/${id}/approveKYC`;
 
   try {
     const response = await fetch(url, {
