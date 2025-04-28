@@ -49,7 +49,7 @@ export class ApplicationController {
     return res.json(ok('Retrieved application ' + id + 'successfully', {}))
   }
 
-  @httpPost('/:id')
+  @httpPost('/:id/approveKYC')
   async approveKYC(@requestParam('id') id: string, @response() res: Response) {
     console.log('applicationId', id)
 
