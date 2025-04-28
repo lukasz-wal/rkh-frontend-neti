@@ -24,11 +24,12 @@ export async function subscribeApplicationSubmissions(container: Container) {
       for (const record of newRecords) {
         if (shouldProcessRecord(record, processedRecords)) {
           const command = mapRecordToCommand(record)
-          await commandBus.send(command)
           processedRecords.add(record.id)
+          await commandBus.send(command)
         }
       }
     } catch (error) {
+      processedRecords.clear()
       console.error('Error processing application submissions:', error)
     }
   }, config.SUBSCRIBE_APPLICATION_SUBMISSIONS_POLLING_INTERVAL)
