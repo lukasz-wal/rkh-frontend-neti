@@ -21,5 +21,6 @@ export const TYPES = {
   RabbitMQConfig: Symbol('RabbitMQConfig'),
   MessageService: Symbol('MessageService'),
   PullRequestService: Symbol('PullRequestService'),
+  RoleService: Symbol('RoleService'),
   ApplicationDetailsRepository: Symbol('ApplicationDetailsRepository'),
 }
