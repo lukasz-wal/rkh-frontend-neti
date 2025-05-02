@@ -4,8 +4,10 @@ import { inject } from 'inversify'
 import { controller, httpGet, request, response } from 'inversify-express-utils'
 
 import { badRequest, ok } from '@src/api/http/processors/response'
+
 import { TYPES } from '@src/types'
 import { RoleService } from '@src/application/services/role.service'
+
 
 @controller('/api/v1/roles')
 export class RoleController {

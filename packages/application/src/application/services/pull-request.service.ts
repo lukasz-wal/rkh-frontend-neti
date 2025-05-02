@@ -23,7 +23,7 @@ export class PullRequestService {
   ) {}
 
   async createPullRequest(application: DatacapAllocator): Promise<PullRequest> {
-    const branchName = `filecoin-plus-bot/${application.guid}/${application.grantCycle}`
+    const branchName = `add-allocator-${application.guid}/${application.grantCycle}`
     this._logger.debug(`Creating branch: ${branchName}`)
 
     try {
@@ -56,7 +56,7 @@ export class PullRequestService {
       'main',
       [
         {
-          path: `allocators/${application.guid}.json`,
+          path: `Allocators/${application.guid}.json`,
           content: JSON.stringify(mapApplicationToPullRequestFile(application), null, 2),
         },
       ],
@@ -78,7 +78,7 @@ export class PullRequestService {
   }
 
   async updatePullRequest(application: DatacapAllocator): Promise<void> {
-    this._logger.debug(`Updating pull request message: ${application.applicationPullRequest.prNumber}`)
+    this._logger.debug(`Updating pull request message: ${application.applicationPullRequest?.prNumber}`)
     let title: string
     if (application.refresh) {
       title = `Refresh allocator: ${application.applicantName}`
@@ -94,7 +94,7 @@ export class PullRequestService {
       this._messageService.generatePullRequestMessage(application),
       [
         {
-          path: `allocators/${application.guid}.json`,
+          path: `Allocators/${application.guid}.json`,
           content: JSON.stringify(mapApplicationToPullRequestFile(application), null, 2),
         },
       ],

@@ -76,7 +76,8 @@ async function main() {
   // await subscribeRefreshRKH(container)
 
   // Start the API server
-  apiServer.listen(config.API_PORT, () => console.log('The application is initialised on the port %s', config.API_PORT))
+  apiServer.listen({ host: '0.0.0.0', port: config.API_PORT })
+  console.log('The application has initialised on the port %s', config.API_PORT)
 }
 
 main().catch((error) => {

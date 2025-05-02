@@ -99,7 +99,7 @@ The Docker setup can be configured by setting the following environment variable
 | Environment Variable     | Description                                                              | Example Values                   |
 | ------------------------ | ------------------------------------------------------------------------ | -------------------------------- |
 | `API_PORT`               | Port number for the API service                                          | `3001`                           |
-| `MONGODB_URI`            | URI for connecting to MongoDB                                            | `mongodb://localhost:27017/`     |
+| `MONGODB_URI`            | URI for connecting to MongoDB                                            | `mongodb://host.docker.internal:27017/`     |
 | `RABBITMQ_URL`           | URL for connecting to RabbitMQ                                           | `localhost:5672`                 |
 | `RABBITMQ_USERNAME`      | Username for RabbitMQ authentication                                     | `admin`                          |
 | `RABBITMQ_PASSWORD`      | Password for RabbitMQ authentication                                     | `admin`                          |

@@ -41,7 +41,7 @@ export async function subscribeApplicationEdits(container: Container) {
           const file = await githubClient.getFile(
             config.GITHUB_OWNER,
             config.GITHUB_REPO,
-            `allocators/${application.id}.json`,
+            `Allocators/${application.id}.json`,
             prDetails.head.ref,
           )
 
