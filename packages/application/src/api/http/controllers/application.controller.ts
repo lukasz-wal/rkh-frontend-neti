@@ -2,16 +2,25 @@ import { IQueryBus } from '@filecoin-plus/core'
 import { Request, Response } from 'express'
 import { query, validationResult } from 'express-validator'
 import { inject } from 'inversify'
-import { controller, httpGet, request, requestParam, response } from 'inversify-express-utils'
+import { controller, httpGet, httpPost, request, requestParam, response } from 'inversify-express-utils'
+import { ICommandBus } from '@filecoin-plus/core'
 
-import { badRequest, ok } from '@src/api/http/processors/response'
+import { badPermissions, badRequest, ok } from '@src/api/http/processors/response'
 import { TYPES } from '@src/types'
 import { GetApplicationsQuery } from '@src/application/queries/get-applications/get-applications.query'
 import { ApplicationStatus } from '@src/domain/application/application'
+import { SubmitKYCResultCommand } from '@src/application/use-cases/submit-kyc-result/submit-kyc-result.command'
+import { PhaseStatus } from '@src/application/commands/common'
+import { KYCApprovedData } from '@src/domain/types'
+import { RoleService } from '@src/application/services/role.service'
 
 @controller('/api/v1/applications')
 export class ApplicationController {
-  constructor(@inject(TYPES.QueryBus) private readonly _queryBus: IQueryBus) {}
+  constructor(
+    @inject(TYPES.QueryBus) private readonly _queryBus: IQueryBus,
+    @inject(TYPES.RoleService) private readonly _roleService: RoleService,
+    @inject(TYPES.CommandBus) private readonly _commandBus: ICommandBus
+  ) {}
 
   @httpGet(
     '',
@@ -43,5 +52,26 @@ export class ApplicationController {
     // const result = await this._queryBus.execute(query);
     // return res.json(ok('Retrieved application successfully', result));
     return res.json(ok('Retrieved application ' + id + 'successfully', {}))
+  }
+
+  @httpPost('/:id/approveKYC', query('address').isString())
+  async approveKYC(@requestParam('id') id: string, @request() req: Request,  @response() res: Response) {
+    console.log('applicationId', id)
+    const address = req.query.address as string
+
+    const role =this._roleService.getRole(address)
+
+    if (role !== 'GOVERNANCE_TEAM') {
+      return res.status(400).json(badPermissions())
+    }
+
+    const result = await this._commandBus.send(
+      new SubmitKYCResultCommand(id, {
+        status: PhaseStatus.Approved,
+        data: {} as KYCApprovedData,
+      }),
+    )
+
+    return res.json(ok('KYC result submitted successfully', {}))
   }
 }

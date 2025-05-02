@@ -24,11 +24,12 @@ export async function subscribeApplicationSubmissions(container: Container) {
       for (const record of newRecords) {
         if (shouldProcessRecord(record, processedRecords)) {
           const command = mapRecordToCommand(record)
-          await commandBus.send(command)
           processedRecords.add(record.id)
+          await commandBus.send(command)
         }
       }
     } catch (error) {
+      processedRecords.clear()
       console.error('Error processing application submissions:', error)
     }
   }, config.SUBSCRIBE_APPLICATION_SUBMISSIONS_POLLING_INTERVAL)
@@ -56,13 +57,13 @@ function mapRecordToCommand(record: any): CreateApplicationCommand {
     applicantOrgName: record.fields['Organization Name'] as string,
     applicantOrgAddresses: record.fields['Organization On-Chain address'] as string,
     allocationTrancheScheduleType: record.fields['Allocation Tranche Schedule Type'] as string,
-    audit: record.fields['Audit'] as string,
-    distributionRequired: record.fields['Distribution Required'] as string,
+    allocationAudit: record.fields['Audit'] as string,
+    allocationDistributionRequired: record.fields['Distribution Required'] as string,
     allocationRequiredStorageProviders: record.fields['Number of Storage Providers required'] as string,
     allocationRequiredReplicas: record.fields['Replicas required, verified by CID checker'] as string,
     datacapAllocationLimits: record.fields['DataCap Allocation Limits'] as string,
     applicantGithubHandle: record.fields['Github User ID'] as string,
-    otherGithubHandles: record.fields['Additional GitHub Users'] as string[],
+    otherGithubHandles: record.fields['Additional GitHub Users'] as string,
     onChainAddressForDataCapAllocation: record.fields['On-chain address for DC Allocation'] as string,
   })
 }

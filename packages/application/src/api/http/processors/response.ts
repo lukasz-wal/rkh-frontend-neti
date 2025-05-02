@@ -10,6 +10,11 @@ export const badRequest = (message: string, errors: any) => ({
   errors,
 })
 
+export const badPermissions = (message?: string) => ({
+  status: '400',
+  message: message || 'Bad Permissions',
+})
+
 export const unauthorized = (message: string) => ({
   status: '401',
   message: message || 'Unauthorized',

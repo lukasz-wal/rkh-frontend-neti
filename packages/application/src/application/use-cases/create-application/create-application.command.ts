@@ -20,13 +20,13 @@ export class CreateApplicationCommand extends Command {
   public readonly applicantOrgName: string
   public readonly applicantOrgAddresses: string
   public readonly allocationTrancheScheduleType: string
-  public readonly audit: string
-  public readonly distributionRequired: string
+  public readonly allocationAudit: string
+  public readonly allocationDistributionRequired: string
   public readonly allocationRequiredStorageProviders: string
   public readonly allocationRequiredReplicas: string
   public readonly datacapAllocationLimits: string
   public readonly applicantGithubHandle: string
-  public readonly otherGithubHandles: string[]
+  public readonly otherGithubHandles: string
   public readonly onChainAddressForDataCapAllocation: string
 
   /**
@@ -54,6 +54,16 @@ export class CreateApplicationCommandHandler implements ICommandHandler<CreateAp
     private readonly pullRequestService: PullRequestService,
   ) {}
 
+  normalizeGithubHandles(input: string) : any {
+    //extract individual handles from the "additional github handles" airtable field
+    if (!input || typeof input !== 'string') return [];
+
+    return input
+     .split(/[\s,]+/) // split on commas, spaces, or newlines
+     .map(handle => handle.replace(/^@/, '').trim().toLowerCase()) // remove leading @ and normalize
+     .filter(Boolean); // remove empty strings
+  }
+    
   async handle(command: CreateApplicationCommand): Promise<Result<{ guid: string }>> {
     console.log('command', command)
     try {
@@ -64,6 +74,8 @@ export class CreateApplicationCommandHandler implements ICommandHandler<CreateAp
       }
     } catch (error) {}
 
+    const otherHandlesArray = this.normalizeGithubHandles(command.otherGithubHandles)
+      
     try {
       // Create a new datacap allocator
       const allocator: DatacapAllocator = DatacapAllocator.create({
@@ -74,13 +86,13 @@ export class CreateApplicationCommandHandler implements ICommandHandler<CreateAp
         applicantOrgName: command.applicantOrgName,
         applicantOrgAddresses: command.applicantOrgAddresses,
         allocationTrancheScheduleType: command.allocationTrancheScheduleType,
-        audit: command.audit,
-        distributionRequired: command.distributionRequired,
+        allocationAudit: command.allocationAudit,
+        allocationDistributionRequired: command.allocationDistributionRequired,
         allocationRequiredStorageProviders: command.allocationRequiredStorageProviders,
         allocationRequiredReplicas: command.allocationRequiredReplicas,
         datacapAllocationLimits: command.datacapAllocationLimits,
         applicantGithubHandle: command.applicantGithubHandle,
-        otherGithubHandles: command.otherGithubHandles,
+        otherGithubHandles: otherHandlesArray,
         onChainAddressForDataCapAllocation: command.onChainAddressForDataCapAllocation,
       })
 
