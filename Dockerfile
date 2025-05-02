@@ -19,7 +19,7 @@ RUN npm -w @filecoin-plus/application install
 RUN npm -w @filecoin-plus/application run build 
 
 # Expose the port the app runs on
-EXPOSE 3001
+EXPOSE 3000
 
 
 # The CMD will be overridden by Docker Compose
