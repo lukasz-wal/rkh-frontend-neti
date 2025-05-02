@@ -14,6 +14,7 @@ const RKH_ADDRESSES = [
   'f1jg4vwqkmtj4n7siyfkwrr5a7haqtmehkjraof3q',
   'f1k5y3sz5xwm6hx5gckxob6gfkmaf4r76brsl77wi',
   'f1tgenzdgpmvuelvcxryy2py4bb4yucwl45dtsruy',
+  'f1f63jtjv4ama3ipdd7fiddjsmd4yw7xixcvaorwy',
 ]
 
 @controller('/api/v1/roles')

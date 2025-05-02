@@ -54,7 +54,7 @@ export function mapApplicationToPullRequestFile(application: DatacapAllocator): 
   }
 
   return {
-    application_number: application?.applicationPullRequest?.prNumber || 1337,
+    application_number: application?.applicationPullRequest?.prNumber,
     address: application.applicantAddress,
     name: application.applicantName,
     organization: application.applicantOrgName,
