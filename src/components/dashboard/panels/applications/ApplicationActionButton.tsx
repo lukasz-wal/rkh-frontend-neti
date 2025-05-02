@@ -27,7 +27,7 @@ function getActionConfig(application: Application, account?: { role: AccountRole
     case "KYC_PHASE":
       return {
         label: "Submit KYC",
-        href: `https://flow-dev.togggle.io/fidl/kyc?allocatorId=${id}`,
+        href: `https://flow.togggle.io/fil/kyc?allocatorId=${id}`,
         disabled: account?.role !== AccountRole.USER,
       };
 
