@@ -47,6 +47,7 @@ async function main() {
   const db = container.get<Db>(TYPES.Db)
   // await db.collection('applicationDetails').deleteMany({})
   // await db.collection('datacap-allocator-events').deleteMany({})
+  await db.collection('applicationDetails').createIndex({ applicationId: 1 }, { unique: true });
 
   // Bind the API server to the container
   const apiServer = server.build()
