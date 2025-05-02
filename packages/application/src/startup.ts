@@ -62,6 +62,7 @@ import { EditApplicationCommandHandler } from './application/use-cases/edit-appl
 import { UpdateDatacapAllocationCommandHandler } from './application/use-cases/update-datacap-allocation/update-datacap-allocation'
 import { UpdateMetaAllocatorApprovalsCommandHandler } from './application/use-cases/update-ma-approvals/update-ma-approvals.command'
 import { CreateRefreshApplicationCommandHandler } from './application/use-cases/create-application/create-refresh-application.command'
+import { RoleService } from './application/services/role.service'
 
 
 export const initialize = async (): Promise<Container> => {
@@ -74,6 +75,7 @@ export const initialize = async (): Promise<Container> => {
   container.bind<Logger>(TYPES.Logger).toConstantValue(logger)
 
   container.bind<PullRequestService>(TYPES.PullRequestService).to(PullRequestService)
+  container.bind<RoleService>(TYPES.RoleService).to(RoleService)
   container.bind<MessageService>(TYPES.MessageService).to(MessageService)
 
   container.bind<IEventHandler<ApplicationCreated>>(TYPES.Event).to(ApplicationCreatedEventHandler)

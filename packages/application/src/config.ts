@@ -1,7 +1,7 @@
 import dotenv from 'dotenv'
 dotenv.config()
 
-const DEFAULT_POLLING_INTERVAL = 10000
+const DEFAULT_POLLING_INTERVAL = 60 * 5 * 1000 // 5 minutes in ms
 
 export default {
   API_PORT: process.env.API_PORT || 3001,
