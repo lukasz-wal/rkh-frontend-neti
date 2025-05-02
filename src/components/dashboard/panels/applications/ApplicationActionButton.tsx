@@ -21,7 +21,7 @@ function getActionConfig(application: Application, account?: { role: AccountRole
     case "GOVERNANCE_REVIEW_PHASE":
       return {
         label: "View",
-        href: `https://github.com/filecoin-project/Allocator-Registry/pull/${githubPrNumber}`,
+        href: `${application.githubPrLink}`,
       };
 
     case "KYC_PHASE":
