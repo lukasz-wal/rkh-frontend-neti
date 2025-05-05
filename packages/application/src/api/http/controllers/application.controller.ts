@@ -56,7 +56,7 @@ export class ApplicationController {
 
   @httpPost('/:id/approveKYC', query('address').isString())
   async approveKYC(@requestParam('id') id: string, @request() req: Request,  @response() res: Response) {
-    console.log('applicationId', id)
+    console.log(`Approve KYC for application ${id}`)
     const address = req.query.address as string
 
     const role =this._roleService.getRole(address)
