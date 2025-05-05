@@ -18,18 +18,21 @@ export class KycController {
     const { endpointSecret } = req.params
     const expectedSecret = process.env.KYC_ENDPOINT_SECRET
 
-    if (endpointSecret !== expectedSecret) {
+    if ( !expectedSecret || (endpointSecret !== expectedSecret)) {
       return res.status(404).json({ error: 'Not Found' })
     }
 
-    const { event, data, custom } = req.body
-    const applicationId = custom.applicationId
-    console.log('applicationId', applicationId)
+    const togggleResult = req.body
+    console.log(togggleResult)
+
+    if ( !togggleResult?.event || !togggleResult?.data?.kyc || !togggleResult?.custom) {
+      return res.status(400).json({ error: 'Bad Request' })
+    }
 
     const result = await this._commandBus.send(
-      new SubmitKYCResultCommand(applicationId, {
-        status: event === 'success' ? PhaseStatus.Approved : PhaseStatus.Rejected,
-        data: data.kyc,
+      new SubmitKYCResultCommand(togggleResult?.custom?.applicationId, {
+        status: togggleResult?.event === 'success' ? PhaseStatus.Approved : PhaseStatus.Rejected,
+        data: togggleResult?.data?.kyc,
       }),
     )
     return res.json(ok('KYC result submitted successfully', {}))

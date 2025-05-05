@@ -1,0 +1,32 @@
+{
+  "result_id": "7fd1c306-7830-4261-b372-181f742055ef",
+  "event": "failed",
+  "data": {
+    "kyc": {
+      "id": "7fd1c306-7830-4261-b372-181f742055ef",
+      "kycInquiryId": "d72b7afc-6841-4478-9d21-3e8dd3d26695",
+      "createdAt": "2023-10-03T10:05:51.851407Z",
+      "tenantId": "6098ca37-d11e-4b66-9344-3837dd3852f9",
+      "customData": { "applicationId": "recrKEUkpFHMyVRy9" },
+      "status": "failed",
+      "documentId": "abcc8e8b7b354cb9978c40b66de2bae3",
+      "documentType": "GB_DrivingLicense_2015",
+      "class": "web-mobile",
+      "platform": "iOS",
+      "browser": "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1",
+      "scoreDocumentTotal": 0.6977895,
+      "scoreBiometricLifeProof": 0.828225,
+      "scoreBiometricSelfie": 0.9996347,
+      "scoreBiometricPhotoId": 0.9996347,
+      "scoreBiometricDuplicateAttack": 0.87014455,
+      "processCode": "ProcessCompleted",
+      "processType": "info",
+      "processMessage": "The process has been successfully completed",
+      "processAdditionalData": null,
+      "identityId": "user@gmail.com"
+    }
+  },
+  "custom": { 
+    "applicationId": "recrKEUkpFHMyVRy9"
+  }
+}
