@@ -13,6 +13,8 @@ import { SubmitKYCResultCommand } from '@src/application/use-cases/submit-kyc-re
 import { PhaseStatus } from '@src/application/commands/common'
 import { KYCApprovedData } from '@src/domain/types'
 import { RoleService } from '@src/application/services/role.service'
+import config from '@src/config'
+
 
 @controller('/api/v1/applications')
 export class ApplicationController {
@@ -54,12 +56,19 @@ export class ApplicationController {
     return res.json(ok('Retrieved application ' + id + 'successfully', {}))
   }
 
-  @httpPost('/:id/approveKYC', query('address').isString())
+  @httpPost('/:id/approveKYC', query('address').isString(), query('sig').isString())
   async approveKYC(@requestParam('id') id: string, @request() req: Request,  @response() res: Response) {
     console.log(`Approve KYC for application ${id}`)
     const address = req.query.address as string
 
     const role =this._roleService.getRole(address)
+
+    // TODO: make sure sig is a signature by address
+    const sig = req.query.sig as string
+
+    if (sig != config.KYC_ENDPOINT_SECRET) {
+      return res.status(400).json(badPermissions())
+    }
 
     if (role !== 'GOVERNANCE_TEAM') {
       return res.status(400).json(badPermissions())
