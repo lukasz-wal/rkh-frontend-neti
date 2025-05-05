@@ -1,5 +1,6 @@
 import { ApplicationInstruction, DatacapAllocator } from '@src/domain/application/application'
 import { ApplicationDetailsRepository } from '@src/infrastructure/respositories/application-details.repository'
+import config from '@src/config'
 
 export type ApplicationPullRequestFile = {
   application_number: number
@@ -59,7 +60,7 @@ export function mapApplicationToPullRequestFile(application: DatacapAllocator): 
     name: application.applicantName,
     organization: application.applicantOrgName,
     metapathway_type: 'MA',
-    ma_address: "0x15a9d9b81e3c67b95ffedfb4416d25a113c8c6df",
+    ma_address: config.MA_ADDRESSES,
     associated_org_addresses: application.applicantOrgAddresses,
     application: {
       allocations: application.allocationStandardizedAllocations,

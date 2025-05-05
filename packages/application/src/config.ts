@@ -33,10 +33,21 @@ export default {
   LOTUS_RPC_URL: process.env.LOTUS_RPC_URL || 'https://filecoin.chain.love/',
   LOTUS_AUTH_TOKEN: process.env.LOTUS_AUTH_TOKEN || 'your-lotus-auth-token',
 
-  // GitHub handles for the governance team
+  // GitHub handles & wallets for the governance team
   GOVERNANCE_TEAM_GITHUB_HANDLES: process.env.GOVERNANCE_TEAM_GITHUB_HANDLES
     ? process.env.GOVERNANCE_TEAM_GITHUB_HANDLES.split(',').map((handle) => handle.trim())
     : ['galen-mcandrew', 'Kevin-FF-USA'],
+  GOVERNANCE_REVIEW_ADDRESSES: process.env.GOVERNANCE_REVIEW_ADDRESSES
+    ? process.env.GOVERNANCE_REVIEW_ADDRESSES.split(',').map((handle) => handle.trim())
+    : [],
+  //allowed RKH addresses
+  RKH_ADDRESSES: process.env.RKH_ADDRESSES
+  ? process.env.RKH_ADDRESSES.split(',').map((handle) => handle.trim())
+  : [],
+  //MA addresses
+  MA_ADDRESSES: process.env.MA_ADDRESSES || '0x15a9d9b81e3c67b95ffedfb4416d25a113c8c6df',
+  /*? process.env.MA_ADDRESSES.split(',').map((handle) => handle.trim())
+  : ["0x15a9d9b81e3c67b95ffedfb4416d25a113c8c6df"],*/
 
   // Admin API key configuration
   ADMIN_API_KEY: process.env.ADMIN_API_KEY || 'default_admin_api_key',

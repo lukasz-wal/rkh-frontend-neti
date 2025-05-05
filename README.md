@@ -111,6 +111,11 @@ The Docker setup can be configured by setting the following environment variable
 | `GITHUB_APP_ID`          | ID of the GitHub App                                                      | `1`                              |
 | `GITHUB_APP_PRIVATE_KEY`| Private key for the GitHub App                                             | `-----BEGIN RSA PRIVATE KEY-----...` |
 | `GITHUB_APP_INSTALLATION_ID`| Installation ID for the GitHub App                                         | `1337`                           |
+| `GITHUB_TOKEN`| GitHub Token for the GitHub App                                         |                           |
+| `GOVERNANCE_TEAM_GITHUB_HANDLES`| github handles of the governance team                                         |'galen-mcandrew'          
+| `GOVERNANCE_REVIEW_ADDRESSES`| Wallet addresses of people on the Fil+ governance team                                         |'f1..., f1....'  
+| `RKH_ADDRESSES`| Wallet addresses of Root Key Holders                                         |'f1..., f1....'  
+| `MA_ADDRESSES`| Addresses of contracts controlling Metaallocator Pathways                                         |' 0x15a9d9b81e3c67b95ffedfb4416d25a113c8c6df'  
 | `AIRTABLE_API_KEY`       | API key for accessing the Airtable API                                   | `pat*******************`         |
 | `AIRTABLE_BASE_ID`       | ID of the Airtable base                                                  | `app*******************`         |
 | `AIRTABLE_TABLE_NAME`    | Name of the Airtable table                                               | `tbl*******************`         |
