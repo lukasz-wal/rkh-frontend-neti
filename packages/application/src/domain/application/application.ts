@@ -204,6 +204,7 @@ export class DatacapAllocator extends AggregateRoot {
     this.applyChange(
       new AllocatorMultisigUpdated(this.guid, allocatorActorId, multisigAddress, multisigThreshold, multisigSigners),
     )
+   
   }
 
   setApplicationPullRequest(

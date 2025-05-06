@@ -8,6 +8,10 @@ interface ApplicationDetails {
   organization: string
   actorId?: string
   address: string
+  multisigDetails?: {
+    multisigThreshold: number
+    multisigSigners: string[]
+  }
   github: string
   allocationTrancheScheduleType: string
   datacap: number
