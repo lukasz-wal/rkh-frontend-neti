@@ -10,5 +10,8 @@ export async function getMultisigInfo(address: string): Promise<any> {
     if (!res.ok) {
       throw new Error(`Filfox API returned ${res.status} for ${address}`);
     }
+    if (result.data.actor !== 'multisig'){
+      throw new Error(`Filfox API returned no multisig`);
+    }
     return res.json();
   }
