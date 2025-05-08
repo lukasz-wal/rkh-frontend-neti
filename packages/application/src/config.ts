@@ -52,8 +52,9 @@ export default {
   // Admin API key configuration
   ADMIN_API_KEY: process.env.ADMIN_API_KEY || 'default_admin_api_key',
 
-  // Secret for KYC
+  // Secrets for KYC and reviews
   KYC_ENDPOINT_SECRET: process.env.KYC_ENDPOINT_SECRET || '',
+  GOVERNANCE_REVIEW_SECRET: process.env.GOVERNANCE_REVIEW_SECRET || '',
 
   // Refresh application threshold
   REFRESH_MIN_THRESHOLD_PCT: Number(process.env.REFRESH_MIN_THRESHOLD_PCT) || 25,

@@ -6,8 +6,18 @@ import { TYPES } from '@src/types'
 
 import { PhaseResult, PhaseStatus, SubmitPhaseResultCommand } from '../../commands/common'
 
-type GovernanceReviewApprovedData = any // TODO
-type GovernanceReviewRejectedData = any // TODO
+type AllocatorType = 'Manual' | 'Automated' | 'Market Based'
+
+type GovernanceReviewApprovedData = {
+  finalDataCap: number
+  allocatorType: AllocatorType
+  reviewerAddress: string
+}
+
+type GovernanceReviewRejectedData = {
+  reason: string
+  reviewerAddress: string
+}
 
 export class SubmitGovernanceReviewResultCommand extends SubmitPhaseResultCommand<
   GovernanceReviewApprovedData,
