@@ -112,11 +112,6 @@ export class AllocatorMultisigUpdatedEventHandler implements IEventHandler<Alloc
           multisigSigners: signers
         }
       });
-/*    await this._repository.update({
-      id: event.aggregateId,
-      actorId: event.allocatorActorId,
-      address: event.multisigAddress,
-    })*/
   }
 }
 
