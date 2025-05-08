@@ -108,7 +108,7 @@ export class CreateApplicationCommandHandler implements ICommandHandler<CreateAp
           actorId,
           command.onChainAddressForDataCapAllocation,
           threshold,
-          signers
+          signers,
         );
       }
       this.logger.info('Creating pull request...')
