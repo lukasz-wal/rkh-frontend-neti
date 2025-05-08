@@ -64,7 +64,7 @@ export class ApplicationController {
     const role = this._roleService.getRole(address)
 
     const sig = req.query.sig as string
-    console.log(`KYC Secret ${id}`)
+  
     if (sig != config.KYC_ENDPOINT_SECRET) {
       return res.status(400).json(badPermissions())
     }
