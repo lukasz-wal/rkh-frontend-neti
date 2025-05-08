@@ -490,6 +490,11 @@ rejectGovernanceReview(details: GovernanceReviewRejectedData) {
     this.applicationStatus = ApplicationStatus.GOVERNANCE_REVIEW_PHASE
   }
 
+  applyKYCRevoked(_: KYCApproved) {
+    this.applicationStatus = ApplicationStatus.GOVERNANCE_REVIEW_PHASE
+  }
+
+
   applyKYCRejected(event: KYCRejected) {
      if (!this.status["Declined"]) {
       this.status["Declined"] = Math.floor(event.timestamp.getTime() / 1000)
