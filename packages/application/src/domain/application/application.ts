@@ -432,9 +432,13 @@ export class DatacapAllocator extends AggregateRoot {
   applyKYCStarted(_: KYCStarted) {
     this.applicationStatus = ApplicationStatus.KYC_PHASE
   }
+  
 
-  applyKYCApproved(_: KYCApproved) {
-    this.status["Submitted"] = Math.floor(Date.now() / 1000)
+  applyKYCApproved(event: KYCApproved) {
+    if (!this.status["Submitted"]) {
+      // convert to Unix seconds if that’s what you want
+      this.status["Submitted"] = Math.floor(event.timestamp.getTime() / 1000);
+    }
   }
 
   applyKYCRejected(_: KYCRejected) {

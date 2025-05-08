@@ -61,18 +61,17 @@ export class ApplicationController {
     console.log(`Approve KYC for application ${id}`)
     const address = req.query.address as string
 
-    const role =this._roleService.getRole(address)
-
+    //const role = this._roleService.getRole(address)
     // TODO: make sure sig is a signature by address
     const sig = req.query.sig as string
-
+    console.log(`KYC Secret ${id}`)
     if (sig != config.KYC_ENDPOINT_SECRET) {
       return res.status(400).json(badPermissions())
     }
 
-    if (role !== 'GOVERNANCE_TEAM') {
-      return res.status(400).json(badPermissions())
-    }
+    /*if (role !== 'GOVERNANCE_TEAM') {
+      return res.status(40).json(badPermissions())
+    }*/
 
     const result = await this._commandBus.send(
       new SubmitKYCResultCommand(id, {
