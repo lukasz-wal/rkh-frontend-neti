@@ -88,7 +88,7 @@ export class KYCStarted extends Event {
   eventName = KYCStarted.name
   aggregateName = 'allocator'
 
-  public timestamp: Date
+  public readonly timestamp: Date
 
   constructor(allocatorId: string) {
     super(allocatorId)
@@ -100,7 +100,7 @@ export class KYCApproved extends Event {
   eventName = KYCApproved.name
   aggregateName = 'allocator'
 
-  public timestamp: Date
+  public readonly timestamp: Date
 
   constructor(
     allocatorId: string,
@@ -115,7 +115,7 @@ export class KYCRejected extends Event {
   eventName = KYCRejected.name
   aggregateName = 'allocator'
 
-  public timestamp: Date
+  public readonly timestamp: Date
 
   constructor(
     allocatorId: string,
