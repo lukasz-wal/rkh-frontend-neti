@@ -35,9 +35,9 @@ async function main() {
   // Initialize and configure the API server
   const server = new InversifyExpressServer(container)
   server.setConfig((app: Application) => {
+    app.use(corsMiddleware)
     app.use(urlencoded({ extended: true }))
     app.use(json())
-    app.use(corsMiddleware)
   })
   server.setErrorConfig((app: Application) => {
     app.use(errorHandler)
