@@ -20,7 +20,7 @@ import {
   AllocatorMultisigUpdated,
   DatacapRefreshRequested,
 } from './application.events'
-import { KYCApprovedData, KYCRejectedData } from '@src/domain/types'
+import { KYCApprovedData, KYCRejectedData, GovernanceReviewApprovedData, GovernanceReviewRejectedData } from '@src/domain/types'
 import { ApplicationPullRequestFile } from '@src/application/services/pull-request.types'
 
 export interface IDatacapAllocatorRepository extends IRepository<DatacapAllocator> { }
@@ -247,7 +247,45 @@ export class DatacapAllocator extends AggregateRoot {
     this.applyChange(new KYCRejected(this.guid, data))
   }
 
-  approveGovernanceReview() {
+  approveGovernanceReview(details: GovernanceReviewApprovedData) {
+    this.ensureValidApplicationStatus([ApplicationStatus.GOVERNANCE_REVIEW_PHASE])    
+
+    /*
+      The choice of type means that:
+        in Automated and Market Based cases:
+          the application should advance to RKH approval
+        in Manual:
+          pathway field updated to MA
+          the address changed to MA address from env variable
+          the tooling field should get "smart_contract_allocator" entry
+          the application should advance to MA approval
+    */
+    const approvedMethod = details?.allocatorType === 'Manual' ? ApplicationAllocator.META_ALLOCATOR : ApplicationAllocator.RKH_ALLOCATOR
+    const lastInstructionIndex = this.applicationInstructions.length - 1
+    this.applicationInstructions[lastInstructionIndex].method = approvedMethod
+    this.applicationInstructions[lastInstructionIndex].datacap_amount = details?.finalDataCap
+    this.applicationInstructions[lastInstructionIndex].status = ApplicationInstructionStatus.PENDING
+    this.applicationInstructions[lastInstructionIndex].timestamp = Math.floor(Date.now() / 1000)
+
+    this.applyChange(new GovernanceReviewApproved(this.guid, this.applicationInstructions))
+    if (this.applicationInstructions[lastInstructionIndex].method === ApplicationAllocator.META_ALLOCATOR) {
+      this.applyChange(new MetaAllocatorApprovalStarted(this.guid))
+    } else {
+      this.applyChange(new RKHApprovalStarted(this.guid, 2)) // TODO: Hardcoded 2 for multisig threshold
+    }
+  }
+
+rejectGovernanceReview(details: GovernanceReviewRejectedData) {
+  this.ensureValidApplicationStatus([ApplicationStatus.GOVERNANCE_REVIEW_PHASE])
+
+  const lastInstructionIndex = this.applicationInstructions.length - 1
+  this.applicationInstructions[lastInstructionIndex].status = ApplicationInstructionStatus.DENIED
+  this.applicationInstructions[lastInstructionIndex].timestamp = Math.floor(Date.now() / 1000)
+  this.applyChange(new GovernanceReviewRejected(this.guid, this.applicationInstructions))
+}
+
+/*
+  approveGovernanceReview(details: GovernanceReviewApprovedData) {
     this.ensureValidApplicationStatus([ApplicationStatus.GOVERNANCE_REVIEW_PHASE])    
     this.ensureValidApplicationInstructions([
       ApplicationAllocator.META_ALLOCATOR,
@@ -265,7 +303,7 @@ export class DatacapAllocator extends AggregateRoot {
     }
   }
 
-  rejectGovernanceReview() {
+  rejectGovernanceReview(details: GovernanceReviewRejectedData) {
     this.ensureValidApplicationStatus([ApplicationStatus.GOVERNANCE_REVIEW_PHASE])
     this.ensureValidApplicationInstructions([
       ApplicationAllocator.META_ALLOCATOR,
@@ -276,6 +314,7 @@ export class DatacapAllocator extends AggregateRoot {
     this.applicationInstructions[lastInstructionIndex].timestamp = Math.floor(Date.now() / 1000)
     this.applyChange(new GovernanceReviewRejected(this.guid, this.applicationInstructions))
   }
+*/
 
   updateRKHApprovals(messageId: number, approvals: string[]) {
     this.ensureValidApplicationStatus([ApplicationStatus.RKH_APPROVAL_PHASE])

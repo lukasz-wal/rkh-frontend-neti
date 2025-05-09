@@ -68,7 +68,7 @@ export class ApplicationController {
     // TODO: make sure sig is a signature by address
     const sig = req.query.sig as string
 
-    if (!config.KYC_ENDPOINT_SECRET || sig != config.KYC_ENDPOINT_SECRET) {
+    if (!config.GOVERNANCE_REVIEW_SECRET || sig != config.GOVERNANCE_REVIEW_SECRET) {
       return res.status(403).json(badPermissions())
     }
 
@@ -79,7 +79,10 @@ export class ApplicationController {
     const result = await this._commandBus.send(
       new SubmitKYCResultCommand(id, {
         status: PhaseStatus.Approved,
-        data: {} as KYCApprovedData,
+        data: {
+          id: id,
+          processMessage: req.body?.reason
+        } as KYCApprovedData,
       }),
     )
 
