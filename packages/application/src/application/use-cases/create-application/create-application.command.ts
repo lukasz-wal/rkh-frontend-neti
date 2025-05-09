@@ -5,6 +5,7 @@ import { ILotusClient } from '@src/infrastructure/clients/lotus'
 import { TYPES } from '@src/types'
 import { PullRequestService } from '@src/application/services/pull-request.service'
 import { DatacapAllocator, IDatacapAllocatorRepository } from '@src/domain/application/application'
+import { getMultisigInfo } from '@src/infrastructure/clients/filfox'
 
 type Result<T> = {
   success: boolean
@@ -98,12 +99,16 @@ export class CreateApplicationCommandHandler implements ICommandHandler<CreateAp
 
       if (command.onChainAddressForDataCapAllocation) {
         const actorId = await this.lotusClient.getActorId(command.onChainAddressForDataCapAllocation)
+        const msigData = await getMultisigInfo(command.onChainAddressForDataCapAllocation);
+        const signers   = msigData.multisig?.signers   ?? [];
+        const threshold = msigData.multisig?.approvalThreshold ?? 0;
         allocator.setAllocatorMultisig(
           actorId,
           command.onChainAddressForDataCapAllocation,
-          2,
-          [],
+          threshold,
+          signers,
         )
+
       }
       this.logger.info('Creating pull request...')
 

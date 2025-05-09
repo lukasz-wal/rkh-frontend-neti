@@ -1,6 +1,7 @@
 import { IEventHandler } from '@filecoin-plus/core'
 import { inject, injectable } from 'inversify'
 import { Db } from 'mongodb'
+import { getMultisigInfo } from '@src/infrastructure/clients/filfox';
 
 import {
   AllocatorMultisigUpdated,
@@ -87,11 +88,28 @@ export class AllocatorMultisigUpdatedEventHandler implements IEventHandler<Alloc
   ) {}
 
   async handle(event: AllocatorMultisigUpdated): Promise<void> {
-    await this._repository.update({
-      id: event.aggregateId,
-      actorId: event.allocatorActorId,
-      address: event.multisigAddress,
-    })
+      let signers: string[] = [];
+      let threshold = 0;
+      try {
+        const msigData = await getMultisigInfo(event.multisigAddress);
+        signers   = msigData.multisig?.signers   ?? [];
+        threshold = msigData.multisig?.approvalThreshold ?? 0;
+      } catch (err) {
+        console.error(
+          `Failed to fetch multisig info for ${event.multisigAddress}:`,
+          err,
+        );
+      }
+
+      await this._repository.update({
+        id:        event.aggregateId,
+        actorId:   event.allocatorActorId,
+        address:   event.multisigAddress,
+        multisigDetails: {
+          multisigThreshold: threshold,
+          multisigSigners: signers
+        }
+      });
   }
 }
 @injectable()

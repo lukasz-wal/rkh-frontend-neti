@@ -1,11 +1,13 @@
 import { ApplicationInstruction, DatacapAllocator } from '@src/domain/application/application'
 import { ApplicationDetailsRepository } from '@src/infrastructure/respositories/application-details.repository'
 import config from '@src/config'
+import { getMultisigInfo } from '@src/infrastructure/clients/filfox'
 
 export type ApplicationPullRequestFile = {
   application_number: number
   address: string
   name: string
+  allocator_id: string
   organization: string
   metapathway_type: string
   ma_address: string
@@ -34,7 +36,9 @@ export type ApplicationPullRequestFile = {
   }
 }
 
-export function mapApplicationToPullRequestFile(application: DatacapAllocator): ApplicationPullRequestFile {
+
+
+export async function mapApplicationToPullRequestFile(application: DatacapAllocator): Promise<ApplicationPullRequestFile>{
   const lifeCycle = (application.applicationInstructions || []).reduce(
     (acc, instruction, index) => {
       const timestamp = instruction.timestamp ? instruction.timestamp.toString() : ''
@@ -54,10 +58,44 @@ export function mapApplicationToPullRequestFile(application: DatacapAllocator): 
     }
   }
 
+ //get current values of msig
+  let allocatorId     = application.allocatorMultisigAddress ?? ""
+  let updatedSigners  = application.allocatorMultisigSigners ?? []
+
+  //if we have an on-chain address, fetch the latest from Filfox
+  if (application.allocatorMultisigAddress) {
+    try {
+      const msigData = await getMultisigInfo(
+        application.allocatorMultisigAddress
+      )
+
+      if (msigData.id !== application.allocatorMultisigAddress) {
+        allocatorId = msigData.id
+      }
+
+      const fetchedSigners = msigData.multisig.signers
+      if (
+        JSON.stringify(fetchedSigners) !==
+        JSON.stringify(application.allocatorMultisigSigners)
+      ) {
+        updatedSigners = fetchedSigners
+      }
+    } catch (err) {
+      console.error(
+        `mapApplicationToPullRequestFile: failed to fetch Filfox info for ${
+          application.allocatorMultisigAddress
+        }:`,
+        err
+      )
+      // keep the old values if the fetch fails
+    }
+  }
+
   return {
     application_number: application?.applicationPullRequest?.prNumber,
     address: application.applicantAddress,
     name: application.applicantName,
+    allocator_id: allocatorId,
     organization: application.applicantOrgName,
     metapathway_type: 'MA',
     ma_address: config.MA_ADDRESSES,
@@ -77,8 +115,8 @@ export function mapApplicationToPullRequestFile(application: DatacapAllocator): 
     status: mappedStatus,
     LifeCycle: lifeCycle,
     pathway_addresses: {
-      msig: application.allocatorMultisigAddress || "",
-      signer: application.allocatorMultisigSigners || [],
+      msig: allocatorId,
+      signer: updatedSigners,
     },
   }
 }
