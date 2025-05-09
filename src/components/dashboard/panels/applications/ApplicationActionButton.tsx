@@ -46,7 +46,7 @@ function getActionConfig(application: Application, account?: { role: AccountRole
 
     case "GOVERNANCE_REVIEW_PHASE":
       label = `(${application.rkhApprovals?.length ?? 0}/${application.rkhApprovalsThreshold ?? 2}) Approve`;
-      if (account?.role === AccountRole.ROOT_KEY_HOLDER || account?.role === AccountRole.ADMIN) {
+      if (account?.role === AccountRole.GOVERNANCE_TEAM || account?.role === AccountRole.ADMIN) {
         return {
           label,
           component: ApproveGovernanceReviewButton,
