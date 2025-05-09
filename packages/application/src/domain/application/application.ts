@@ -126,11 +126,13 @@ export class DatacapAllocator extends AggregateRoot {
   public onChainAddressForDataCapAllocation: string
 
   public status: { [key: string]: number | null } = {
-    "Submitted": null,
+    "Application Submitted": null,
+    "KYC Submitted": null,
     "In Review": null,
     "In Refresh": null,
     "Approved": null,
     "Declined": null,
+
   }
 
   constructor(guid?: string) {
@@ -265,7 +267,7 @@ export class DatacapAllocator extends AggregateRoot {
     this.applicationInstructions[lastInstructionIndex].method = approvedMethod
     this.applicationInstructions[lastInstructionIndex].datacap_amount = details?.finalDataCap
     this.applicationInstructions[lastInstructionIndex].status = ApplicationInstructionStatus.PENDING
-    this.applicationInstructions[lastInstructionIndex].timestamp = Math.floor(Date.now() / 1000)
+    //this.applicationInstructions[lastInstructionIndex].timestamp = Math.floor(Date.now() / 1000)
 
     this.applyChange(new GovernanceReviewApproved(this.guid, this.applicationInstructions))
     if (this.applicationInstructions[lastInstructionIndex].method === ApplicationAllocator.META_ALLOCATOR) {
@@ -280,7 +282,7 @@ rejectGovernanceReview(details: GovernanceReviewRejectedData) {
 
   const lastInstructionIndex = this.applicationInstructions.length - 1
   this.applicationInstructions[lastInstructionIndex].status = ApplicationInstructionStatus.DENIED
-  this.applicationInstructions[lastInstructionIndex].timestamp = Math.floor(Date.now() / 1000)
+  //this.applicationInstructions[lastInstructionIndex].timestamp = Math.floor(Date.now() / 1000)
   this.applyChange(new GovernanceReviewRejected(this.guid, this.applicationInstructions))
 }
 
@@ -331,7 +333,7 @@ rejectGovernanceReview(details: GovernanceReviewRejectedData) {
     ])
     const lastInstructionIndex = this.applicationInstructions.length - 1
     this.applicationInstructions[lastInstructionIndex].status = ApplicationInstructionStatus.GRANTED
-    this.applicationInstructions[lastInstructionIndex].timestamp = Math.floor(Date.now() / 1000)
+  //  this.applicationInstructions[lastInstructionIndex].timestamp = Math.floor(Date.now() / 1000)
     this.applyChange(new MetaAllocatorApprovalCompleted(this.guid, blockNumber, txHash, this.applicationInstructions))
   }
 
@@ -343,7 +345,7 @@ rejectGovernanceReview(details: GovernanceReviewRejectedData) {
     ])
     const lastInstructionIndex = this.applicationInstructions.length - 1
     this.applicationInstructions[lastInstructionIndex].status = ApplicationInstructionStatus.GRANTED
-    this.applicationInstructions[lastInstructionIndex].timestamp = Math.floor(Date.now() / 1000)    
+  //  this.applicationInstructions[lastInstructionIndex].timestamp = Math.floor(Date.now() / 1000)    
     this.applyChange(new RKHApprovalCompleted(this.guid, this.applicationInstructions))
   }
 
@@ -397,7 +399,8 @@ rejectGovernanceReview(details: GovernanceReviewRejectedData) {
     ]
 
     this.status = {
-      "Submitted": null,
+      "Application Submitted": null,
+      "KYC Submitted": null,
       "In Review": null,
       "In Refresh": null,
       "Approved": null,
@@ -461,7 +464,9 @@ rejectGovernanceReview(details: GovernanceReviewRejectedData) {
       commentId: event.commentId,
       timestamp: event.timestamp,
     }
-
+    if (!this.status["Application Submitted"]) {
+      this.status["Application Submitted"] = Math.floor(event.timestamp.getTime() / 1000)
+    }
     if (this.applicationStatus === ApplicationStatus.SUBMISSION_PHASE && this.allocatorActorId) {
       this.applicationStatus = ApplicationStatus.KYC_PHASE
     }
@@ -471,27 +476,38 @@ rejectGovernanceReview(details: GovernanceReviewRejectedData) {
     this.applicationStatus = ApplicationStatus.KYC_PHASE
   }
 
-  applyKYCApproved(_: KYCApproved) {
-    if (!this.status["Submitted"]) {
-      this.status["Submitted"] = Math.floor(Date.now() / 1000)
+  applyKYCApproved(event: KYCApproved) {
+    if (!this.status["In Review"]) {
+      this.status["In Review"] = Math.floor(event.timestamp.getTime() / 1000)
     }
     this.applicationStatus = ApplicationStatus.GOVERNANCE_REVIEW_PHASE
   }
 
-  applyKYCRejected(_: KYCRejected) {
+  applyKYCRejected(event: KYCRejected) {
+     if (!this.status["Declined"]) {
+      this.status["Declined"] = Math.floor(event.timestamp.getTime() / 1000)
+    }
     this.applicationStatus = ApplicationStatus.REJECTED
   }
 
-  applyGovernanceReviewStarted(_: GovernanceReviewStarted) {
+  applyGovernanceReviewStarted(event: GovernanceReviewStarted) {
+    if (!this.status["In Review"]) {
+      this.status["In Review"] = Math.floor(event.timestamp.getTime() / 1000)
+    }
     this.applicationStatus = ApplicationStatus.GOVERNANCE_REVIEW_PHASE
   }
 
-  applyGovernanceReviewApproved(_: GovernanceReviewApproved) {
-    // TODO: ?
+  applyGovernanceReviewApproved(event: GovernanceReviewApproved) {
+ /*   if (!this.status["Approved"]) {
+      this.status["Approved"] = Math.floor(event.timestamp.getTime() / 1000)
+    }*/
   }
 
-  applyGovernanceReviewRejected(_: GovernanceReviewRejected) {
+  applyGovernanceReviewRejected(event: GovernanceReviewRejected) {
     this.applicationStatus = ApplicationStatus.REJECTED
+    if (!this.status["Declined"]) {
+      this.status["Declined"] = Math.floor(event.timestamp.getTime() / 1000)
+    }
   }
 
   applyRKHApprovalStarted(event: RKHApprovalStarted) {
@@ -539,6 +555,9 @@ rejectGovernanceReview(details: GovernanceReviewRejectedData) {
       timestamp: event.timestamp.getTime(),
       status: ApplicationInstructionStatus.PENDING,
     })
+    if (!this.status["In Refresh"]) {
+      this.status["In Refresh"] = Math.floor(event.timestamp.getTime() / 1000)
+    }
     console.log('applyDatacapRefreshRequested', this.applicationInstructions)
   }
 
