@@ -57,7 +57,7 @@ export class PullRequestService {
       [
         {
           path: `Allocators/${application.guid}.json`,
-          content: JSON.stringify(mapApplicationToPullRequestFile(application), null, 2),
+          content: JSON.stringify(await mapApplicationToPullRequestFile(application), null, 2),
         },
       ],
     )
@@ -95,7 +95,7 @@ export class PullRequestService {
       [
         {
           path: `Allocators/${application.guid}.json`,
-          content: JSON.stringify(mapApplicationToPullRequestFile(application), null, 2),
+          content: JSON.stringify(await mapApplicationToPullRequestFile(application), null, 2),
         },
       ],
     )
