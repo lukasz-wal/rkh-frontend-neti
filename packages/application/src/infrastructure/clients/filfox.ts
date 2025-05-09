@@ -45,7 +45,7 @@ export async function getMultisigInfo(address: string): Promise<any> {
   return {
     actor:    payload.actor,
     id:        payload.id ?? address,
-    multisig:  undefined,
-    signers:   undefined,
+    multisig:  'undefined',
+    signers:   'undefined',
   }
 }

@@ -7,7 +7,7 @@ export class ApplicationCreated extends Event {
   eventName = ApplicationCreated.name
   aggregateName = 'allocator'
 
-  public timestamp: Date
+  public readonly timestamp: Date
 
   constructor(
     public guid: string,
@@ -35,7 +35,7 @@ export class ApplicationEdited extends Event {
   eventName = ApplicationEdited.name
   aggregateName = 'allocator'
 
-  public timestamp: Date
+  public readonly timestamp: Date
 
   constructor(
     allocatorId: string,
@@ -50,7 +50,7 @@ export class AllocatorMultisigUpdated extends Event {
   eventName = AllocatorMultisigUpdated.name
   aggregateName = 'allocator'
 
-  public timestamp: Date
+  public readonly timestamp: Date
 
   constructor(
     applicationId: string,
@@ -68,7 +68,7 @@ export class ApplicationPullRequestUpdated extends Event {
   eventName = ApplicationPullRequestUpdated.name
   aggregateName = 'allocator'
 
-  public timestamp: Date
+  public readonly timestamp: Date
   public status?: ApplicationStatus
 
   constructor(
@@ -88,7 +88,7 @@ export class KYCStarted extends Event {
   eventName = KYCStarted.name
   aggregateName = 'allocator'
 
-  public timestamp: Date
+  public readonly timestamp: Date
 
   constructor(allocatorId: string) {
     super(allocatorId)
@@ -100,7 +100,7 @@ export class KYCApproved extends Event {
   eventName = KYCApproved.name
   aggregateName = 'allocator'
 
-  public timestamp: Date
+  public readonly timestamp: Date
 
   constructor(
     allocatorId: string,
@@ -115,7 +115,7 @@ export class KYCRejected extends Event {
   eventName = KYCRejected.name
   aggregateName = 'allocator'
 
-  public timestamp: Date
+  public readonly timestamp: Date
 
   constructor(
     allocatorId: string,
@@ -130,7 +130,7 @@ export class GovernanceReviewStarted extends Event {
   eventName = GovernanceReviewStarted.name
   aggregateName = 'allocator'
 
-  public timestamp: Date
+  public readonly timestamp: Date
 
   constructor(allocatorId: string) {
     super(allocatorId)
@@ -142,7 +142,7 @@ export class GovernanceReviewApproved extends Event {
   eventName = GovernanceReviewApproved.name
   aggregateName = 'allocator'
 
-  public timestamp: Date
+  public readonly timestamp: Date
 
   constructor(
     allocatorId: string,
@@ -156,7 +156,7 @@ export class GovernanceReviewRejected extends Event {
   eventName = GovernanceReviewRejected.name
   aggregateName = 'allocator'
 
-  public timestamp: Date
+  public readonly timestamp: Date
 
   constructor(
     allocatorId: string,
@@ -170,7 +170,7 @@ export class RKHApprovalStarted extends Event {
   eventName = RKHApprovalStarted.name
   aggregateName = 'allocator'
 
-  public timestamp: Date
+  public readonly timestamp: Date
 
   constructor(
     allocatorId: string,
@@ -187,7 +187,7 @@ export class MetaAllocatorApprovalStarted extends Event {
   eventName = MetaAllocatorApprovalStarted.name
   aggregateName = 'allocator'
   
-  public timestamp: Date
+  public readonly timestamp: Date
 
   constructor(
     allocatorId: string,
@@ -201,7 +201,7 @@ export class MetaAllocatorApprovalCompleted extends Event {
   eventName = MetaAllocatorApprovalCompleted.name
   aggregateName = 'allocator'
 
-  public timestamp: Date
+  public readonly timestamp: Date
 
   constructor(
     allocatorId: string,
@@ -219,7 +219,7 @@ export class RKHApprovalsUpdated extends Event {
   eventName = RKHApprovalsUpdated.name
   aggregateName = 'allocator'
 
-  public timestamp: Date
+  public readonly timestamp: Date
 
   constructor(
     allocatorId: string,
@@ -236,7 +236,7 @@ export class RKHApprovalCompleted extends Event {
   eventName = RKHApprovalCompleted.name
   aggregateName = 'allocator'
 
-  public timestamp: Date
+  public readonly timestamp: Date
 
   constructor(
     allocatorId: string,
@@ -251,7 +251,7 @@ export class DatacapAllocationUpdated extends Event {
   eventName = DatacapAllocationUpdated.name
   aggregateName = 'allocator'
 
-  public timestamp: Date
+  public readonly timestamp: Date
 
   constructor(
     allocatorId: string,
@@ -266,7 +266,7 @@ export class DatacapRefreshRequested extends Event {
   eventName = DatacapRefreshRequested.name
   aggregateName = 'allocator'
 
-  public timestamp: Date
+  public readonly timestamp: Date
 
   constructor(
     allocatorId: string,

@@ -472,7 +472,10 @@ rejectGovernanceReview(details: GovernanceReviewRejectedData) {
   }
 
   applyKYCApproved(_: KYCApproved) {
-    this.status["Submitted"] = Math.floor(Date.now() / 1000)
+    if (!this.status["Submitted"]) {
+      this.status["Submitted"] = Math.floor(Date.now() / 1000)
+    }
+    this.applicationStatus = ApplicationStatus.GOVERNANCE_REVIEW_PHASE
   }
 
   applyKYCRejected(_: KYCRejected) {
