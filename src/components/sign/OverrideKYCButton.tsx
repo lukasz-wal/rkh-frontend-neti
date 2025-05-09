@@ -103,19 +103,23 @@ export default function OverrideKYCButton({ application }: OverrideKYCButtonProp
                     
                 </div>
 
-                <div className="flex center-items justify-center gap-2 flex-col">
-                <Input
-                      type="text"
-                      className="w-full rounded-lg bg-background pl-8 md:w-[200px] lg:w-[320px]"
-                      placeholder="Give a short reason"
-                      onChange={(e) => setOverrideReason(e.target.value)}
-                    />
-                  <Input
-                      type="password"
-                      className="w-full rounded-lg bg-background pl-8 md:w-[200px] lg:w-[320px]"
-                      placeholder="secret"
-                      onChange={(e) => setApprovalSecret(e.target.value)}
-                    />
+                <div className="flex gap-2 flex-col">
+                  <div className="flex center-items justify-center">
+                    <Input
+                          type="text"
+                          className="w-full rounded-lg bg-background pl-8 md:w-[200px] lg:w-[320px]"
+                          placeholder="Give a short reason"
+                          onChange={(e) => setOverrideReason(e.target.value)}
+                        />
+                    </div>
+                    <div className="flex center-items justify-center">
+                      <Input
+                          type="password"
+                          className="w-full rounded-lg bg-background pl-8 md:w-[200px] lg:w-[320px]"
+                          placeholder="secret"
+                          onChange={(e) => setApprovalSecret(e.target.value)}
+                        />
+                  </div>
                 </div>
 
                 <div className="flex justify-center gap-2">
