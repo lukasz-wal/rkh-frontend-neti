@@ -32,7 +32,7 @@ function getActionConfig(application: Application, account?: { role: AccountRole
     case "KYC_PHASE":
       // If gov team is logged in they can override KYC.
       // If not, the viewer can submit KYC
-      if (account?.role === AccountRole.ROOT_KEY_HOLDER || account?.role === AccountRole.ADMIN) {
+      if (account?.role === AccountRole.GOVERNANCE_TEAM || account?.role === AccountRole.ADMIN) {
         return {
           label,
           component: OverrideKYCButton,
