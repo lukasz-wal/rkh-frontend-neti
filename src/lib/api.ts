@@ -117,8 +117,10 @@ export async function fetchRole(address: string): Promise<AccountRole> {
   }
 }
 
-export async function approveKYC(id: string) {
-  const url = `${API_BASE_URL}/applications/${id}/approveKYC`;
+/* Note: This function is the one that allows a Governance Team member to override
+ * KYC and approve an application, NOT the webhook for the formal KYC app */
+export async function overrideKYC(id: string, sig: string, payload: any) {
+  const url = `${API_BASE_URL}/applications/${id}/approveKYC?address=${payload.reviewerAddress}&sig=${sig}`;
 
   try {
     const response = await fetch(url, {
@@ -126,7 +128,7 @@ export async function approveKYC(id: string) {
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ id })
+      body: JSON.stringify(payload)
     });
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
@@ -135,5 +137,26 @@ export async function approveKYC(id: string) {
   } catch (error) {
     console.error("Failed to approve KYC:", error);
     throw new Error("Failed to approve KYC");
+  }
+}
+
+export async function governanceReview(id: string, sig: string, payload: any) {
+  const url = `${API_BASE_URL}/applications/${id}/approveGovernanceReview?address=${payload.details.reviewerAddress}&sig=${sig}`;
+  console.log(payload)
+  try {
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(payload)
+    });
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+  } catch (error) {
+    console.error("Failed to submit Governance Review:", error);
+    throw new Error("Failed to submit Governance Review");
   }
 }
