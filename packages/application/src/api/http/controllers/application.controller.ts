@@ -10,10 +10,12 @@ import { TYPES } from '@src/types'
 import { GetApplicationsQuery } from '@src/application/queries/get-applications/get-applications.query'
 import { ApplicationStatus } from '@src/domain/application/application'
 import { SubmitKYCResultCommand } from '@src/application/use-cases/submit-kyc-result/submit-kyc-result.command'
+import { SubmitGovernanceReviewResultCommand } from '@src/application/use-cases/submit-governance-review/submit-governance-review.command'
 import { PhaseStatus } from '@src/application/commands/common'
 import { KYCApprovedData } from '@src/domain/types'
 import { RoleService } from '@src/application/services/role.service'
 import config from '@src/config'
+import { GovernanceReviewApproved } from '@src/domain/application/application.events'
 
 
 @controller('/api/v1/applications')
@@ -66,21 +68,60 @@ export class ApplicationController {
     // TODO: make sure sig is a signature by address
     const sig = req.query.sig as string
 
-    if (sig != config.KYC_ENDPOINT_SECRET) {
-      return res.status(400).json(badPermissions())
+    if (!config.GOVERNANCE_REVIEW_SECRET || sig != config.GOVERNANCE_REVIEW_SECRET) {
+      return res.status(403).json(badPermissions())
     }
 
     if (role !== 'GOVERNANCE_TEAM') {
-      return res.status(400).json(badPermissions())
+      return res.status(403).json(badPermissions())
     }
 
     const result = await this._commandBus.send(
       new SubmitKYCResultCommand(id, {
         status: PhaseStatus.Approved,
-        data: {} as KYCApprovedData,
+        data: {
+          id: id,
+          processMessage: req.body?.reason
+        } as KYCApprovedData,
       }),
     )
 
     return res.json(ok('KYC result submitted successfully', {}))
+  }
+
+  @httpPost('/:id/approveGovernanceReview', query('address').isString(), query('sig').isString())
+  async approveGovernanceReview(@requestParam('id') id: string, @request() req: Request,  @response() res: Response) {
+    console.log(`Approve Governance Review for application ${id}`)
+    const address = req.query.address as string
+
+    const role =this._roleService.getRole(address)
+
+    // TODO: make sure sig is a signature by address
+    // Checking the secret is a HIGHLY TEMPORARY solution
+    const sig = req.query.sig as string
+
+    if (!config.GOVERNANCE_REVIEW_SECRET || sig != config.GOVERNANCE_REVIEW_SECRET) {
+      return res.status(403).json(badPermissions())
+    }
+
+    if (role !== 'GOVERNANCE_TEAM') {
+      return res.status(403).json(badPermissions())
+    }
+
+    // Check whether it's an approve or reject
+    const reviewResult = req.body
+
+    if ( !reviewResult?.result || !reviewResult?.details ) {
+      return res.status(400).json({ error: 'Bad Request' })
+    }
+
+    const result = await this._commandBus.send(
+      new SubmitGovernanceReviewResultCommand(id, {
+        status: reviewResult?.result === 'approved' ? PhaseStatus.Approved : PhaseStatus.Rejected,
+        data: reviewResult?.details,
+      }),
+    )
+
+    return res.json(ok('Governance Team Review result submitted successfully', {}))
   }
 }

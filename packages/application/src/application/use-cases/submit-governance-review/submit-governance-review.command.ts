@@ -5,9 +5,7 @@ import { ApplicationStatus, IDatacapAllocatorRepository } from '@src/domain/appl
 import { TYPES } from '@src/types'
 
 import { PhaseResult, PhaseStatus, SubmitPhaseResultCommand } from '../../commands/common'
-
-type GovernanceReviewApprovedData = any // TODO
-type GovernanceReviewRejectedData = any // TODO
+import { GovernanceReviewApprovedData, GovernanceReviewRejectedData } from '@src/domain/types'
 
 export class SubmitGovernanceReviewResultCommand extends SubmitPhaseResultCommand<
   GovernanceReviewApprovedData,
@@ -37,10 +35,10 @@ export class SubmitGovernanceReviewResultCommandHandler
 
     switch (command.result.status) {
       case PhaseStatus.Approved:
-        allocator.approveGovernanceReview()
+        allocator.approveGovernanceReview(command.result.data)
         break
       case PhaseStatus.Rejected:
-        allocator.rejectGovernanceReview()
+        allocator.rejectGovernanceReview(command.result.data)
         break
       default:
         throw new Error('Invalid governance review result')
