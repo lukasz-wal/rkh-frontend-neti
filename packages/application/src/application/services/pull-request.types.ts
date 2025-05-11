@@ -81,17 +81,19 @@ export async function mapApplicationToPullRequestFile(application: DatacapAlloca
         updatedSigners = fetchedSigners
       }
     } catch (err) {
+      /* Note to future maintainers: if *any part* of this fails,
+        we must keep the old values otherwise things can get
+        wacky. If you introduce code later which can cause
+        exceptions from anywhere other than `getMultisigInfo`
+        then make sure you maintain this promise!
+      */
+     
       console.error(
         `mapApplicationToPullRequestFile: failed to fetch Filfox info for ${
           application.allocatorMultisigAddress
         }:`,
         err
       )
-      /* Note to future maintainers: if *any part* of this fails,
-        we must keep the old values otherwise things can get
-        wacky. If you introduce code later which can cause
-        exceptions from anywhere other than `getMultisigInfo`
-        then make sure you maintain this promise!
     }
   }
 
