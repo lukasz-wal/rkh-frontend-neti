@@ -15,7 +15,7 @@ const environments: { [key: string]: Environment } = {
     useTestData: false,
     useTestnet: false,
     rpcUrl: "https://api.node.glif.io/rpc/v1",
-    rpcToken: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJBbGxvdyI6WyJyZWFkIiwid3JpdGUiLCJzaWduIiwiYWRtaW4iXX0.Dbqn4zlC2cIQ9rJH06OZR1uZ4WUKHTwf2ziaW2RZczA",
+    rpcToken: process.env.RPC_TOKEN || "",
     metaAllocatorContractAddress: "0x15a9d9b81e3c67b95ffedfb4416d25a113c8c6df",
   },
   staging: {
@@ -23,7 +23,7 @@ const environments: { [key: string]: Environment } = {
     useTestData: false,
     useTestnet: false,
     rpcUrl: "https://api.node.glif.io/rpc/v1",
-    rpcToken: "UXggx8DyJeaIIIe1cJZdnDk4sIiTc0uF3vYJXlRsZEQ=",
+    rpcToken: process.env.RPC_TOKEN || "",
     metaAllocatorContractAddress: "0x386f08f6E8E4647B871415EBFB858b1e377d9ab2",
   },
   production: {
@@ -31,7 +31,7 @@ const environments: { [key: string]: Environment } = {
     useTestData: false,
     useTestnet: false,
     rpcUrl: "https://api.node.glif.io/rpc/v1",
-    rpcToken: "UXggx8DyJeaIIIe1cJZdnDk4sIiTc0uF3vYJXlRsZEQ=",
+    rpcToken: process.env.RPC_TOKEN || "",
     metaAllocatorContractAddress: "0x386f08f6E8E4647B871415EBFB858b1e377d9ab2",
   },
 };
