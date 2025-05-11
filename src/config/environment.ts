@@ -3,6 +3,7 @@ import { Application } from "@/types/application";
 interface Environment {
   apiBaseUrl: string;
   useTestData: boolean;
+  useTestnet: boolean;
   rpcUrl: string;
   rpcToken: string;
   metaAllocatorContractAddress: string;
@@ -12,13 +13,15 @@ const environments: { [key: string]: Environment } = {
   development: {
     apiBaseUrl: "http://localhost:3001/api/v1",
     useTestData: false,
-    rpcUrl: "http://localhost:8010/proxy/rpc/v1",
+    useTestnet: false,
+    rpcUrl: "https://api.node.glif.io/rpc/v1",
     rpcToken: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJBbGxvdyI6WyJyZWFkIiwid3JpdGUiLCJzaWduIiwiYWRtaW4iXX0.Dbqn4zlC2cIQ9rJH06OZR1uZ4WUKHTwf2ziaW2RZczA",
     metaAllocatorContractAddress: "0x15a9d9b81e3c67b95ffedfb4416d25a113c8c6df",
   },
   staging: {
     apiBaseUrl: "https://allocator-rkh-backend-utcn6.ondigitalocean.app/api/v1",
     useTestData: false,
+    useTestnet: false,
     rpcUrl: "https://api.node.glif.io/rpc/v1",
     rpcToken: "UXggx8DyJeaIIIe1cJZdnDk4sIiTc0uF3vYJXlRsZEQ=",
     metaAllocatorContractAddress: "0x386f08f6E8E4647B871415EBFB858b1e377d9ab2",
@@ -26,6 +29,7 @@ const environments: { [key: string]: Environment } = {
   production: {
     apiBaseUrl: "https://allocator-rkh-backend-utcn6.ondigitalocean.app/backend/api/v1",
     useTestData: false,
+    useTestnet: false,
     rpcUrl: "https://api.node.glif.io/rpc/v1",
     rpcToken: "UXggx8DyJeaIIIe1cJZdnDk4sIiTc0uF3vYJXlRsZEQ=",
     metaAllocatorContractAddress: "0x386f08f6E8E4647B871415EBFB858b1e377d9ab2",

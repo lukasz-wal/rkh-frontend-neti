@@ -132,13 +132,9 @@ export const AccountProvider: React.FC<{
     }
 
     const api = new VerifyAPI(
-      VerifyAPI.browserProvider(env.rpcUrl, {
-        token: async () => {
-          return env.rpcToken;
-        },
-      }),
+      VerifyAPI.browserProvider(env.rpcUrl, {}),
       account.wallet,
-      env.useTestData // (false => Mainnet, true => Testnet)
+      env.useTestnet
     );
 
     const fullDataCap = BigInt(datacap * 1000000000000);
@@ -146,15 +142,9 @@ export const AccountProvider: React.FC<{
     if (verifierAccountId.length < 12) {
       verifierAccountId = await api.actorKey(verifierAccountId)
     }
-
-    console.log("account", account);
-    console.log("account.wallet", account.wallet);
-    console.log("verifierAddress", verifierAddress);
-    console.log("verifierAccountId", verifierAccountId);
-    console.log("fullDataCap", fullDataCap);
     
     const messageId = await api.proposeVerifier(
-      verifierAccountId,
+      account.address,
       fullDataCap,
       account.index ?? 0,
       account.wallet
@@ -168,13 +158,9 @@ export const AccountProvider: React.FC<{
     }
 
     const api = new VerifyAPI(
-      VerifyAPI.browserProvider(env.rpcUrl, {
-        token: async () => {
-          return env.rpcToken;
-        },
-      }),
+      VerifyAPI.browserProvider(env.rpcUrl, {}),
       account.wallet,
-      env.useTestData // (false => Mainnet, true => Testnet)
+      env.useTestnet 
     );
 
     const fullDataCap = BigInt(datacap * 1000000000000);
@@ -184,7 +170,7 @@ export const AccountProvider: React.FC<{
     }
 
     const messageId = await api.approveVerifier(
-      verifierAccountId,
+      account.address,
       fullDataCap,
       fromAccount,
       transactionId,
