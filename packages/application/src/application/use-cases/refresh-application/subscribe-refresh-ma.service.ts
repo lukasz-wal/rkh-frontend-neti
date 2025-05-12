@@ -38,35 +38,39 @@ export async function subscribeMetaAllocatorAllowances(container: Container) {
     
     logger.info('Subscribing to Meta Allocator allowances...')
     setInterval(async () => {
-        const approvedAllocators = await repository.getPaginated(1, 1000, [ApplicationStatus.APPROVED])
-        const allocators = approvedAllocators.results.filter(a => a.applicationInstructions && a.applicationInstructions[a.applicationInstructions.length - 1].method === 'META_ALLOCATOR')
-        console.log("Found", allocators.length, "allocators")
+        try {
+            const approvedAllocators = await repository.getPaginated(1, 1000, [ApplicationStatus.APPROVED])
+            const allocators = approvedAllocators.results.filter(a => a.applicationInstructions && a.applicationInstructions[a.applicationInstructions.length - 1].method === 'META_ALLOCATOR')
+            console.log("Found", allocators.length, "allocators")
 
-        for (const allocator of allocators) {
-            const currentDatacap = await fetchCurrentDatacap(allocator.address)
-            if (datacapCache.get(allocator.address) === currentDatacap) {
-                logger.debug(`Datacap for ${allocator.address} is up to date`)
-                continue
-            }
-
-            if (!allocator.applicationInstructions) {
-                logger.debug(`No applicationInstructions found for allocator: ${allocator.address}`)
-                continue
-            }
-
-            try {
-                const initialDatacap = allocator.applicationInstructions[allocator.applicationInstructions.length - 1].datacap_amount
-                logger.debug(`Current Datacap: ${currentDatacap}, Initial Datacap: ${initialDatacap}`)
-                const pct = (Number(currentDatacap) / Number(initialDatacap)) * 100
-                if (pct <= config.REFRESH_MIN_THRESHOLD_PCT) {
-                    const applicationId = allocator.id
-                    const command = new CreateRefreshApplicationCommand(applicationId)
-                    await commandBus.send(command)
+            for (const allocator of allocators) {
+                const currentDatacap = await fetchCurrentDatacap(allocator.address)
+                if (datacapCache.get(allocator.address) === currentDatacap) {
+                    logger.debug(`Datacap for ${allocator.address} is up to date`)
+                    continue
                 }
-            } catch (error) {
-                logger.error(`Error refreshing application for allocator: ${allocator.address}`, { error })
+
+                if (!allocator.applicationInstructions) {
+                    logger.debug(`No applicationInstructions found for allocator: ${allocator.address}`)
+                    continue
+                }
+
+                try {
+                    const initialDatacap = allocator.applicationInstructions[allocator.applicationInstructions.length - 1].datacap_amount
+                    logger.debug(`Current Datacap: ${currentDatacap}, Initial Datacap: ${initialDatacap}`)
+                    const pct = (Number(currentDatacap) / Number(initialDatacap)) * 100
+                    if (pct <= config.REFRESH_MIN_THRESHOLD_PCT) {
+                        const applicationId = allocator.id
+                        const command = new CreateRefreshApplicationCommand(applicationId)
+                        await commandBus.send(command)
+                    }
+                } catch (error) {
+                    logger.error(`Error refreshing application for allocator: ${allocator.address}`, { error })
+                }
+                datacapCache.set(allocator.address, currentDatacap)
             }
-            datacapCache.set(allocator.address, currentDatacap)
+        }catch (error) {
+            console.error('Error psubscribing to MA events', error)
         }
     }, config.SUBSCRIBE_REFRESH_META_ALLOCATOR_POLLING_INTERVAL)
 }

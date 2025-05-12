@@ -44,35 +44,35 @@ export async function subscribeRKHApprovals(container: Container) {
 
   logger.info('Subscribing to RKH proposals')
   setInterval(async () => {
-    const head = await lotusClient.getChainHead()
-    const actor = await lotusClient.getActor(RHK_MULTISIG_ACTOR_ADDRESS, head.Cids)
-    const actorState = await lotusClient.getChainObj(actor.Head)
+    try{
+      const head = await lotusClient.getChainHead()
+      const actor = await lotusClient.getActor(RHK_MULTISIG_ACTOR_ADDRESS, head.Cids)
+      const actorState = await lotusClient.getChainObj(actor.Head)
 
 
-    const msigStateRaw = await lotusClient.getChainObj(actor.Head)
-    const msigStateCbor = cbor.decode(msigStateRaw)
-    const msigData = methods.decode(msigSchema, msigStateCbor)
+      const msigStateRaw = await lotusClient.getChainObj(actor.Head)
+      const msigStateCbor = cbor.decode(msigStateRaw)
+      const msigData = methods.decode(msigSchema, msigStateCbor)
 
-    const pendingRaw = await lotusClient.getChainObj(msigData[6])
-    const pendingCbor = cbor.decode(pendingRaw)
+      const pendingRaw = await lotusClient.getChainObj(msigData[6])
+      const pendingCbor = cbor.decode(pendingRaw)
 
-    const info = methods.decode(methods.pending, pendingCbor)
-    const obj = await info.asObject(async a => {
-      return await lotusClient.getChainObj(a)
-    })
-    let pendingTxs:any = []
-    for (const [k, v] of Object.entries<dTXN>(obj)) {
-      const parse = methods.parse(v)
-      if (parse.signers[0].to == config.VERIFIED_REGISTRY_ACTOR_ADDRESS && parse.signers[0].method == VERIFIED_REGISTRY_ACTOR_METHODS.ADD_VERIFIER) {
-        pendingTxs.push({
-          id: parseInt(k),
-          tx: { ...v, from: v.signers[0]},
-          parsed: parse,
-          signers: v.signers,
-        })
+      const info = methods.decode(methods.pending, pendingCbor)
+      const obj = await info.asObject(async a => {
+        return await lotusClient.getChainObj(a)
+      })
+      let pendingTxs:any = []
+      for (const [k, v] of Object.entries<dTXN>(obj)) {
+        const parse = methods.parse(v)
+        if (parse.signers[0].to == config.VERIFIED_REGISTRY_ACTOR_ADDRESS && parse.signers[0].method == VERIFIED_REGISTRY_ACTOR_METHODS.ADD_VERIFIER) {
+          pendingTxs.push({
+            id: parseInt(k),
+            tx: { ...v, from: v.signers[0]},
+            parsed: parse,
+            signers: v.signers,
+          })
+        }
       }
-    }
-
 
     /*
     const pendingTxs = (await api.pendingTransactions(RHK_MULTISIG_ACTOR_ADDRESS))?.filter(
@@ -95,5 +95,9 @@ export async function subscribeRKHApprovals(container: Container) {
         console.error('Error updating RKH approvals', { error })
         }
       }
+    }catch (err) {
+      console.error("RKH subscription failed:", err);
+      // swallow and wait for next tick
+    }
   }, config.SUBSCRIBE_RKH_APPROVALS_POLLING_INTERVAL)
 }
