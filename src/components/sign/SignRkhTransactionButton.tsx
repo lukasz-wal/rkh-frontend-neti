@@ -40,7 +40,6 @@ export default function SignRkhTransactionButton({
 
   const proposeTransaction = async () => {
     setIsPending(true);
-    console.log(application)
     try {
       const messageId = await proposeAddVerifier(application.address, application.datacap);
       toast({

@@ -10,7 +10,7 @@ import { LedgerConnector } from "@/lib/connectors/ledger-connector";
 import { FilsnapConnector } from "@/lib/connectors/filsnap-connector";
 import { Account, AccountRole } from "@/types/account";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { VerifyAPI } from "@keyko-io/filecoin-verifier-tools";
+import { VerifyAPI } from "filecoin-verifier-tools";
 import { env } from "@/config/environment";
 import { injected } from "wagmi/connectors";
 import { Eip1193Provider } from "@safe-global/protocol-kit";
@@ -144,7 +144,7 @@ export const AccountProvider: React.FC<{
     }
     
     const messageId = await api.proposeVerifier(
-      account.address,
+      verifierAddress,
       fullDataCap,
       account.index ?? 0,
       account.wallet
