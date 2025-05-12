@@ -126,32 +126,34 @@ export async function subscribeRefreshRKH(container: Container) {
     let shouldContinue = true
 
     const intervalId = setInterval(async () => {
-        if (!shouldContinue) {
-            logger.info("Unsubscribing from Refresh RKH...")
-            clearInterval(intervalId)
-            return
+        try{
+            if (!shouldContinue) {
+                logger.info("Unsubscribing from Refresh RKH...")
+                clearInterval(intervalId)
+                return
+            }
+            logger.info("Subscribing to Refresh RKH...")
+
+            const currentDatacapCache = await fetchCurrentDatacapCache(container)
+            console.log('currentDatacapCache', currentDatacapCache)
+            const applicationDetailsRepository = container.get<IApplicationDetailsRepository>(TYPES.ApplicationDetailsRepository)
+            const applications = await applicationDetailsRepository.getAll()
+
+            for (const applicationDetails of applications) {
+                await submitRefreshRKHAllocatorCommand(
+                    applicationDetails,
+                    currentDatacapCache,
+                    config.REFRESH_MIN_THRESHOLD_PCT,
+                    commandBus,
+                    logger,
+                )
+            }
+        }catch(error){
+            console.error('Error in subscribeRefreshRKH', error)
         }
-        logger.info("Subscribing to Refresh RKH...")
-
-        const currentDatacapCache = await fetchCurrentDatacapCache(container)
-        console.log('currentDatacapCache', currentDatacapCache)
-        const applicationDetailsRepository = container.get<IApplicationDetailsRepository>(TYPES.ApplicationDetailsRepository)
-        const applications = await applicationDetailsRepository.getAll()
-
-        for (const applicationDetails of applications) {
-            await submitRefreshRKHAllocatorCommand(
-                applicationDetails,
-                currentDatacapCache,
-                config.REFRESH_MIN_THRESHOLD_PCT,
-                commandBus,
-                logger,
-            )
-        }
-
     }, config.SUBSCRIBE_REFRESH_RKH_POLLING_INTERVAL)
 
     return () => {
         shouldContinue = false
     }
-
 }

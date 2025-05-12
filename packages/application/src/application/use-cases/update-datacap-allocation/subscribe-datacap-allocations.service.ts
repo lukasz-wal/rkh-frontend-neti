@@ -36,37 +36,41 @@ export async function subscribeDatacapAllocations(container: Container) {
 
   logger.info('Subscribing to datacap allocations')
   setInterval(async () => {
-    const head = await lotusClient.getChainHead()
-    const actor = await lotusClient.getActor(VERIFIED_REGISTRY_ACTOR_ADDRESS, head.Cids)
-    const verRegState = await lotusClient.getChainObj(actor.Head)
-    const verRegStateDecoded = cbor.decode(verRegState)
-    const verLnks = methods.decode(verSchema, verRegStateDecoded)
-    const verifiers = await lotusClient.getChainObj(verLnks[1])
-    const verifiersDecoded = cbor.decode(verifiers)
-    const dta = methods.decode(schema, verifiersDecoded)
-    for (const it of await dta.asList(async (a) => {
-      if (!a) {
-        return ['',[]]
-      }
-      const res = await lotusClient.getChainObj(a)
-      return res
-    })) {
-      if (datacapCache.get(it[0]) === it[1]) {
-        logger.debug(`Datacap allocation for ${it[0]} is up to date`)
-        continue
-      }
+    try{
+      const head = await lotusClient.getChainHead()
+      const actor = await lotusClient.getActor(VERIFIED_REGISTRY_ACTOR_ADDRESS, head.Cids)
+      const verRegState = await lotusClient.getChainObj(actor.Head)
+      const verRegStateDecoded = cbor.decode(verRegState)
+      const verLnks = methods.decode(verSchema, verRegStateDecoded)
+      const verifiers = await lotusClient.getChainObj(verLnks[1])
+      const verifiersDecoded = cbor.decode(verifiers)
+      const dta = methods.decode(schema, verifiersDecoded)
+      for (const it of await dta.asList(async (a) => {
+        if (!a) {
+          return ['',[]]
+        }
+        const res = await lotusClient.getChainObj(a)
+        return res
+      })) {
+        if (datacapCache.get(it[0]) === it[1]) {
+          logger.debug(`Datacap allocation for ${it[0]} is up to date`)
+          continue
+        }
 
-      const actorId = await lotusClient.getActorId(it[0])
-      const allocator = await applicationDetailsRepository.getByActorId(actorId)
-      if (!allocator) {
-        logger.warn(`Allocator not found for actor id ${actorId}`)
-        continue
-      }
+        const actorId = await lotusClient.getActorId(it[0])
+        const allocator = await applicationDetailsRepository.getByActorId(actorId)
+        if (!allocator) {
+          logger.warn(`Allocator not found for actor id ${actorId}`)
+          continue
+        }
 
-      logger.info(`Updating datacap allocation for ${allocator.id} to ${it[1]}`)
-      await commandBus.send(new UpdateDatacapAllocationCommand(allocator.id, it[1]))
-      datacapCache.set(it[0], it[1])
-      break
-    }
+        logger.info(`Updating datacap allocation for ${allocator.id} to ${it[1]}`)
+        await commandBus.send(new UpdateDatacapAllocationCommand(allocator.id, it[1]))
+        datacapCache.set(it[0], it[1])
+        break
+      }
+    }catch(error){
+          console.error('subscribeDatacapAllocations', error)
+      }
   }, config.SUBSCRIBE_DATACAP_ALLOCATIONS_POLLING_INTERVAL)
 }
