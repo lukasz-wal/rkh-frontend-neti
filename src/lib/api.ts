@@ -140,8 +140,8 @@ export async function overrideKYC(id: string, sig: string, payload: any) {
   }
 }
 
-export async function governanceReview(id: string, sig: string, payload: any) {
-  const url = `${API_BASE_URL}/applications/${id}/approveGovernanceReview?address=${payload.details.reviewerAddress}&sig=${sig}`;
+export async function governanceReview(id: string, payload: any) {
+  const url = `${API_BASE_URL}/applications/${id}/approveGovernanceReview`;
   console.log(payload)
   try {
     const response = await fetch(url, {
