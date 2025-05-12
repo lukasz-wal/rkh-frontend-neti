@@ -19,6 +19,7 @@ import {
   ApplicationPullRequestUpdated,
   AllocatorMultisigUpdated,
   DatacapRefreshRequested,
+  KYCRevoked
 } from './application.events'
 import { KYCApprovedData, KYCRejectedData, GovernanceReviewApprovedData, GovernanceReviewRejectedData } from '@src/domain/types'
 import { ApplicationPullRequestFile } from '@src/application/services/pull-request.types'
@@ -243,6 +244,12 @@ export class DatacapAllocator extends AggregateRoot {
     this.applyChange(new GovernanceReviewStarted(this.guid))
   }
 
+  revokeKYC() {
+    this.ensureValidApplicationStatus([ApplicationStatus.GOVERNANCE_REVIEW_PHASE])
+
+    this.applyChange(new KYCRevoked(this.guid))
+  }
+
   rejectKYC(data: KYCRejectedData) {
     this.ensureValidApplicationStatus([ApplicationStatus.KYC_PHASE])
 
@@ -250,7 +257,7 @@ export class DatacapAllocator extends AggregateRoot {
   }
 
   approveGovernanceReview(details: GovernanceReviewApprovedData) {
-    this.ensureValidApplicationStatus([ApplicationStatus.GOVERNANCE_REVIEW_PHASE])    
+    this.ensureValidApplicationStatus([ApplicationStatus.GOVERNANCE_REVIEW_PHASE])
 
     /*
       The choice of type means that:
@@ -345,7 +352,7 @@ rejectGovernanceReview(details: GovernanceReviewRejectedData) {
     ])
     const lastInstructionIndex = this.applicationInstructions.length - 1
     this.applicationInstructions[lastInstructionIndex].status = ApplicationInstructionStatus.GRANTED
-  //  this.applicationInstructions[lastInstructionIndex].timestamp = Math.floor(Date.now() / 1000)    
+  //  this.applicationInstructions[lastInstructionIndex].timestamp = Math.floor(Date.now() / 1000)
     this.applyChange(new RKHApprovalCompleted(this.guid, this.applicationInstructions))
   }
 
@@ -482,6 +489,11 @@ rejectGovernanceReview(details: GovernanceReviewRejectedData) {
     }
     this.applicationStatus = ApplicationStatus.GOVERNANCE_REVIEW_PHASE
   }
+
+  applyKYCRevoked(_: KYCApproved) {
+    this.applicationStatus = ApplicationStatus.GOVERNANCE_REVIEW_PHASE
+  }
+
 
   applyKYCRejected(event: KYCRejected) {
      if (!this.status["Declined"]) {
