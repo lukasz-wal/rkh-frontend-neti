@@ -119,8 +119,8 @@ export async function fetchRole(address: string): Promise<AccountRole> {
 
 /* Note: This function is the one that allows a Governance Team member to override
  * KYC and approve an application, NOT the webhook for the formal KYC app */
-export async function overrideKYC(id: string, sig: string, payload: any) {
-  const url = `${API_BASE_URL}/applications/${id}/approveKYC?address=${payload.reviewerAddress}&sig=${sig}`;
+export async function overrideKYC(id: string, payload: any) {
+  const url = `${API_BASE_URL}/applications/${id}/approveKYC`;
 
   try {
     const response = await fetch(url, {
@@ -140,8 +140,8 @@ export async function overrideKYC(id: string, sig: string, payload: any) {
   }
 }
 
-export async function governanceReview(id: string, sig: string, payload: any) {
-  const url = `${API_BASE_URL}/applications/${id}/approveGovernanceReview?address=${payload.details.reviewerAddress}&sig=${sig}`;
+export async function governanceReview(id: string, payload: any) {
+  const url = `${API_BASE_URL}/applications/${id}/approveGovernanceReview`;
   console.log(payload)
   try {
     const response = await fetch(url, {
