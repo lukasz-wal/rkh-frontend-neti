@@ -2,8 +2,10 @@
 import FilecoinApp from "@zondax/ledger-filecoin";
 import { Wallet } from "@/types/wallet";
 import { encode as cborEncode } from "cbor";
-import { verifyRaw } from 'iso-filecoin/ledger'
-import { AddressSecp256k1 } from 'iso-filecoin/address'
+import { Signature, verify } from '@noble/secp256k1';
+import { hexToBytes, bytesToHex } from '@noble/hashes/utils';
+import { sha256 } from '@noble/hashes/sha2';
+import { blake2b } from '@noble/hashes/blake2b';
 
 // Import the signer as a dynamic import
 const signerPromise = import("@zondax/filecoin-signing-tools/js").then(module => module.transactionSerialize);
@@ -59,6 +61,7 @@ export class LedgerWallet implements Wallet {
          * complete message is a bit of a pain and might go away
          * later. */
         const transactionSerialize = await signerPromise;
+        const derivationPath = `m/44'/461'/0'/0/${indexAccount}`;
         const paramsCBOR = cborEncode(message);
         const paramsBase64 = Buffer.from(paramsCBOR).toString("base64");
 
@@ -75,42 +78,29 @@ export class LedgerWallet implements Wallet {
             Params: paramsBase64,
             Value: "0",
         }
-        const serializedMessage = transactionSerialize(fakeMessage);
-        const tbs = Uint8Array.from(Buffer.from(serializedMessage, 'hex'));
 
-        const signedMessage = this.handleErrors(
-            await this.filecoinApp.sign(`m/44'/461'/0'/0/${indexAccount}`, tbs)
-        );
+        const serializedHex = transactionSerialize(fakeMessage);
+        const serializedBytes = hexToBytes(serializedHex);
 
-        // TODO remove everything between here and -- END --
-
-        // Test the signature
-        console.log("Verifying signature...")
-        console.log(signedMessage.signature_compact)
-        const signature = new Uint8Array(signedMessage.signature_compact)
-        //const tbv = Uint8Array.from(tbs)
-        const unpk = Uint8Array.from(this.pubkey)
-        console.log(unpk)
-        const derivedAddress = AddressSecp256k1.fromPublicKey(
-            unpk,
-            'mainnet'
-          )
-        // make sure the public key is right for hte account we chose.
-        console.log(derivedAddress.toString())
-        const valid = verifyRaw(signature, tbs, unpk)
-
-        if (!valid) {
-            console.log("Signature verification failed");
-        } else {
-            console.log("Signature verification succeeded");
+        const { signature_compact } = await this.filecoinApp.sign(derivationPath, serializedBytes);
+        if (signature_compact.length !== 65) {
+          throw new Error(`Ledger returned bad signature length ${signature_compact.length}`);
         }
 
-        // -- END -- 
+        /* Verify sanity-check code. For dev only 
+        const CID_PREFIX = Uint8Array.from([0x01, 0x71, 0xa0, 0xe4, 0x02, 0x20]);
+        const digestInner = blake2b(serializedBytes, { dkLen: 32 }); // Uint8Array(32)
+        const digestMiddle = Uint8Array.from(Buffer.concat([CID_PREFIX, digestInner]));
+        const digest = blake2b(digestMiddle, { dkLen: 32 }); // Uint8Array(32)
+        const compactSig = signature_compact.subarray(0, 64);
+        const isValid = verify(compactSig, digest, Uint8Array.from(this.pubkey));
+        console.log("Signature OK?", isValid)
+        */
 
         return JSON.stringify({
             Message: fakeMessage,
             Signature: {
-                Data: signedMessage.signature_compact.toString('base64'),
+                Data: signature_compact.toString('base64'),
                 Type: 1
             },
         });
