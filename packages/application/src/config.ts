@@ -45,9 +45,9 @@ export default {
   ? process.env.RKH_ADDRESSES.split(',').map((handle) => handle.trim())
   : [],
   //MA addresses
-  MA_ADDRESSES: process.env.MA_ADDRESSES || '0x15a9d9b81e3c67b95ffedfb4416d25a113c8c6df',
-  /*? process.env.MA_ADDRESSES.split(',').map((handle) => handle.trim())
-  : ["0x15a9d9b81e3c67b95ffedfb4416d25a113c8c6df"],*/
+  MA_ADDRESSES: process.env.MA_ADDRESSES 
+  ? process.env.MA_ADDRESSES.split(',').map((handle) => handle.trim())
+  : ["0xD8DA234E8B7763d5321B0b518f220A22dE6982A6"],
 
   // Admin API key configuration
   ADMIN_API_KEY: process.env.ADMIN_API_KEY || 'default_admin_api_key',

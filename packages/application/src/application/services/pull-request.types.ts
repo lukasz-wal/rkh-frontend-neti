@@ -87,7 +87,7 @@ export async function mapApplicationToPullRequestFile(application: DatacapAlloca
         exceptions from anywhere other than `getMultisigInfo`
         then make sure you maintain this promise!
       */
-     
+
       console.error(
         `mapApplicationToPullRequestFile: failed to fetch Filfox info for ${
           application.allocatorMultisigAddress
@@ -104,7 +104,7 @@ export async function mapApplicationToPullRequestFile(application: DatacapAlloca
     allocator_id: allocatorId,
     organization: application.applicantOrgName,
     metapathway_type: 'MA',
-    ma_address: config.MA_ADDRESSES,
+    ma_address: config.META_ALLOCATOR_CONTRACT_ADDRESS,
     associated_org_addresses: application.applicantOrgAddresses,
     application: {
       allocations: application.allocationStandardizedAllocations,
