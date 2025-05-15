@@ -22,17 +22,18 @@ export class KycController {
       return res.status(404).json({ error: 'Not Found' })
     }
 
-    const togggleResult = req.body
-    console.log(togggleResult)
+    const zypheResult = req.body
+    console.log(zypheResult)
+    console.log(zypheResult?.data?.kyc?.customData)
 
-    if ( !togggleResult?.event || !togggleResult?.data?.kyc || !togggleResult?.custom) {
+    if ( !zypheResult?.event || !zypheResult?.data?.kyc || !zypheResult?.data?.kyc?.customData?.applicationId) {
       return res.status(400).json({ error: 'Bad Request' })
     }
 
     const result = await this._commandBus.send(
-      new SubmitKYCResultCommand(togggleResult?.custom?.applicationId, {
-        status: togggleResult?.event === 'success' ? PhaseStatus.Approved : PhaseStatus.Rejected,
-        data: togggleResult?.data?.kyc,
+      new SubmitKYCResultCommand(zypheResult?.data?.kyc?.customData?.applicationId, {
+        status: zypheResult?.event === 'success' ? PhaseStatus.Approved : PhaseStatus.Rejected,
+        data: zypheResult?.data?.kyc,
       }),
     )
     return res.json(ok('KYC result submitted successfully', {}))
