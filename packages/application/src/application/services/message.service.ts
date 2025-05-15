@@ -95,7 +95,7 @@ export class MessageService {
   private getKYCStatusMessage(application: DatacapAllocator): string {
     return `
 ### Next Steps
-1. Complete the KYC process at [our secure portal](https://flow.togggle.io/fil/kyc?applicationId=${application.guid})
+1. Complete the KYC process at [our secure portal](https://verify.zyphe.com/flow/fil-kyc/kyc/kyc?applicationId=${application.id})
    - **Name:** ${application.applicantName}
    - **GitHub Username:** ${application.applicantGithubHandle}
 2. Your application will be automatically updated once submitted

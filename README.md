@@ -58,8 +58,8 @@ stateDiagram-v2
 ![Application Phase](img/phases/application-phase.png)
 
 ### Know Your Client (KYC) Process
-- After the application is accepted the applicant will be provided a link to the Togggle platform to complete KYC and human verification.
-- The KYC process is done through the Togggle platform. The Togggle platform will provide a KYC status to the Filecoin Plus backend.
+- After the application is accepted the applicant will be provided a link to the Zyphe platform to complete KYC and human verification.
+- The KYC process is done through the Zyphe platform. The Zyphe platform will provide a KYC status to the Filecoin Plus backend.
 
 ![KYC Phase](img/phases/kyc-phase.png)
 
