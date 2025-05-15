@@ -24,13 +24,14 @@ export class KycController {
 
     const togggleResult = req.body
     console.log(togggleResult)
+    console.log(togggleResult?.data?.kyc?.customData)
 
-    if ( !togggleResult?.event || !togggleResult?.data?.kyc || !togggleResult?.custom) {
+    if ( !togggleResult?.event || !togggleResult?.data?.kyc || !togggleResult?.data?.kyc?.customData?.applicationId) {
       return res.status(400).json({ error: 'Bad Request' })
     }
 
     const result = await this._commandBus.send(
-      new SubmitKYCResultCommand(togggleResult?.custom?.applicationId, {
+      new SubmitKYCResultCommand(togggleResult?.data?.kyc?.customData?.applicationId, {
         status: togggleResult?.event === 'success' ? PhaseStatus.Approved : PhaseStatus.Rejected,
         data: togggleResult?.data?.kyc,
       }),
