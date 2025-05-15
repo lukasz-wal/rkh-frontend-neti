@@ -26,14 +26,22 @@ export class KycController {
     console.log(zypheResult)
     console.log(zypheResult?.data?.kyc?.customData)
 
-    if ( !zypheResult?.event || !zypheResult?.data?.kyc || !zypheResult?.data?.kyc?.customData?.applicationId) {
-      return res.status(400).json({ error: 'Bad Request' })
+    if ( !zypheResult?.event || zypheResult.event != "COMPLETED" ) {
+      return res.status(400).json({ error: 'KYC process not yet complete' })
+    }
+
+    if ( !zypheResult?.data || !zypheResult.data?.dv || !zypheResult.data?.dv?.status ) {
+      return res.status(400).json({ error: 'No results in KYC response' })
+    }
+
+    if ( !zypheResult?.data?.dv?.customData?.applicationId) {
+      return res.status(400).json({ error: 'No application ID specified' })
     }
 
     const result = await this._commandBus.send(
-      new SubmitKYCResultCommand(zypheResult?.data?.kyc?.customData?.applicationId, {
-        status: zypheResult?.event === 'success' ? PhaseStatus.Approved : PhaseStatus.Rejected,
-        data: zypheResult?.data?.kyc,
+      new SubmitKYCResultCommand(zypheResult.data.dv.customData.applicationId, {
+        status: zypheResult.data.dv.status === 'PASSED' ? PhaseStatus.Approved : PhaseStatus.Rejected,
+        data: zypheResult.data.dv,
       }),
     )
     return res.json(ok('KYC result submitted successfully', {}))
