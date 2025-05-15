@@ -7,7 +7,6 @@ import { PullRequestService } from '@src/application/services/pull-request.servi
 import { DatacapAllocator, IDatacapAllocatorRepository } from '@src/domain/application/application'
 import { getMultisigInfo } from '@src/infrastructure/clients/filfox'
 
-
 type Result<T> = {
   success: boolean
   data?: T
@@ -103,13 +102,13 @@ export class CreateApplicationCommandHandler implements ICommandHandler<CreateAp
         const msigData = await getMultisigInfo(command.onChainAddressForDataCapAllocation);
         const signers   = msigData.multisig?.signers   ?? [];
         const threshold = msigData.multisig?.approvalThreshold ?? 0;
-
         allocator.setAllocatorMultisig(
           actorId,
           command.onChainAddressForDataCapAllocation,
           threshold,
           signers,
-        );
+        )
+
       }
       this.logger.info('Creating pull request...')
 

@@ -4,16 +4,20 @@ import { query, validationResult } from 'express-validator'
 import { inject } from 'inversify'
 import { controller, httpGet, httpPost, request, requestParam, response } from 'inversify-express-utils'
 import { ICommandBus } from '@filecoin-plus/core'
+import { verifyLedgerPoP } from './authutils'
 
 import { badPermissions, badRequest, ok } from '@src/api/http/processors/response'
 import { TYPES } from '@src/types'
 import { GetApplicationsQuery } from '@src/application/queries/get-applications/get-applications.query'
 import { ApplicationStatus } from '@src/domain/application/application'
 import { SubmitKYCResultCommand } from '@src/application/use-cases/submit-kyc-result/submit-kyc-result.command'
+import { SubmitGovernanceReviewResultCommand } from '@src/application/use-cases/submit-governance-review/submit-governance-review.command'
 import { PhaseStatus } from '@src/application/commands/common'
 import { KYCApprovedData } from '@src/domain/types'
 import { RoleService } from '@src/application/services/role.service'
 import config from '@src/config'
+import { RevokeKycCommand } from '@src/application/use-cases/revoke-kyc/revoke-kyc.command'
+import { GovernanceReviewApproved } from '@src/domain/application/application.events'
 
 
 @controller('/api/v1/applications')
@@ -56,9 +60,177 @@ export class ApplicationController {
     return res.json(ok('Retrieved application ' + id + 'successfully', {}))
   }
 
-  @httpPost('/:id/approveKYC', query('address').isString(), query('sig').isString())
+  /* Retaining this for now, but we should remove it in the future once everyone is wallet based */
+  @httpPost('/:id/secretApproveKYC', query('address').isString(), query('sig').isString())
+  async secretApproveKYC(@requestParam('id') id: string, @request() req: Request,  @response() res: Response) {
+    console.log(`Approve KYC by secret for application ${id}`)
+    const address = req.query.address as string
+
+    const role =this._roleService.getRole(address)
+
+    // TODO: make sure sig is a signature by address
+    const sig = req.query.sig as string
+
+    if (!config.GOVERNANCE_REVIEW_SECRET || sig != config.GOVERNANCE_REVIEW_SECRET) {
+      return res.status(403).json(badPermissions())
+    }
+
+    if (role !== 'GOVERNANCE_TEAM') {
+      return res.status(403).json(badPermissions())
+    }
+
+    const result = await this._commandBus.send(
+      new SubmitKYCResultCommand(id, {
+        status: PhaseStatus.Approved,
+        data: {
+          id: id,
+          processMessage: req.body?.reason
+        } as KYCApprovedData,
+      }),
+    )
+
+    return res.json(ok('KYC result submitted successfully', {}))
+  }
+
+  @httpPost('/:id/approveKYC')
   async approveKYC(@requestParam('id') id: string, @request() req: Request,  @response() res: Response) {
-    console.log(`Approve KYC for application ${id}`)
+    console.log(`Approve KYC by signature for application ${id}`)
+    console.log(req.body)
+    // RBAC first
+    // Check address is on the list of Gov Team addresses
+    const address = req.body.reviewerAddress
+    const role =this._roleService.getRole(address)
+    if (role !== 'GOVERNANCE_TEAM') {
+      console.log(`Not a governance team member: ${role}`)
+      return res.status(403).json(badPermissions())
+    }
+
+    // Work out what signed message we expect
+    const expectedPreImage = `KYC Override for ${id}`
+
+    // Now check it was authorized on the Ledger
+    let verified = false;
+    try {
+      verified = await verifyLedgerPoP(
+        req.body.reviewerAddress,
+        req.body.reviewerPublicKey,
+        req.body.signature,
+        expectedPreImage
+      )
+    } catch (err) {
+      let msg = "Unknown error in signature validation"
+      if (err instanceof Error) {
+        msg = err.message;
+      }
+      return res.status(400).json(badRequest(msg, []))
+    }
+
+    if (!verified) {
+      return res.status(403).json(badRequest("Signature verification failure.", []))
+    }
+
+    const result = await this._commandBus.send(
+      new SubmitKYCResultCommand(id, {
+        status: PhaseStatus.Approved,
+        data: {
+          id: id,
+          processMessage: req.body?.reason
+        } as KYCApprovedData,
+      }),
+    )
+
+    return res.json(ok('KYC result submitted successfully', {}))
+  }
+
+  /* Retaining this for now, but we should remove it in the future once everyone is wallet based */
+  @httpPost('/:id/SecretApproveGovernanceReview', query('address').isString(), query('sig').isString())
+  async secretApproveGovernanceReview(@requestParam('id') id: string, @request() req: Request,  @response() res: Response) {
+    console.log(`Approve Governance Review by secret for application ${id}`)
+    const address = req.query.address as string
+
+    const role =this._roleService.getRole(address)
+
+    // TODO: make sure sig is a signature by address
+    // Checking the secret is a HIGHLY TEMPORARY solution
+    const sig = req.query.sig as string
+
+    if (!config.GOVERNANCE_REVIEW_SECRET || sig != config.GOVERNANCE_REVIEW_SECRET) {
+      return res.status(403).json(badPermissions())
+    }
+
+    if (role !== 'GOVERNANCE_TEAM') {
+      return res.status(403).json(badPermissions())
+    }
+
+    // Check whether it's an approve or reject
+    const reviewResult = req.body
+
+    if ( !reviewResult?.result || !reviewResult?.details ) {
+      return res.status(400).json({ error: 'Bad Request' })
+    }
+
+    const result = await this._commandBus.send(
+      new SubmitGovernanceReviewResultCommand(id, {
+        status: reviewResult?.result === 'approved' ? PhaseStatus.Approved : PhaseStatus.Rejected,
+        data: reviewResult?.details,
+      }),
+    )
+
+    return res.json(ok('Governance Team Review result submitted successfully', {}))
+  }
+
+  @httpPost('/:id/approveGovernanceReview')
+  async approveGovernanceReview(@requestParam('id') id: string, @request() req: Request,  @response() res: Response) {
+    console.log(`Approve Governance Review by signature for application ${id}`)
+    console.log(req.body)
+
+    // RBAC first
+    // Check address is on the list of Gov Team addresses
+    const address = req.body.details?.reviewerAddress
+    const role =this._roleService.getRole(address)
+    if (role !== 'GOVERNANCE_TEAM') {
+      console.log(`Not a governance team member: ${role}`)
+      return res.status(403).json(badPermissions())
+    }
+
+    // Work out what signed message we expect
+    const expectedPreImage = `Governance Review ${id} ${req.body.result}`
+
+    // Now check it was authorized on the Ledger
+    let verified = false;
+    try {
+      verified = await verifyLedgerPoP(
+        address,
+        req.body.details.reviewerPublicKey,
+        req.body.signature,
+        expectedPreImage
+      )
+    } catch (err) {
+      let msg = "Unknown error in signature validation"
+      if (err instanceof Error) {
+        msg = err.message;
+      }
+      return res.status(400).json(badRequest(msg, []))
+    }
+
+    if (!verified) {
+      return res.status(403).json(badRequest("Signature verification failure.", []))
+    }
+
+    // Phew! We made it through all the checks
+    const result = await this._commandBus.send(
+      new SubmitGovernanceReviewResultCommand(id, {
+        status: req.body?.result === 'approved' ? PhaseStatus.Approved : PhaseStatus.Rejected,
+        data: req.body?.details,
+      }),
+    )
+
+    return res.json(ok('Governance Team Review result submitted successfully', {}))
+  }
+
+  @httpPost('/:id/revokeKYC', query('address').isString(), query('sig').isString())
+  async revokeKYC(@requestParam('id') id: string, @request() req: Request,  @response() res: Response) {
+    console.log(`RevokeKYC KYC for application ${id}`)
     const address = req.query.address as string
 
     const role = this._roleService.getRole(address)
@@ -74,12 +246,9 @@ export class ApplicationController {
     }
 
     const result = await this._commandBus.send(
-      new SubmitKYCResultCommand(id, {
-        status: PhaseStatus.Approved,
-        data: {} as KYCApprovedData,
-      }),
+      new RevokeKycCommand(id),
     )
 
-    return res.json(ok('KYC result submitted successfully', {}))
+    return res.json(ok('Phase changed successfully', {}))
   }
 }

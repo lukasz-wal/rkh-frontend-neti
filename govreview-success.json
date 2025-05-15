@@ -1,0 +1,8 @@
+{
+  "result": "approved",
+  "details": {
+    "finalDataCap": 10,
+    "allocatorType": "Manual",
+    "reviewerAddress": "0x0000000000000000000000000000000000000000"
+  }
+}

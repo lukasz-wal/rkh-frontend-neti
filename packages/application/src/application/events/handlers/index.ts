@@ -20,10 +20,11 @@ import {
   MetaAllocatorApprovalStarted,
   MetaAllocatorApprovalCompleted,
   DatacapRefreshRequested,
+  KYCRevoked
 } from '@src/domain/application/application.events'
 import { TYPES } from '@src/types'
 import { IApplicationDetailsRepository } from '@src/infrastructure/respositories/application-details.repository'
-import { ApplicationStatus, ApplicationAllocator, ApplicationInstructionStatus, ApplicationInstruction } from '@src/domain/application/application'
+import { ApplicationStatus, ApplicationAllocator, ApplicationInstructionStatus } from '@src/domain/application/application'
 import { ApplicationDetails } from '@src/infrastructure/respositories/application-details.types'
 
 @injectable()
@@ -88,7 +89,6 @@ export class AllocatorMultisigUpdatedEventHandler implements IEventHandler<Alloc
   ) {}
 
   async handle(event: AllocatorMultisigUpdated): Promise<void> {
-      // 1) Fetch the *full* Filfox JSON
       let signers: string[] = [];
       let threshold = 0;
       try {
@@ -101,8 +101,7 @@ export class AllocatorMultisigUpdatedEventHandler implements IEventHandler<Alloc
           err,
         );
       }
-  
-      // 2) Persist everything in one go
+
       await this._repository.update({
         id:        event.aggregateId,
         actorId:   event.allocatorActorId,
@@ -114,7 +113,6 @@ export class AllocatorMultisigUpdatedEventHandler implements IEventHandler<Alloc
       });
   }
 }
-
 @injectable()
 export class KYCStartedEventHandler implements IEventHandler<KYCStarted> {
   public event = KYCStarted.name
@@ -124,6 +122,22 @@ export class KYCStartedEventHandler implements IEventHandler<KYCStarted> {
   ) { }
 
   async handle(event: KYCStarted): Promise<void> {
+    this._repository.update({
+      id: event.aggregateId,
+      status: ApplicationStatus.KYC_PHASE,
+    })
+  }
+}
+
+@injectable()
+export class KYCRevokedEventHandler implements IEventHandler<KYCRevoked> {
+  public event = KYCRevoked.name
+
+  constructor(
+    @inject(TYPES.ApplicationDetailsRepository) private readonly _repository: IApplicationDetailsRepository,
+  ) { }
+
+  async handle(event: KYCRevoked): Promise<void> {
     this._repository.update({
       id: event.aggregateId,
       status: ApplicationStatus.KYC_PHASE,

@@ -109,7 +109,11 @@ async function main() {
     }
     allocator.applicationStatus = ApplicationStatus.GOVERNANCE_REVIEW_PHASE
 
-    allocator.approveGovernanceReview()
+    allocator.approveGovernanceReview({
+        finalDataCap: 10,
+        allocatorType: 'Manual',
+        reviewerAddress: '0x1234567890123456789012345678901234567890',
+    })
     // .save will update the PR with the new status
     // .save also required for event handlers to trigger
     allocatorRepository.save(allocator, -1)
