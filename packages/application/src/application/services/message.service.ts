@@ -87,7 +87,7 @@ export class MessageService {
 ### Need Assistance?
 - For questions about the application process, please contact our support team
 
-> 📞 We're here to help if you need any assistance
+📞 We're here to help if you need any assistance
 `
     }
   }
@@ -100,7 +100,7 @@ export class MessageService {
    - **GitHub Username:** ${application.applicantGithubHandle}
 2. Your application will be automatically updated once submitted
 
-> ℹ️ KYC completion is required to proceed with your application
+ℹ️ KYC completion is required to proceed with your application
 `
   }
 
@@ -110,44 +110,12 @@ export class MessageService {
 ### 🔍 Governance Review Phase
 Your application is currently under review by the Fil+ governance team.
 
-### 📊 Current Request
-- Amount: \`${currentInstruction.datacap_amount} PiB\`
-- Method: \`${currentInstruction.method}\`
-
-### 📋 Review Guidelines
-1. Verify applicant details and eligibility
-2. Assess DataCap request:
-   - Is the amount appropriate for the use case?
-   - Is the allocation method suitable?
-   - Does the distribution strategy make sense?
-
 ### ✏️ Making Changes
-You can propose changes to the DataCap amount or allocation method by editing the JSON file in this Pull Request.
+If you would like to propose changes to your application, please do so by making comments on this PR tagging @galen-mcandrew.
+The governance team will review your comments and make any necessary adjustments.
 
-**Metapathway Options:**
-- \`metapathway_type\`: Can be either \`"MA"\` (Meta Allocator) or \`"RKH"\` (Root Key Holder).
-- \`ma_address\`: **Required only if** \`metapathway_type\` is set to \`"MA"\`. This should be the on-chain address of the Meta Allocator.
-
-**Editing the Amount:**
-To change the requested DataCap amount, modify the **last entry** in the \`LifeCycle\` object. Ensure this entry sets the new amount in PiB.
-
-**Example JSON Edit:**
-\`\`\`json
-{
-  // ... other fields ...
-  "metapathway_type": "MA", // Or "RKH"
-  "ma_address": "0x15a9d9b81e3c67b95ffedfb4416d25a113c8c6df", // Required if metapathway_type is "MA"
-  // ... other fields ...
-  "LifeCycle": {
-    // ... previous audits ...
-    "Audit <latest_number>": [ "2025-04-10T12:00:00Z", "5" ] // Edit this value for the new amount (e.g., 5 PiB)
-  }
-}
-\`\`\`
-Commit your changes directly to this PR after editing the JSON file.
-
-> 💬 Please be prepared to respond to any questions or requests for clarification.
-> 🔧 Governance members: Approve the PR to move the application to the next phase.
+💬 Please be prepared to respond to any questions or requests for clarification.
+🔧 Governance members: Approve the PR to move the application to the next phase.
 `
   }
 
@@ -157,7 +125,7 @@ Commit your changes directly to this PR after editing the JSON file.
 - Your application is awaiting final approval from on-chain signers
 - We'll update this thread once a decision has been made
 
-> ⏳ The final decision is pending. Thank you for your patience.
+⏳ The final decision is pending. Thank you for your patience.
 `
   }
 
@@ -167,7 +135,7 @@ Commit your changes directly to this PR after editing the JSON file.
 - Your application is awaiting final approval from on-chain signers
 - We'll update this thread once a decision has been made
 
-> ⏳ The final decision is pending. Thank you for your patience.
+⏳ The final decision is pending. Thank you for your patience.
 `
   }
 
@@ -177,7 +145,7 @@ Commit your changes directly to this PR after editing the JSON file.
 - Congratulations! Your application to become a DataCap allocator has been approved
 - You will receive further instructions shortly
 
-> 🎉 Welcome to the Filecoin Plus community!
+🎉 Welcome to the Filecoin Plus community!
 `
   }
 
@@ -186,7 +154,7 @@ Commit your changes directly to this PR after editing the JSON file.
 ### Application Rejected
 - We regret to inform you that your application has been rejected
 
-> ❌ Please contact our support team for more information
+❌ Please contact our support team for more information
 `
   }
 }
