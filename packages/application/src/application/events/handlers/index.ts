@@ -203,6 +203,7 @@ export class GovernanceReviewApprovedEventHandler implements IEventHandler<Gover
     const applicationInstructions = event.applicationInstructions
     const lastInstruction = applicationInstructions[applicationInstructions.length - 1]
     const lastInstructionMethod = lastInstruction.method
+    const lastInstructionAmount = lastInstruction.datacap_amount
 
     const status = lastInstructionMethod === ApplicationAllocator.META_ALLOCATOR
       ? ApplicationStatus.META_APPROVAL_PHASE
@@ -214,6 +215,7 @@ export class GovernanceReviewApprovedEventHandler implements IEventHandler<Gover
         $set: {
           status: status,
           applicationInstructions: applicationInstructions,
+          datacap: lastInstructionAmount,
         },
       },
     )
