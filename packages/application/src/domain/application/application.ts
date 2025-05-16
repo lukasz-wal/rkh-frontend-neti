@@ -36,6 +36,8 @@ export enum ApplicationStatus {
   META_APPROVAL_PHASE = 'META_APPROVAL_PHASE',
   APPROVED = 'APPROVED',
   REJECTED = 'REJECTED',
+  IN_REFRESH = 'IN_REFRESSH',
+  DC_ALLOCATED = 'DC_ALLOCATED',
 }
 
 export enum ApplicationAllocator {
@@ -79,6 +81,8 @@ export type ApplicationGrantCycle = {
   pullRequest: ApplicationPullRequest
   instruction: ApplicationInstruction
 }
+
+export type StatusEvent = { stage: string; timestamp: number };
 
 export class DatacapAllocator extends AggregateRoot {
   public applicationNumber: number
@@ -126,16 +130,26 @@ export class DatacapAllocator extends AggregateRoot {
   public allocationDatacapAllocationLimits: string
   public onChainAddressForDataCapAllocation: string
 
-  public status: { [key: string]: number | null } = {
+/*  public currentStatus: { [key: string]: number | null } = {
     "Application Submitted": null,
     "KYC Submitted": null,
     "In Review": null,
     "In Refresh": null,
     "Approved": null,
     "Declined": null,
+    "DC Allocated": null
+  }*/
 
+  public status: { [stage: string]: number[]|null} = {
+    "Application Submitted": null,
+    "KYC Submitted":         null,
+    "KYC Failed":            null, 
+    "In Review":             null,
+    "In Refresh":            null,
+    "Approved":              null,
+    "Declined":              null,
+    "DC Allocated":          null,
   }
-
   constructor(guid?: string) {
     super(guid)
   }
@@ -207,6 +221,7 @@ export class DatacapAllocator extends AggregateRoot {
     this.applyChange(
       new AllocatorMultisigUpdated(this.guid, allocatorActorId, multisigAddress, multisigThreshold, multisigSigners),
     )
+   
   }
 
   setApplicationPullRequest(
@@ -364,7 +379,13 @@ rejectGovernanceReview(details: GovernanceReviewRejectedData) {
   }
 
   requestDatacapRefresh() {
-    this.ensureValidApplicationStatus([ApplicationStatus.APPROVED])
+    this.ensureValidApplicationStatus([ApplicationStatus.DC_ALLOCATED])
+    /*if (!this.currentStatus["In Refresh"]) {
+      this.status["In Refresh"] = event.timestamp.getTime()
+    }*/
+    if (this.applicationStatus === ApplicationStatus.DC_ALLOCATED) {
+      this.applicationStatus = ApplicationStatus.IN_REFRESH
+    }
 
     const prevInstruction = this.applicationInstructions[this.applicationInstructions.length - 1]
     const refreshAmount = prevInstruction.datacap_amount * 2
@@ -394,25 +415,25 @@ rejectGovernanceReview(details: GovernanceReviewRejectedData) {
     this.datacapAllocationLimits = event.datacapAllocationLimits
     this.onChainAddressForDataCapAllocation = event.onChainAddressForDataCapAllocation
 
-    this.applicationStatus = ApplicationStatus.SUBMISSION_PHASE
+    this.applicationStatus = ApplicationStatus.SUBMISSION_PHASE;
 
     this.applicationInstructions = [
       {
-        method: ApplicationAllocator.META_ALLOCATOR,
-        datacap_amount: 5,
+        method: '',
+        datacap_amount: 0,
         timestamp: event.timestamp.getTime(),
         status: ApplicationInstructionStatus.PENDING,
       },
     ]
-
-    this.status = {
-      "Application Submitted": null,
+   // (this.status["Application Submitted"] ??= []).push(event.timestamp.getTime())
+    /*  "Application Submitted": event.timestamp.getTime(),
       "KYC Submitted": null,
       "In Review": null,
       "In Refresh": null,
       "Approved": null,
       "Declined": null,
-    }
+      "KYC Failed": null,
+    }*/
   }
 
   applyApplicationEdited(event: ApplicationEdited) {
@@ -446,11 +467,11 @@ rejectGovernanceReview(details: GovernanceReviewRejectedData) {
     this.allocatorMultisigAddress = event.file.pathway_addresses?.msig || this.allocatorMultisigAddress
     this.allocatorMultisigSigners = event.file.pathway_addresses?.signer || this.allocatorMultisigSigners
 
-    this.applicationInstructions = Object.entries(event.file.LifeCycle).map(([_, value]) => ({
+    try {this.applicationInstructions = Object.entries(event.file.LifeCycle).map(([_, value]) => ({
       method: event.file.metapathway_type === "MA" ? ApplicationAllocator.META_ALLOCATOR : ApplicationAllocator.RKH_ALLOCATOR,
       datacap_amount: parseInt(value[1]),
       timestamp: parseInt(value[0]),
-    }))
+    }))}catch(error){ console.log('No application instruction found')}
   }
 
   applyAllocatorMultisigUpdated(event: AllocatorMultisigUpdated) {
@@ -471,8 +492,11 @@ rejectGovernanceReview(details: GovernanceReviewRejectedData) {
       commentId: event.commentId,
       timestamp: event.timestamp,
     }
-    if (!this.status["Application Submitted"]) {
-      this.status["Application Submitted"] = Math.floor(event.timestamp.getTime() / 1000)
+    if(!this.status["Application Submitted"]){
+      this.status["Application Submitted"] ??= []
+    }
+    if (this.status["Application Submitted"].length === 0) {
+      this.status["Application Submitted"].push(event.timestamp.getTime())
     }
     if (this.applicationStatus === ApplicationStatus.SUBMISSION_PHASE && this.allocatorActorId) {
       this.applicationStatus = ApplicationStatus.KYC_PHASE
@@ -482,43 +506,44 @@ rejectGovernanceReview(details: GovernanceReviewRejectedData) {
   applyKYCStarted(_: KYCStarted) {
     this.applicationStatus = ApplicationStatus.KYC_PHASE
   }
+  
 
   applyKYCApproved(event: KYCApproved) {
-    if (!this.status["In Review"]) {
-      this.status["In Review"] = Math.floor(event.timestamp.getTime() / 1000)
+    if (this.applicationStatus===ApplicationStatus.KYC_PHASE) {
+      (this.status["KYC Submitted"] ??= []).push(event.timestamp.getTime())
+      this.applicationStatus = ApplicationStatus.GOVERNANCE_REVIEW_PHASE
     }
-    this.applicationStatus = ApplicationStatus.GOVERNANCE_REVIEW_PHASE
   }
-
+//check that it should be KYCApproved. 
   applyKYCRevoked(_: KYCApproved) {
     this.applicationStatus = ApplicationStatus.GOVERNANCE_REVIEW_PHASE
+    this.status["KYC Submitted"] = []
   }
 
-
   applyKYCRejected(event: KYCRejected) {
-     if (!this.status["Declined"]) {
-      this.status["Declined"] = Math.floor(event.timestamp.getTime() / 1000)
+     if ((this.status["KYC Failed"] ??= []).length === 0) {
+      this.status["KYC Failed"].push(event.timestamp.getTime())
     }
-    this.applicationStatus = ApplicationStatus.REJECTED
   }
 
   applyGovernanceReviewStarted(event: GovernanceReviewStarted) {
-    if (!this.status["In Review"]) {
-      this.status["In Review"] = Math.floor(event.timestamp.getTime() / 1000)
+    if (this.applicationStatus === ApplicationStatus.IN_REFRESH) {
+      (this.status["In Review"] ??= []).push(event.timestamp.getTime())
+      this.applicationStatus = ApplicationStatus.GOVERNANCE_REVIEW_PHASE
     }
-    this.applicationStatus = ApplicationStatus.GOVERNANCE_REVIEW_PHASE
   }
 
   applyGovernanceReviewApproved(event: GovernanceReviewApproved) {
- /*   if (!this.status["Approved"]) {
-      this.status["Approved"] = Math.floor(event.timestamp.getTime() / 1000)
-    }*/
+     if (this.applicationStatus === ApplicationStatus.GOVERNANCE_REVIEW_PHASE) {
+      (this.status["Approved"] ??= []).push(event.timestamp.getTime())
+    }
+    this.applicationStatus = ApplicationStatus.APPROVED
   }
 
   applyGovernanceReviewRejected(event: GovernanceReviewRejected) {
     this.applicationStatus = ApplicationStatus.REJECTED
-    if (!this.status["Declined"]) {
-      this.status["Declined"] = Math.floor(event.timestamp.getTime() / 1000)
+    if ((this.status["Declined"] ??= []).length === 0) {
+      this.status["Declined"].push(event.timestamp.getTime())
     }
   }
 
@@ -538,7 +563,13 @@ rejectGovernanceReview(details: GovernanceReviewRejectedData) {
   }
 
   applyRKHApprovalCompleted(event: RKHApprovalCompleted) {
-    this.applicationStatus = ApplicationStatus.APPROVED
+    if(this.applicationStatus === ApplicationStatus.RKH_APPROVAL_PHASE){
+      (this.status["DC Allocated"] ??= []).push(event.timestamp.getTime())
+    }
+    this.applicationStatus = ApplicationStatus.DC_ALLOCATED
+    const index = this.applicationInstructions.length - 1
+    this.applicationInstructions[index].timestamp = event.timestamp.getTime()
+    this.applicationInstructions[index].status = ApplicationInstructionStatus.GRANTED
   }
 
   applyMetaAllocatorApprovalStarted(event: MetaAllocatorApprovalStarted) {
@@ -546,7 +577,10 @@ rejectGovernanceReview(details: GovernanceReviewRejectedData) {
   }
 
   applyMetaAllocatorApprovalCompleted(event: MetaAllocatorApprovalCompleted) {
-    this.applicationStatus = ApplicationStatus.APPROVED
+    if(this.applicationStatus === ApplicationStatus.META_APPROVAL_PHASE){
+      (this.status["DC Allocated"] ??= []).push(event.timestamp.getTime())
+    }
+    this.applicationStatus = ApplicationStatus.DC_ALLOCATED
 
     const index = this.applicationInstructions.length - 1
     this.applicationInstructions[index].timestamp = event.timestamp.getTime()
@@ -560,6 +594,9 @@ rejectGovernanceReview(details: GovernanceReviewRejectedData) {
 
   applyDatacapRefreshRequested(event: DatacapRefreshRequested) {
     console.log('applyDatacapRefreshRequested', this.applicationStatus)
+    if (this.applicationStatus === ApplicationStatus.DC_ALLOCATED) {
+      (this.status["In Refresh"] ??= []).push(event.timestamp.getTime())
+    }
     this.applicationStatus = ApplicationStatus.GOVERNANCE_REVIEW_PHASE
     this.applicationInstructions.push({
       method: event.method,
@@ -567,9 +604,6 @@ rejectGovernanceReview(details: GovernanceReviewRejectedData) {
       timestamp: event.timestamp.getTime(),
       status: ApplicationInstructionStatus.PENDING,
     })
-    if (!this.status["In Refresh"]) {
-      this.status["In Refresh"] = Math.floor(event.timestamp.getTime() / 1000)
-    }
     console.log('applyDatacapRefreshRequested', this.applicationInstructions)
   }
 
