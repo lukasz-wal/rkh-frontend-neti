@@ -143,6 +143,76 @@ export class ApplicationController {
   }
 
   /* Retaining this for now, but we should remove it in the future once everyone is wallet based */
+  @httpPost('/:id/secretRevokeKYC', query('address').isString(), query('sig').isString())
+  async secretRevokeKYC(@requestParam('id') id: string, @request() req: Request,  @response() res: Response) {
+    console.log(`RevokeKYC KYC for application ${id}`)
+    const address = req.query.address as string
+
+    const role =this._roleService.getRole(address)
+
+    // TODO: make sure sig is a signature by address
+    const sig = req.query.sig as string
+
+    if (sig != config.KYC_ENDPOINT_SECRET) {
+      return res.status(400).json(badPermissions())
+    }
+
+    if (role !== 'GOVERNANCE_TEAM') {
+      return res.status(400).json(badPermissions())
+    }
+
+    const result = await this._commandBus.send(
+      new RevokeKycCommand(id),
+    )
+
+    return res.json(ok('Phase changed successfully', {}))
+  }
+
+  @httpPost('/:id/revokeKYC')
+  async revokeKYC(@requestParam('id') id: string, @request() req: Request,  @response() res: Response) {
+    console.log(`Approve KYC by signature for application ${id}`)
+    console.log(req.body)
+    // RBAC first
+    // Check address is on the list of Gov Team addresses
+    const address = req.body.reviewerAddress
+    const role =this._roleService.getRole(address)
+    if (role !== 'GOVERNANCE_TEAM') {
+      console.log(`Not a governance team member: ${role}`)
+      return res.status(403).json(badPermissions())
+    }
+
+    // Work out what signed message we expect
+    const expectedPreImage = `KYC Revoke for ${id}`
+
+    // Now check it was authorized on the Ledger
+    let verified = false;
+    try {
+      verified = await verifyLedgerPoP(
+        req.body.reviewerAddress,
+        req.body.reviewerPublicKey,
+        req.body.signature,
+        expectedPreImage
+      )
+    } catch (err) {
+      let msg = "Unknown error in signature validation"
+      if (err instanceof Error) {
+        msg = err.message;
+      }
+      return res.status(400).json(badRequest(msg, []))
+    }
+
+    if (!verified) {
+      return res.status(403).json(badRequest("Signature verification failure.", []))
+    }
+
+    const result = await this._commandBus.send(
+      new RevokeKycCommand(id),
+    )
+
+    return res.json(ok('Phase changed successfully', {}))
+  }
+
+  /* Retaining this for now, but we should remove it in the future once everyone is wallet based */
   @httpPost('/:id/SecretApproveGovernanceReview', query('address').isString(), query('sig').isString())
   async secretApproveGovernanceReview(@requestParam('id') id: string, @request() req: Request,  @response() res: Response) {
     console.log(`Approve Governance Review by secret for application ${id}`)
@@ -226,30 +296,5 @@ export class ApplicationController {
     )
 
     return res.json(ok('Governance Team Review result submitted successfully', {}))
-  }
-
-  @httpPost('/:id/revokeKYC', query('address').isString(), query('sig').isString())
-  async revokeKYC(@requestParam('id') id: string, @request() req: Request,  @response() res: Response) {
-    console.log(`RevokeKYC KYC for application ${id}`)
-    const address = req.query.address as string
-
-    const role =this._roleService.getRole(address)
-
-    // TODO: make sure sig is a signature by address
-    const sig = req.query.sig as string
-
-    if (sig != config.KYC_ENDPOINT_SECRET) {
-      return res.status(400).json(badPermissions())
-    }
-
-    if (role !== 'GOVERNANCE_TEAM') {
-      return res.status(400).json(badPermissions())
-    }
-
-    const result = await this._commandBus.send(
-      new RevokeKycCommand(id),
-    )
-
-    return res.json(ok('Phase changed successfully', {}))
   }
 }
