@@ -13,42 +13,58 @@ const REQUIRED_AIRTABLE_FIELDS = [
 ] // TODO: Add required fields
 
 export async function subscribeApplicationSubmissions(container: Container) {
+  // Do the first pass immediately
+  await processRecords(container)
+
+  // And now poll for updates periodically
+  console.log(`Start loop (${config.SUBSCRIBE_APPLICATION_SUBMISSIONS_POLLING_INTERVAL})`)
+  setInterval(async () => {
+    processRecords(container)
+  }, config.SUBSCRIBE_APPLICATION_SUBMISSIONS_POLLING_INTERVAL)
+}
+
+async function processRecords(container: Container) {
   const airtableClient = container.get<IAirtableClient>(TYPES.AirtableClient)
   const commandBus = container.get<ICommandBus>(TYPES.CommandBus)
   const processedRecords = new Set<string>()
 
-  setInterval(async () => {
-    try {
-      const newRecords = await airtableClient.getTableRecords()
+  try {
+    const newRecords = await airtableClient.getTableRecords()
+    console.log(`Fetched ${newRecords.length} records from Airtable`)
 
-      for (const record of newRecords) {
-        if (shouldProcessRecord(record, processedRecords)) {
-          const command = mapRecordToCommand(record)
-          processedRecords.add(record.id)
-          await commandBus.send(command)
-        }
+    for (const record of newRecords) {
+      if (shouldProcessRecord(record, processedRecords)) {
+        console.log(`Processing record ${record.id}...`)
+        console.log(record)
+        const command = mapRecordToCommand(record)
+        processedRecords.add(record.id)
+        console.log(`Finalising record ${record.id}...`)
+        await commandBus.send(command)
+      } else {
+        console.log(`Skipping record ${record.id}...`)
+        console.log(record)
       }
-    } catch (error) {
-      processedRecords.clear()
-      console.error('Error processing application submissions:', error)
     }
-  }, config.SUBSCRIBE_APPLICATION_SUBMISSIONS_POLLING_INTERVAL)
+  } catch (error) {
+    processedRecords.clear()
+    console.error('Error processing application submissions:', error)
+  }
 }
 
 function shouldProcessRecord(record: any, processedRecords: Set<string>): boolean {
+  const alreadyDone = processedRecords.has(record.id)
+  const isValid = isRecordValid(record)
+  console.log(`Record ${record.id} is valid?: ${isValid} and already done?: ${alreadyDone}`)
   return (
-    !processedRecords.has(record.id) &&
-    isRecordValid(record) //  && isApplicationNumberInRange(Number(record.fields['Application Number']))
+    !alreadyDone && isValid //  && isApplicationNumberInRange(Number(record.fields['Application Number']))
   )
 }
 
 function isRecordValid(record: any): boolean {
-  console.log('record', record)
   return REQUIRED_AIRTABLE_FIELDS.every((field) => field in record.fields)
 }
 
 function mapRecordToCommand(record: any): CreateApplicationCommand {
-  console.log('record', record)
   return new CreateApplicationCommand({
     applicationId: record.id,
     applicationNumber: record.fields['Application Number'] as number,
