@@ -98,7 +98,7 @@ export default function SignMetaAllocatorTransactionButton({ application }: Sign
     }, [isError, isConfirming]);
 
     const addVerifier = async (verifierAddress: string, datacap: number) => {
-        const fullDataCap = BigInt(datacap * 1000000000000);
+        const fullDataCap = BigInt(datacap * 1_000_000_000_000_000);
         writeContract({
             address: env.metaAllocatorContractAddress as `0x${string}`,
             abi: contractAbi,
@@ -158,7 +158,7 @@ export default function SignMetaAllocatorTransactionButton({ application }: Sign
               });
         }
 
-        const fullDataCap = BigInt(application.datacap * 1000000000000);
+        const fullDataCap = BigInt(application.datacap * 1_000_000_000_000_000);
         const data = encodeFunctionData({
             abi: contractAbi,
             functionName: 'addAllowance',
