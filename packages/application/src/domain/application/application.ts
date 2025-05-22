@@ -493,7 +493,7 @@ rejectGovernanceReview(details: GovernanceReviewRejectedData) {
       commentId: event.commentId,
       timestamp: event.timestamp,
     }
-    if(!this.status["Application Submitted"]){
+    if (!this.status["Application Submitted"]) {
       this.status["Application Submitted"] ??= []
     }
     if (this.status["Application Submitted"].length === 0) {
