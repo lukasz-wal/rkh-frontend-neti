@@ -43,8 +43,8 @@ stateDiagram-v2
     RKH_Approval_In_Progress --> RKH_Approval_Failed: RKHApprovalsUpdated[approvals < threshold]
     MA_Approval_In_Progress --> MA_Approval_Completed: DC_ALLOCATED
     MA_Approval_In_Progress --> MA_Approval_Failed
-    RKH_Approval_Completed --> DC_ALLOCATED: [*]
-    MA_Approval_Completed --> DC_ALLOCATED: [*]
+    RKH_Approval_Completed --> [*]: DC_ALLOCATED
+    MA_Approval_Completed --> [*]: DC_ALLOCATED
     KYC_Failed --> [*]
     Governance_Review_Failed --> [*]
     RKH_Approval_Failed --> [*]
