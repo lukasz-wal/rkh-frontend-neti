@@ -409,7 +409,7 @@ rejectGovernanceReview(details: GovernanceReviewRejectedData) {
     this.applicantOrgAddresses = event.applicantOrgAddresses
     this.applicantGithubHandle = event.applicantGithubHandle
 
-    this.allocationTrancheScheduleType = event.allocationTrancheScheduleType
+    this.allocationTrancheSchedule = event.allocationTrancheSchedule
     this.allocationAudit = event.audit
     this.allocationDistributionRequired = event.distributionRequired
     this.allocationRequiredStorageProviders = event.allocationRequiredStorageProviders
@@ -469,12 +469,12 @@ rejectGovernanceReview(details: GovernanceReviewRejectedData) {
     
     this.allocatorMultisigAddress = event.file.pathway_addresses?.msig || this.allocatorMultisigAddress
     this.allocatorMultisigSigners = event.file.pathway_addresses?.signer || this.allocatorMultisigSigners
-    if (this.statusHelper != "updated"){
+   /* if (this.statusHelper != "updated"){
       console.log('status helper before update', this.applicantName, this.status, this.statusHelper)
       this.status[this.statusHelper].push(event.timestamp.getTime())
       this.statusHelper = "updated"
       console.log('status helper updated', this.applicantName, this.status, this.statusHelper)
-    }
+    }*/
 
     this.applicationInstructions = Object.entries(event.file.audit_outcomes).map(([_, value]) => ({
       method: event.file.metapathway_type === "MA" ? ApplicationAllocator.META_ALLOCATOR : ApplicationAllocator.RKH_ALLOCATOR,
