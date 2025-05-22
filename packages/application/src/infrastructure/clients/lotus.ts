@@ -78,7 +78,7 @@ export class LotusClient implements ILotusClient {
     const multisig = {
       address: id,
       threshold: multisigState.State.NumApprovalsThreshold,
-      signers: signers.map((signer) => signer.State.Address),
+      signers: signers.map((signers) => signers.State.Address),
       pendingTxs: pendingTxs.map((tx: any) => ({
         id: tx.ID,
         to: tx.To,

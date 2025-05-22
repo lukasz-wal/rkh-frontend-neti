@@ -15,7 +15,7 @@ export type ApplicationPullRequestFile = {
   associated_org_addresses: string
   pathway_addresses?: {
     msig: string
-    signer: string[]
+    signers: string[]
   }
   application: {
     allocations: string[]
@@ -31,7 +31,7 @@ export type ApplicationPullRequestFile = {
     client_contract_address: string
   }
   history: {
-    [key: string]: string []
+    [key: string]: number|null
   }
   audit_outcomes: {
     [key: string]: [string, string]
@@ -51,8 +51,8 @@ export async function mapApplicationToPullRequestFile(application: DatacapAlloca
     {} as { [key: string]: [string, string] },
   )
 
-  // Filter and map the distribution object
-  const mappedStatus: { [key: string]: string[] } = {}
+  // This is for when history (used to be status) is a  [key: string]: string[]
+ /* const mappedStatus: { [key: string]: string[] } = {}
   if (application.status) {
     for (const [key, value] of Object.entries(application.status)) {
       if (value !== null && value !== undefined) {
@@ -62,7 +62,7 @@ export async function mapApplicationToPullRequestFile(application: DatacapAlloca
       mappedStatus[key].push(String(value))
       }
     }
-  }
+  }*/
 
  //get current values of msig
   let allocatorId     = application.allocatorMultisigAddress ?? ""
@@ -114,7 +114,7 @@ export async function mapApplicationToPullRequestFile(application: DatacapAlloca
     ma_address: '',
     pathway_addresses: {
       msig: allocatorId,
-      signer: updatedSigners,
+      signers: updatedSigners,
     },
     associated_org_addresses: application.applicantOrgAddresses,
     application: {
@@ -130,7 +130,7 @@ export async function mapApplicationToPullRequestFile(application: DatacapAlloca
       allocation_bookkeeping: application.allocationBookkeepingRepo,
       client_contract_address: "",
     },
-    history: mappedStatus,
+    history: application.status,
     audit_outcomes: lifeCycle,
     old_allocator_id: "",
   }

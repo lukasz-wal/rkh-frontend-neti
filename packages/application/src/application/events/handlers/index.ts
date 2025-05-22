@@ -171,7 +171,7 @@ export class KYCRejectedEventHandler implements IEventHandler<KYCRejected> {
 
   async handle(event: KYCRejected): Promise<void> {
     await this._repository.update({
-      id: event.aggregateId,
+      id: event.aggregateName,
       status: ApplicationStatus.REJECTED,
     })
   }
