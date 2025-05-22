@@ -69,15 +69,22 @@ export class CreateApplicationCommandHandler implements ICommandHandler<CreateAp
   async handle(command: CreateApplicationCommand): Promise<Result<{ guid: string }>> {
     console.log('command', command)
     try {
+      this.logger.debug(`Getting repository entry for ${command.applicationId}...`)
       await this.repository.getById(command.applicationId)
+      this.logger.debug(`Getting repository entry for ${command.applicationId} succeeded! Aborting...`)
       return {
         success: false,
         error: new Error('Application already exists'),
       }
-    } catch (error) {}
+    } catch (error) {
+      this.logger.debug(`Getting repository entry for ${command.applicationId} catch`)
+      this.logger.debug(error)
+    }
 
+    this.logger.debug(`Normalizing ${command.otherGithubHandles}...`)
     const otherHandlesArray = this.normalizeGithubHandles(command.otherGithubHandles)
-      
+
+    this.logger.debug('Creating...')
     try {
       // Create a new datacap allocator
       const allocator: DatacapAllocator = DatacapAllocator.create({
@@ -98,12 +105,18 @@ export class CreateApplicationCommandHandler implements ICommandHandler<CreateAp
         otherGithubHandles: otherHandlesArray,
         onChainAddressForDataCapAllocation: command.onChainAddressForDataCapAllocation,
       })
+      this.logger.debug('Created...')
+      console.log('allocator', allocator)
 
       if (command.onChainAddressForDataCapAllocation) {
+        this.logger.debug(`Getting multisig info for ${command.onChainAddressForDataCapAllocation}...`)
         const actorId = await this.lotusClient.getActorId(command.onChainAddressForDataCapAllocation)
+        this.logger.debug(`Got multisig actor ID ${actorId}`)
         const msigData = await getMultisigInfo(command.onChainAddressForDataCapAllocation);
+        this.logger.debug(`Got multisig data}`)
         const signers   = msigData.multisig?.signers   ?? [];
         const threshold = msigData.multisig?.approvalThreshold ?? 0;
+        this.logger.debug(`Setting multisig data`)
         allocator.setAllocatorMultisig(
           actorId,
           command.onChainAddressForDataCapAllocation,
@@ -116,18 +129,23 @@ export class CreateApplicationCommandHandler implements ICommandHandler<CreateAp
 
       try {
         const pullRequest = await this.pullRequestService.createPullRequest(allocator)
+        this.logger.info('Pull request created successfully!')
+        console.log('pullRequest', pullRequest)
         allocator.setApplicationPullRequest(pullRequest.number, pullRequest.url, pullRequest.commentId)
       } catch (error) {
         console.log(error)
         this.logger.error('Unable to create application pull request. The application already exists.')
       }
+      this.logger.debug('Saving allocator...')
       await this.repository.save(allocator, -1)
 
+      this.logger.debug('Allocator saved!')
       return {
         success: true,
         data: { guid: command.guid },
       }
     } catch (error: any) {
+      this.logger.error('Error creating application!')
       this.logger.error(error.message)
       return {
         success: false,
