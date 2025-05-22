@@ -9,12 +9,18 @@ export type ApplicationPullRequestFile = {
   name: string
   allocator_id: string
   organization: string
+  allocation_bookkeeping: string,
   metapathway_type: string
   ma_address: string
   associated_org_addresses: string
+  pathway_addresses?: {
+    msig: string
+    signers: string[]
+  }
   application: {
     allocations: string[]
     audit: string[]
+    tranche_schedule: string
     distribution: string[]
     required_sps: string
     required_replicas: string
@@ -24,16 +30,13 @@ export type ApplicationPullRequestFile = {
     allocation_bookkeeping: string
     client_contract_address: string
   }
-  status: {
-    [key: string]: string
+  history: {
+    [key: string]: number|null
   }
-  LifeCycle: {
+  audit_outcomes: {
     [key: string]: [string, string]
   }
-  pathway_addresses?: {
-    msig: string
-    signer: string[]
-  }
+  old_allocator_id: string
 }
 
 
@@ -48,15 +51,18 @@ export async function mapApplicationToPullRequestFile(application: DatacapAlloca
     {} as { [key: string]: [string, string] },
   )
 
-  // Filter and map the status object
-  const mappedStatus: { [key: string]: string } = {}
+  // This is for when history (used to be status) is a  [key: string]: string[]
+ /* const mappedStatus: { [key: string]: string[] } = {}
   if (application.status) {
     for (const [key, value] of Object.entries(application.status)) {
       if (value !== null && value !== undefined) {
-        mappedStatus[key] = String(value) // Convert value to string
+        if (!Array.isArray(mappedStatus[key])) {
+          mappedStatus[key] = []
+        }
+      mappedStatus[key].push(String(value))
       }
     }
-  }
+  }*/
 
  //get current values of msig
   let allocatorId     = application.allocatorMultisigAddress ?? ""
@@ -69,8 +75,8 @@ export async function mapApplicationToPullRequestFile(application: DatacapAlloca
         application.allocatorMultisigAddress
       )
 
-      if (msigData.id !== application.allocatorMultisigAddress) {
-        allocatorId = msigData.id
+      if (msigData.robust !== application.allocatorMultisigAddress) {
+        allocatorId = msigData.robust
       }
 
       const fetchedSigners = msigData.multisig.signers
@@ -103,26 +109,29 @@ export async function mapApplicationToPullRequestFile(application: DatacapAlloca
     name: application.applicantName,
     allocator_id: allocatorId,
     organization: application.applicantOrgName,
-    metapathway_type: 'MA',
-    ma_address: config.META_ALLOCATOR_CONTRACT_ADDRESS,
+    allocation_bookkeeping: application.allocationBookkeepingRepo,
+    metapathway_type: '',
+    ma_address: '',
+    pathway_addresses: {
+      msig: allocatorId,
+      signers: updatedSigners,
+    },
     associated_org_addresses: application.applicantOrgAddresses,
     application: {
       allocations: application.allocationStandardizedAllocations,
       audit: application.allocationAudit ? [application.allocationAudit] : [],
       distribution: application.allocationDistributionRequired ? [application.allocationDistributionRequired] : [],
+      tranche_schedule: application.allocationTrancheSchedule,
       required_sps: application.allocationRequiredStorageProviders,
       required_replicas: application.allocationRequiredReplicas,
       tooling: application.allocationTooling,
-      max_DC_client: application.maxDcClient,
-      github_handles: [application.applicantGithubHandle, ...application.otherGithubHandles ?? []],
+      max_DC_client: application.allocationMaxDcClient,
+      github_handles: [application.applicantGithubHandle, ...application.applicantOtherGithubHandles ?? []],
       allocation_bookkeeping: application.allocationBookkeepingRepo,
       client_contract_address: "",
     },
-    status: mappedStatus,
-    LifeCycle: lifeCycle,
-    pathway_addresses: {
-      msig: allocatorId,
-      signer: updatedSigners,
-    },
+    history: application.status,
+    audit_outcomes: lifeCycle,
+    old_allocator_id: "",
   }
 }

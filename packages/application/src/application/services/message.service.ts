@@ -34,7 +34,6 @@ export class MessageService {
 
   generateCommentMessage(application: DatacapAllocator): string {
     const statusTitle = {
-      [ApplicationStatus.SUBMISSION_PHASE]: 'Submission Phase',
       [ApplicationStatus.KYC_PHASE]: 'KYC Phase',
       [ApplicationStatus.GOVERNANCE_REVIEW_PHASE]: 'Governance Review Phase',
       [ApplicationStatus.RKH_APPROVAL_PHASE]: 'RKH Approval Phase',
@@ -44,7 +43,6 @@ export class MessageService {
     }
     
     const statusEmoji = {
-      [ApplicationStatus.SUBMISSION_PHASE]: '📝',
       [ApplicationStatus.KYC_PHASE]: '🔍',
       [ApplicationStatus.GOVERNANCE_REVIEW_PHASE]: '👥',
       [ApplicationStatus.RKH_APPROVAL_PHASE]: '🔑',

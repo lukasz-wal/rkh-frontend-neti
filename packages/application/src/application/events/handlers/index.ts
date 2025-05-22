@@ -44,16 +44,16 @@ export class ApplicationEditedEventHandler implements IEventHandler<ApplicationE
       address: event.file.address,
       github: event.file.application.github_handles[0],
       // xDONE
-      applicationInstructions: Object.entries(event.file.LifeCycle).map(([_, value]) => ({
+      applicationInstructions: Object.entries(event.file.audit_outcomes).map(([_, value]) => ({
         method: event.file.metapathway_type === "MA" ? ApplicationAllocator.META_ALLOCATOR : ApplicationAllocator.RKH_ALLOCATOR,
         timestamp: parseInt(value[0]),
         datacap_amount: parseInt(value[1]),
       })),
     } as Partial<ApplicationDetails>
 
-    if (Object.keys(event.file.LifeCycle).length > 0) {
-      const key = `Audit ${Object.keys(event.file.LifeCycle).length}`
-      updated.datacap = parseInt(event.file.LifeCycle[key][1])
+    if (Object.keys(event.file.audit_outcomes).length > 0) {
+      const key = `Audit ${Object.keys(event.file.audit_outcomes).length}`
+      updated.datacap = parseInt(event.file.audit_outcomes[key][1])
     }
 
     await this._repository.update(updated)

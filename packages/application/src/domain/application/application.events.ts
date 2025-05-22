@@ -16,7 +16,6 @@ export class ApplicationCreated extends Event {
     public applicantAddress: string,
     public applicantOrgName: string,
     public applicantOrgAddresses: string,
-    public allocationTrancheScheduleType: string,
     public audit: string,
     public distributionRequired: string,
     public allocationRequiredStorageProviders: string,
@@ -25,6 +24,8 @@ export class ApplicationCreated extends Event {
     public applicantGithubHandle: string,
     public otherGithubHandles: string[],
     public onChainAddressForDataCapAllocation: string,
+    public bookkeepingRepo: string,
+    public allocationTrancheSchedule: string,
   ) {
     super(guid)
     this.timestamp = new Date()
@@ -163,6 +164,7 @@ export class GovernanceReviewApproved extends Event {
     public applicationInstructions: ApplicationInstruction[],
   ) {
     super(allocatorId)
+    this.timestamp = new Date()
   }
 }
 
@@ -177,6 +179,7 @@ export class GovernanceReviewRejected extends Event {
     public applicationInstructions: ApplicationInstruction[],
   ) {
     super(allocatorId)
+    this.timestamp = new Date()
   }
 }
 
