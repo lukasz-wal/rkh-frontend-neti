@@ -31,17 +31,20 @@ The backend service is responsible for the following key functionalities:
 ```mermaid
 stateDiagram-v2
     [*] --> Submission
-    Submission --> KYC_Not_Started: ApplicationSubmitted
-    KYC_Not_Started --> KYC_In_Progress: KYCStarted
+    Submission --> KYC_In_Progress: KYCStarted
     KYC_In_Progress --> KYC_Completed: KYCApproved
     KYC_In_Progress --> KYC_Failed: KYCRejected
     KYC_Completed --> Governance_Review_In_Progress: GovernanceReviewStarted
     Governance_Review_In_Progress --> Governance_Review_Completed: GovernanceReviewApproved
     Governance_Review_In_Progress --> Governance_Review_Failed: GovernanceReviewRejected
     Governance_Review_Completed --> RKH_Approval_In_Progress: RKHApprovalStarted
+    Governance_Review_Completed --> MA_Approval_In_Progress: MAApprovalStarted
     RKH_Approval_In_Progress --> RKH_Approval_Completed: RKHApprovalsUpdated[approvals >= threshold]
     RKH_Approval_In_Progress --> RKH_Approval_Failed: RKHApprovalsUpdated[approvals < threshold]
-    RKH_Approval_Completed --> [*]
+    MA_Approval_In_Progress --> MA_Approval_Completed: DC_ALLOCATED
+    MA_Approval_In_Progress --> MA_Approval_Failed
+    RKH_Approval_Completed --> DC_ALLOCATED: [*]
+    MA_Approval_Completed --> DC_ALLOCATED: [*]
     KYC_Failed --> [*]
     Governance_Review_Failed --> [*]
     RKH_Approval_Failed --> [*]
