@@ -436,7 +436,7 @@ rejectGovernanceReview(details: GovernanceReviewRejectedData) {
     if(this.applicationStatus === ApplicationStatus.META_APPROVAL_PHASE){
       this.allocationTooling = ["smart_contract_allocator"]
       this.pathway = 'MA'
-      this.ma_address = '0xB6F5d279AEad97dFA45209F3E53969c2EF43C21'
+      this.ma_address = '0xB6F5d279AEad97dFA45209F3E53969c2EF43C21d'
     }
     if(this.applicationStatus === ApplicationStatus.RKH_APPROVAL_PHASE){
       this.allocationTooling = [],
@@ -574,7 +574,7 @@ rejectGovernanceReview(details: GovernanceReviewRejectedData) {
     this.applicationStatus = ApplicationStatus.META_APPROVAL_PHASE
     this.allocationTooling = ["smart_contract_allocator"]
     this.pathway = 'MA'
-    this.ma_address = '0xB6F5d279AEad97dFA45209F3E53969c2EF43C21'
+    this.ma_address = '0xB6F5d279AEad97dFA45209F3E53969c2EF43C21d'
   }
 
   applyMetaAllocatorApprovalCompleted(event: MetaAllocatorApprovalCompleted) {
