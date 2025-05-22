@@ -24,7 +24,7 @@ export class ApplicationCreatedEventHandler implements IEventHandler<Application
       github: event.applicantGithubHandle,
       allocationTrancheSchedule: event.allocationTrancheSchedule,
       datacap: 5,
-      status: ApplicationStatus.SUBMISSION_PHASE,
+      status: ApplicationStatus.KYC_PHASE,
     }
     await this._repository.save(applicationDetails, 0)
   }

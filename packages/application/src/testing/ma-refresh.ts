@@ -359,7 +359,7 @@ async function testUpdateDatacapInfo(container: Container) {
             github: 'github',
             allocationTrancheSchedule: 'type',
             datacap: 0,
-            status: ApplicationStatus.SUBMISSION_PHASE,
+            status: ApplicationStatus.KYC_PHASE,
         }, 0)
     }
 
