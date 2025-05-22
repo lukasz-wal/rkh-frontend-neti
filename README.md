@@ -41,7 +41,7 @@ stateDiagram-v2
     Governance_Review_Completed --> MA_Approval_In_Progress: MAApprovalStarted
     RKH_Approval_In_Progress --> RKH_Approval_Completed: RKHApprovalsUpdated[approvals >= threshold]
     RKH_Approval_In_Progress --> RKH_Approval_Failed: RKHApprovalsUpdated[approvals < threshold]
-    MA_Approval_In_Progress --> MA_Approval_Completed: DC_ALLOCATED
+    MA_Approval_In_Progress --> MA_Approval_Completed
     MA_Approval_In_Progress --> MA_Approval_Failed
     RKH_Approval_Completed --> [*]: DC_ALLOCATED
     MA_Approval_Completed --> [*]: DC_ALLOCATED
