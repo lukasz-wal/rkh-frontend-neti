@@ -81,7 +81,6 @@ export type ApplicationGrantCycle = {
   pullRequest: ApplicationPullRequest
   instruction: ApplicationInstruction
 }
-
 export type StatusEvent = { stage: string; timestamp: number };
 
 export class DatacapAllocator extends AggregateRoot {
@@ -101,6 +100,7 @@ export class DatacapAllocator extends AggregateRoot {
   public allocationAudit: string
   public allocationDistributionRequired: string
   public allocationTargetClients: string[]
+  public allocationTrancheSchedule: string
   public allocationRequiredReplicas: string
   public allocationRequiredStorageProviders: string
   public allocationTooling: string[]
@@ -116,6 +116,8 @@ export class DatacapAllocator extends AggregateRoot {
   public datacap: number
   public datacapAmount: number
   public refresh?: boolean
+  public pathway?: string
+  public ma_address?: string
 
   public rkhApprovalThreshold: number = 2
   public rkhApprovals: string[] = []
@@ -165,10 +167,11 @@ export class DatacapAllocator extends AggregateRoot {
     applicantAddress: string
     applicantOrgName: string
     applicantOrgAddresses: string
-    allocationTrancheScheduleType: string
+    allocationTrancheSchedule: string
     allocationAudit: string
     allocationDistributionRequired: string
     allocationRequiredStorageProviders: string
+    bookkeepingRepo: string
     allocationRequiredReplicas: string
     datacapAllocationLimits: string
     applicantGithubHandle: string
@@ -184,7 +187,6 @@ export class DatacapAllocator extends AggregateRoot {
         params.applicantAddress,
         params.applicantOrgName,
         params.applicantOrgAddresses,
-        params.allocationTrancheScheduleType,
         params.allocationAudit,
         params.allocationDistributionRequired,
         params.allocationRequiredStorageProviders,
@@ -192,7 +194,9 @@ export class DatacapAllocator extends AggregateRoot {
         params.datacapAllocationLimits,
         params.applicantGithubHandle,
         params.otherGithubHandles ?? [],
-        params.onChainAddressForDataCapAllocation
+        params.onChainAddressForDataCapAllocation,
+        params.bookkeepingRepo,
+        params.allocationTrancheSchedule,
       ),
     )
     return allocator
@@ -404,7 +408,6 @@ rejectGovernanceReview(details: GovernanceReviewRejectedData) {
     this.applicantOrgName = event.applicantOrgName
     this.applicantOrgAddresses = event.applicantOrgAddresses
     this.applicantGithubHandle = event.applicantGithubHandle
-    this.otherGithubHandles = event.otherGithubHandles
 
     this.allocationTrancheScheduleType = event.allocationTrancheScheduleType
     this.allocationAudit = event.audit
@@ -412,7 +415,7 @@ rejectGovernanceReview(details: GovernanceReviewRejectedData) {
     this.allocationRequiredStorageProviders = event.allocationRequiredStorageProviders
     this.allocationRequiredReplicas = event.allocationRequiredReplicas
     this.allocationTooling = []
-    this.datacapAllocationLimits = event.datacapAllocationLimits
+    this.allocationDatacapAllocationLimits = event.datacapAllocationLimits
     this.onChainAddressForDataCapAllocation = event.onChainAddressForDataCapAllocation
 
     this.applicationStatus = ApplicationStatus.SUBMISSION_PHASE;
@@ -425,27 +428,28 @@ rejectGovernanceReview(details: GovernanceReviewRejectedData) {
         status: ApplicationInstructionStatus.PENDING,
       },
     ]
-   // (this.status["Application Submitted"] ??= []).push(event.timestamp.getTime())
-    /*  "Application Submitted": event.timestamp.getTime(),
-      "KYC Submitted": null,
-      "In Review": null,
-      "In Refresh": null,
-      "Approved": null,
-      "Declined": null,
-      "KYC Failed": null,
-    }*/
   }
 
   applyApplicationEdited(event: ApplicationEdited) {
-    console.log('applyApplicationEdited', event)
-
+    console.log(`Application Edited Started`, event)
     this.applicantAddress = event.file.address || this.applicantAddress
-    this.applicantName = event.file.name || this.name
-    this.applicantOrgName = event.file.organization || this.organization
-    // TODO: metapathway_type: 'MA',
-    // TODO: ma_address: "0x15a9d9b81e3c67b95ffedfb4416d25a113c8c6df",
-    this.associatedOrgAddresses = event.file.associated_org_addresses || this.associatedOrgAddresses
+    this.applicantName = event.file.name || this.applicantName
 
+    this.applicantOrgName = event.file.organization || this.applicantOrgName
+    if(this.applicationStatus === ApplicationStatus.RKH_APPROVAL_PHASE){
+
+    }
+    if(this.applicationStatus === ApplicationStatus.META_APPROVAL_PHASE){
+      this.allocationTooling = ["smart_contract_allocator"]
+      this.pathway = 'MA'
+      this.ma_address = '0xB6F5d279AEad97dFA45209F3E53969c2EF43C21'
+    }
+    if(this.applicationStatus === ApplicationStatus.RKH_APPROVAL_PHASE){
+      this.allocationTooling = [],
+      this.pathway = 'RKH',
+      this.ma_address = 'f080'
+    }
+    this.applicantOrgAddresses = event.file.associated_org_addresses || this.applicantOrgAddresses
     this.allocationStandardizedAllocations = event.file.application.allocations || this.allocationStandardizedAllocations
     this.allocationAudit = event.file.application.audit && event.file.application.audit.length > 0
       ? event.file.application.audit[0]
@@ -453,25 +457,31 @@ rejectGovernanceReview(details: GovernanceReviewRejectedData) {
     this.allocationDistributionRequired = event.file.application.distribution && event.file.application.distribution.length > 0
       ? event.file.application.distribution[0]
       : this.allocationDistributionRequired
+    this.allocationTrancheSchedule = event.file.application.tranche_schedule || this.allocationTrancheSchedule
     this.allocationRequiredReplicas = event.file.application.required_replicas || this.allocationRequiredReplicas
     this.allocationRequiredStorageProviders = event.file.application.required_sps || this.allocationRequiredStorageProviders
-    this.allocationTooling = event.file.application.tooling || this.allocationTooling
     this.allocationMaxDcClient = event.file.application.max_DC_client || this.allocationMaxDcClient
     this.applicantGithubHandle = event.file.application.github_handles && event.file.application.github_handles.length > 0
       ? event.file.application.github_handles[0]
       : this.applicantGithubHandle
     this.allocationBookkeepingRepo = event.file.application.allocation_bookkeeping || this.allocationBookkeepingRepo
-    // TODO: client_contract_address
     this.onChainAddressForDataCapAllocation = event.file.application.client_contract_address || this.onChainAddressForDataCapAllocation
     
     this.allocatorMultisigAddress = event.file.pathway_addresses?.msig || this.allocatorMultisigAddress
     this.allocatorMultisigSigners = event.file.pathway_addresses?.signer || this.allocatorMultisigSigners
+    if (this.statusHelper != "updated"){
+      console.log('status helper before update', this.applicantName, this.status, this.statusHelper)
+      this.status[this.statusHelper].push(event.timestamp.getTime())
+      this.statusHelper = "updated"
+      console.log('status helper updated', this.applicantName, this.status, this.statusHelper)
+    }
 
-    try {this.applicationInstructions = Object.entries(event.file.LifeCycle).map(([_, value]) => ({
+    this.applicationInstructions = Object.entries(event.file.audit_outcomes).map(([_, value]) => ({
       method: event.file.metapathway_type === "MA" ? ApplicationAllocator.META_ALLOCATOR : ApplicationAllocator.RKH_ALLOCATOR,
       datacap_amount: parseInt(value[1]),
       timestamp: parseInt(value[0]),
-    }))}catch(error){ console.log('No application instruction found')}
+    }))
+
   }
 
   applyAllocatorMultisigUpdated(event: AllocatorMultisigUpdated) {
@@ -506,7 +516,6 @@ rejectGovernanceReview(details: GovernanceReviewRejectedData) {
   applyKYCStarted(_: KYCStarted) {
     this.applicationStatus = ApplicationStatus.KYC_PHASE
   }
-  
 
   applyKYCApproved(event: KYCApproved) {
     if (this.applicationStatus===ApplicationStatus.KYC_PHASE) {

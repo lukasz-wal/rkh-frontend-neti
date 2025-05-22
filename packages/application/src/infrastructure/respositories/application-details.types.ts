@@ -13,7 +13,7 @@ interface ApplicationDetails {
     multisigSigners: string[]
   }
   github: string
-  allocationTrancheScheduleType: string
+  allocationTrancheSchedule: string
   datacap: number
   status: ApplicationStatus
   applicationDetails?: {

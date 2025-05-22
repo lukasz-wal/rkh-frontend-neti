@@ -22,7 +22,7 @@ export class ApplicationCreatedEventHandler implements IEventHandler<Application
       organization: event.applicantOrgName,
       address: event.applicantAddress,
       github: event.applicantGithubHandle,
-      allocationTrancheScheduleType: event.allocationTrancheScheduleType,
+      allocationTrancheSchedule: event.allocationTrancheSchedule,
       datacap: 5,
       status: ApplicationStatus.SUBMISSION_PHASE,
     }

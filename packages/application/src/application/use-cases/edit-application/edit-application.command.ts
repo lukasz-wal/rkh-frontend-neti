@@ -86,7 +86,7 @@ export class EditApplicationCommandHandler implements ICommandHandler<EditApplic
     }
 
     const prevApplicationInstructions = application.applicationInstructions
-    const currApplicationInstructions = Object.entries(command.file.LifeCycle).map(([_, value]) => ({
+    const currApplicationInstructions = Object.entries(command.file.audit_outcomes).map(([_, value]) => ({
       method: ApplicationAllocator.META_ALLOCATOR,
       timestamp: parseInt(value[0]),
       datacap_amount: parseInt(value[1]),

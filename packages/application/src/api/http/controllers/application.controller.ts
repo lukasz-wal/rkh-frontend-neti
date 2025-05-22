@@ -297,28 +297,4 @@ export class ApplicationController {
 
     return res.json(ok('Governance Team Review result submitted successfully', {}))
   }
-
-  @httpPost('/:id/revokeKYC', query('address').isString(), query('sig').isString())
-  async revokeKYC(@requestParam('id') id: string, @request() req: Request,  @response() res: Response) {
-    console.log(`RevokeKYC KYC for application ${id}`)
-    const address = req.query.address as string
-
-    const role = this._roleService.getRole(address)
-
-    const sig = req.query.sig as string
-  
-    if (sig != config.KYC_ENDPOINT_SECRET) {
-      return res.status(400).json(badPermissions())
-    }
-
-    if (role !== 'GOVERNANCE_TEAM') {
-      return res.status(40).json(badPermissions())
-    }
-
-    const result = await this._commandBus.send(
-      new RevokeKycCommand(id),
-    )
-
-    return res.json(ok('Phase changed successfully', {}))
-  }
 }
