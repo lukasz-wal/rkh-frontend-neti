@@ -10,8 +10,8 @@ export type ApplicationPullRequestFile = {
   allocator_id: string
   organization: string
   allocation_bookkeeping: string,
-  metapathway_type: string
-  ma_address: string
+  metapathway_type: string|undefined
+  ma_address: string|undefined
   associated_org_addresses: string
   pathway_addresses?: {
     msig: string
@@ -50,19 +50,6 @@ export async function mapApplicationToPullRequestFile(application: DatacapAlloca
     },
     {} as { [key: string]: [string, string] },
   )
-
-  // This is for when history (used to be status) is a  [key: string]: string[]
- /* const mappedStatus: { [key: string]: string[] } = {}
-  if (application.status) {
-    for (const [key, value] of Object.entries(application.status)) {
-      if (value !== null && value !== undefined) {
-        if (!Array.isArray(mappedStatus[key])) {
-          mappedStatus[key] = []
-        }
-      mappedStatus[key].push(String(value))
-      }
-    }
-  }*/
 
  //get current values of msig
   let allocatorId     = application.allocatorMultisigAddress ?? ""
@@ -110,8 +97,8 @@ export async function mapApplicationToPullRequestFile(application: DatacapAlloca
     allocator_id: allocatorId,
     organization: application.applicantOrgName,
     allocation_bookkeeping: application.allocationBookkeepingRepo,
-    metapathway_type: '',
-    ma_address: '',
+    metapathway_type: application.pathway,
+    ma_address: application.ma_address,
     pathway_addresses: {
       msig: allocatorId,
       signers: updatedSigners,
