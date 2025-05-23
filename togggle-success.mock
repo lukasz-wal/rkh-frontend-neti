@@ -1,32 +1,61 @@
 {
-  "result_id": "7fd1c306-7830-4261-b372-181f742055ef",
-  "event": "success",
-  "data": {
-    "kyc": {
-      "id": "7fd1c306-7830-4261-b372-181f742055ef",
-      "kycInquiryId": "d72b7afc-6841-4478-9d21-3e8dd3d26695",
-      "createdAt": "2023-10-03T10:05:51.851407Z",
-      "tenantId": "6098ca37-d11e-4b66-9344-3837dd3852f9",
-      "customData": { "applicationId": "recrKEUkpFHMyVRy9" },
-      "status": "failed",
-      "documentId": "abcc8e8b7b354cb9978c40b66de2bae3",
-      "documentType": "GB_DrivingLicense_2015",
-      "class": "web-mobile",
-      "platform": "iOS",
-      "browser": "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1",
-      "scoreDocumentTotal": 0.6977895,
-      "scoreBiometricLifeProof": 0.828225,
-      "scoreBiometricSelfie": 0.9996347,
-      "scoreBiometricPhotoId": 0.9996347,
-      "scoreBiometricDuplicateAttack": 0.87014455,
-      "processCode": "ProcessCompleted",
-      "processType": "info",
-      "processMessage": "The process has been successfully completed",
-      "processAdditionalData": null,
-      "identityId": "user@gmail.com"
-    }
-  },
-  "custom": { 
-    "applicationId": "recrKEUkpFHMyVRy9"
-  }
+   "resultId": "533bce8d-be8b-43e1-be16-1cd4db1e394a",
+   "event": "COMPLETED",
+   "data": {
+     "kyc": {
+       "id": "cfedad34-052b-4144-80b5-9b1cc36f720a",
+       "kycInquiryId": "69367ceb-0645-4a9a-b35f-04ecfa4fe487",
+       "createdAt": "2025-05-22T17:42:22.740Z",
+       "tenantId": "",
+       "customData": { 
+         "applicationId": "recpoiy2rctHqjC9Q" 
+        },
+       "status": "PASSED",
+       "documentId": "aae91bd3-9b9a-4ffc-a0f8-a846a240c20b",
+       "documentType": "Passport",
+       "class": "",
+       "platform": "iPhone",
+       "browser": "Mozilla/5.0 (iPhone; CPU iPhone OS 18_3_2 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) CriOS/136.0.7103.91 Mobile/15E148 Safari/604.1",
+       "scoreDocumentTotal": 1,
+       "scoreBiometricLifeProof": 1,
+       "scoreBiometricSelfie": 93,
+       "scoreBiometricPhotoId": 1,
+       "scoreBiometricDuplicateAttack": 1,
+       "processCode": "ProcessCompleted",
+       "processType": "info",
+       "processMessage": "",
+       "processAdditionalData": {
+        "null": "null"
+       },
+       "identityId": "marta@fidl.tech"
+     },
+     "dv": {
+       "version": 0,
+       "id": "cfedad34-052b-4144-80b5-9b1cc36f720a",
+       "verificationRequestId": "69367ceb-0645-4a9a-b35f-04ecfa4fe487",
+       "flowId": "dfd3d147-40b1-40a1-ac45-e6ebc0b40f4b",
+       "flowStepId": "af82cad2-ad64-4c8a-89c7-d5c7eadcea33",
+       "createdAt": "2025-05-22T17:42:22.740Z",
+       "customData": { 
+         "applicationId": "recpoiy2rctHqjC9Q" 
+        },
+       "status": "PASSED",
+       "reason": "",
+       "documentId": "aae91bd3-9b9a-4ffc-a0f8-a846a240c20b",
+       "documentType": "Passport",
+       "class": "",
+       "platform": "iPhone",
+       "browser": "Mozilla/5.0 (iPhone; CPU iPhone OS 18_3_2 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) CriOS/136.0.7103.91 Mobile/15E148 Safari/604.1",
+       "scoreBiometricSelfie": 93,
+       "errorMessage": "",
+       "processAdditionalData": {
+         "null": "null"
+       },
+       "identityEmail": "marta@fidl.tech"
+     },
+     "poa": "",
+     "form": "",
+     "additionalData": ""
+   },
+   "custom": { "applicationId": "recpoiy2rctHqjC9Q" }
 }
