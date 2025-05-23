@@ -103,6 +103,7 @@ async function fetchApprovals(fromBlock: number): Promise<any[]> {
         const decoded = iface.decodeEventLog("AllowanceChanged", log.data, log.topics)
         if (decoded) {
           console.log(`Decoded log ${log.transactionHash} SUCCESS...`)
+          console.log(decoded)
           const approval = {
             blockNumber: log.blockNumber,
             txHash: log.transactionHash,
@@ -179,11 +180,27 @@ export async function subscribeMetaAllocatorApprovals(container: Container) {
     logger.info(`Found ${approvals.length} AllowanceChanged events since block ${lastBlock + 1}.`)
 
     for (let approval of approvals) {
+      console.log(`Processing approval ${approval.txHash}, approved by ${approval.contractAddress}...`)
+      console.log(approval)
       if (config.VALID_META_ALLOCATOR_ADDRESSES.includes(approval.contractAddress)) {
-        const allocatorAddress = approval.allocatorAddress
-        const applicationDetails = await applicationDetailsRepository.getByAddress(allocatorAddress)
+        let actorId = approval.allocatorAddress
+        if (actorId.startsWith('0x')) {
+          console.log(`Allocator Id is an Ethereum address: ${actorId}`)
+          // If the address is an Ethereum address, convert to Filecoin Id first
+          const provider = new ethers.providers.JsonRpcProvider(config.EVM_RPC_URL)
+          const filecoinId = await provider.send(
+            "Filecoin.EthAddressToFilecoinAddress",
+            [actorId],
+          )
+          console.log(`Converted to Filecoin id: ${filecoinId}`)
+          if (!filecoinId) {
+            logger.error('Failed to convert Ethereum address to Filecoin address:', actorId);
+          }
+          actorId = filecoinId
+        }
+        const applicationDetails = await applicationDetailsRepository.getByActorId(actorId)
         if (!applicationDetails) {
-          logger.info('Application details not found for address:', allocatorAddress)
+          logger.info('Application details not found for address:', actorId)
           continue
         }
         try {
@@ -196,6 +213,7 @@ export async function subscribeMetaAllocatorApprovals(container: Container) {
         }
       } else {
         logger.debug(`Invalid contract address: ${approval.contractAddress}`)
+        logger.debug(config.VALID_META_ALLOCATOR_ADDRESSES)
       }
     }
   }, config.SUBSCRIBE_META_ALLOCATOR_APPROVALS_POLLING_INTERVAL)
