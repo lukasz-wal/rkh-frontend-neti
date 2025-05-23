@@ -51,9 +51,11 @@ export async function mapApplicationToPullRequestFile(application: DatacapAlloca
     {} as { [key: string]: [string, string] },
   )
 
+
  //get current values of msig
-  let allocatorId     = application.allocatorMultisigAddress ?? ""
+  let allocatorAddress     = application.allocatorMultisigAddress ?? ""
   let updatedSigners  = application.allocatorMultisigSigners ?? []
+  let allocatorId = ''
 
   //if we have an on-chain address, fetch the latest from Filfox
   if (application.allocatorMultisigAddress) {
@@ -63,9 +65,9 @@ export async function mapApplicationToPullRequestFile(application: DatacapAlloca
       )
 
       if (msigData.robust !== application.allocatorMultisigAddress) {
-        allocatorId = msigData.robust
+        allocatorAddress = msigData.robust
       }
-
+      allocatorId = msigData.address
       const fetchedSigners = msigData.multisig.signers
       if (
         JSON.stringify(fetchedSigners) !==
@@ -100,7 +102,7 @@ export async function mapApplicationToPullRequestFile(application: DatacapAlloca
     metapathway_type: application.pathway,
     ma_address: application.ma_address,
     pathway_addresses: {
-      msig: allocatorId,
+      msig: allocatorAddress,
       signers: updatedSigners,
     },
     associated_org_addresses: application.applicantOrgAddresses,
