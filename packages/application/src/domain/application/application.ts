@@ -569,6 +569,7 @@ rejectGovernanceReview(details: GovernanceReviewRejectedData) {
     const index = this.applicationInstructions.length - 1
     this.applicationInstructions[index].timestamp = event.timestamp.getTime()
     this.applicationInstructions[index].status = ApplicationInstructionStatus.GRANTED
+    this.applicationInstructions[index].datacap_amount = event.applicationInstructions[index].datacap_amount
   }
 
   applyMetaAllocatorApprovalStarted(event: MetaAllocatorApprovalStarted) {
@@ -587,6 +588,8 @@ rejectGovernanceReview(details: GovernanceReviewRejectedData) {
     const index = this.applicationInstructions.length - 1
     this.applicationInstructions[index].timestamp = event.timestamp.getTime()
     this.applicationInstructions[index].status = ApplicationInstructionStatus.GRANTED
+    this.applicationInstructions[index].datacap_amount = event.applicationInstructions[index].datacap_amount
+
   }
 
   applyDatacapAllocationUpdated(event: DatacapAllocationUpdated) {
