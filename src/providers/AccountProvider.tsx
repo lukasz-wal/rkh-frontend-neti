@@ -48,7 +48,7 @@ export const AccountProvider: React.FC<{
             address: wagmiAddress,
             index: 0,
             isConnected: true,
-            role: maOwners.includes(wagmiAddress) || wagmiAddress === '0xD8DA234E8B7763d5321B0b518f220A22dE6982A6' ? AccountRole.METADATA_ALLOCATOR : AccountRole.GUEST,
+            role: maOwners.includes(wagmiAddress) ? AccountRole.METADATA_ALLOCATOR : AccountRole.GUEST,
             wallet: {
               type: "metamask",
               sign: async (_message: any, _indexAccount: number) => "0x00",
