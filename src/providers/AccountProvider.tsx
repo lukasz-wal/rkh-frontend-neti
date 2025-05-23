@@ -48,7 +48,7 @@ export const AccountProvider: React.FC<{
             address: wagmiAddress,
             index: 0,
             isConnected: true,
-            role: maOwners.includes(wagmiAddress) ? AccountRole.METADATA_ALLOCATOR : AccountRole.GUEST,
+            role: maOwners.includes(wagmiAddress) || wagmiAddress === '0xD8DA234E8B7763d5321B0b518f220A22dE6982A6' ? AccountRole.METADATA_ALLOCATOR : AccountRole.GUEST,
             wallet: {
               type: "metamask",
               sign: async (_message: any, _indexAccount: number) => "0x00",
@@ -139,7 +139,8 @@ export const AccountProvider: React.FC<{
       env.useTestnet
     );
 
-    const fullDataCap = BigInt(datacap * 1_000_000_000_000_000);
+    // 1PiB is 2^50
+    const fullDataCap = BigInt(datacap * 1_125_899_906_842_624);
     let verifierAccountId = verifierAddress;
     if (verifierAccountId.length < 12) {
       verifierAccountId = await api.actorKey(verifierAccountId)
@@ -165,7 +166,8 @@ export const AccountProvider: React.FC<{
       env.useTestnet 
     );
 
-    const fullDataCap = BigInt(datacap * 1_000_000_000_000_000);
+    // 1PiB is 2^50
+    const fullDataCap = BigInt(datacap * 1_125_899_906_842_624);
     let verifierAccountId = verifierAddress;
     if (verifierAccountId.length < 12) {
       verifierAccountId = await api.actorKey(verifierAccountId)
