@@ -63,26 +63,46 @@ export function ensureSubscribeMetaAllocatorApprovalsConfig() {
 
 
 async function fetchApprovals(fromBlock: number): Promise<any[]> {
+  console.log(`Fetching approvals from block ${fromBlock}...`)
   const provider = new ethers.providers.JsonRpcProvider(config.EVM_RPC_URL)
+
+  /* Ensure 'fromBlock' is within the allowed lookback range.
+     Lotus enforces exactly that “no more than 16h40m” window, which is 2000 epochs.
+     Any lookback more than that will be rejected so we have to accept some
+     lossiness here if (eg the service goes down for a bit).
+     Using 1990 to allow a little headroom for race conditions */
+  const head = await provider.getBlockNumber();
+  const from = fromBlock > (head - 2000) ? fromBlock : head - 1990;
+  console.log(`After adjustment fetching approvals from block ${from}...`)
+
   const iface = new ethers.utils.Interface(ALLOWANCE_CHANGED_EVENT_ABI)
   const eventTopic = iface.getEventTopic("AllowanceChanged")
+  console.log(`Ethers returned topic: ${eventTopic}...`)
   const filter = {
-      fromBlock: fromBlock,
-      toBlock: 'latest',
+      fromBlock: from,
+      toBlock: head,
       topics: [eventTopic]
   }
   let logs: any[]
   try {
+    console.log(`Ethers getting logs...`)
     logs = await provider.getLogs(filter);
+    console.log(`Ethers returned ${logs.length} logs...`)
+    console.log(logs)
   } catch (error) {
+    console.log(`Ethers fetch FAILED...`)
+    console.error(error)
     return []
   }
 
   const approvals: Approval[] = []
   for (let log of logs) {
     try {
+      console.log(`Processing log ${log.transactionHash}...`)
+      console.log(log)
         const decoded = iface.decodeEventLog("AllowanceChanged", log.data, log.topics)
         if (decoded) {
+          console.log(`Decoded log ${log.transactionHash} SUCCESS...`)
           const approval = {
             blockNumber: log.blockNumber,
             txHash: log.transactionHash,
@@ -92,8 +112,11 @@ async function fetchApprovals(fromBlock: number): Promise<any[]> {
             allowanceAfter: decoded.allowanceAfter.toString(),
           }
           approvals.push(approval)
+        } else {
+          console.log(`Decoded log ${log.transactionHash} FAILED...`)
         }
     } catch (error) {
+      console.log(`Decoding log ${log.transactionHash} ERROR...`)
       continue
     }
   }
