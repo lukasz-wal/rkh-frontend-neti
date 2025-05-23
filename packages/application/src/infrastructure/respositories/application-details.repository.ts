@@ -110,6 +110,7 @@ class ApplicationDetailsRepository implements IRepository<ApplicationDetails> {
   }
 
   async getByAddress(address: string): Promise<ApplicationDetails | null> {
+    console.log('getByAddress', address)
     return this._db.collection<ApplicationDetails>('applicationDetails').findOne({ address })
   }
 }

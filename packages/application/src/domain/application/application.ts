@@ -350,6 +350,7 @@ rejectGovernanceReview(details: GovernanceReviewRejectedData) {
   }
 
   completeMetaAllocatorApproval(blockNumber: number, txHash: string) {
+    console.log('completeMetaAllocatorApproval...')
     this.ensureValidApplicationInstructions([
       ApplicationAllocator.META_ALLOCATOR,
       ApplicationAllocator.RKH_ALLOCATOR,
