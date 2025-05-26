@@ -72,17 +72,19 @@ async function findProcessApprovals(
   // Now do recently completed ones
   logger.debug(`Found ${msigState.approvedTxs.length} approved transactions`)
   for (const tx of msigState.approvedTxs) {
-    let verifier = getVerifierFromParams(tx.params, logger)
-
-    const applicationDetails = await applicationDetailsRepository.getByAddress(verifier)
-    if (!applicationDetails) {
-      console.log('Application details not found for address', verifier)
-      continue
-    }
     try {
+      const verifier = getVerifierFromParams(tx.params, logger)
+
+      const applicationDetails = await applicationDetailsRepository.getByAddress(verifier)
+      if (!applicationDetails) {
+        console.log('Application details not found for address', verifier)
+        continue
+      }
+
       await commandBus.send(new UpdateRKHApprovalsCommand(applicationDetails.id, 0, [], "Approved"))
     } catch (error) {
       console.error('Error updating RKH completed approvals', { error })
+      // swallow and move on to the next one, it's probably just not for us
     }
   }
 }
