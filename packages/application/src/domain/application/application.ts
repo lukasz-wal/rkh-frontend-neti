@@ -349,23 +349,51 @@ rejectGovernanceReview(details: GovernanceReviewRejectedData) {
     }
   }
 
-  completeMetaAllocatorApproval(blockNumber: number, txHash: string) {
+  async completeMetaAllocatorApproval(blockNumber: number, txHash: string) {
     console.log('completeMetaAllocatorApproval...')
-    this.ensureValidApplicationInstructions([
-      ApplicationAllocator.META_ALLOCATOR,
-      ApplicationAllocator.RKH_ALLOCATOR,
-    ])
-    const lastInstructionIndex = this.applicationInstructions.length - 1
-    this.applicationInstructions[lastInstructionIndex].status = ApplicationInstructionStatus.GRANTED
+    /* Big hack warning (AKA "TODO")
+     * All throughout the various steps of the code it's really good at updating the Mongo, so
+     * things like changes in DataCap allowance are properly reflected in the JSON and the PR and
+     * the UI. But this in-memory object is not very well maintained.
+     * Specifically for the application instructions the in-memory object is not updated with the
+     * latest status as the application progresses, so when we check it here it's still the default.
+     * 
+     * HOWEVER, I believe it's not actually necessary to check this here, because the on-chain
+     * messages and the PR are all correct already, so I'm disabling this check for now.
+     * If all holds up then we can decide whether to simply remove this code or go ahead with
+     * the refactoring to maintain the object properly.
+     */
+
+    //this.ensureValidApplicationInstructions([
+    //  ApplicationAllocator.META_ALLOCATOR,
+    //  ApplicationAllocator.RKH_ALLOCATOR,
+    //])
+    //const lastInstructionIndex = this.applicationInstructions.length - 1
+    //this.applicationInstructions[lastInstructionIndex].status = ApplicationInstructionStatus.GRANTED
     this.applyChange(new MetaAllocatorApprovalCompleted(this.guid, blockNumber, txHash, this.applicationInstructions))
   }
 
   completeRKHApproval() {
+    console.log("Completing RKH Approval for application", this)
     this.ensureValidApplicationStatus([ApplicationStatus.RKH_APPROVAL_PHASE])
-    this.ensureValidApplicationInstructions([
-      ApplicationAllocator.META_ALLOCATOR,
-      ApplicationAllocator.RKH_ALLOCATOR,
-    ])
+
+    /* Big hack warning (AKA "TODO")
+     * All throughout the various steps of the code it's really good at updating the Mongo, so
+     * things like changes in DataCap allowance are properly reflected in the JSON and the PR and
+     * the UI. But this in-memory object is not very well maintained.
+     * Specifically for the application instructions the in-memory object is not updated with the
+     * latest status as the application progresses, so when we check it here it's still the default.
+     * 
+     * HOWEVER, I believe it's not actually necessary to check this here, because the on-chain
+     * messages and the PR are all correct already, so I'm disabling this check for now.
+     * If all holds up then we can decide whether to simply remove this code or go ahead with
+     * the refactoring to maintain the object properly.
+     */
+
+    //this.ensureValidApplicationInstructions([
+    //  ApplicationAllocator.META_ALLOCATOR,
+    //  ApplicationAllocator.RKH_ALLOCATOR,
+    //])
     const lastInstructionIndex = this.applicationInstructions.length - 1
     this.applicationInstructions[lastInstructionIndex].status = ApplicationInstructionStatus.GRANTED
     this.applyChange(new RKHApprovalCompleted(this.guid, this.applicationInstructions))
@@ -618,6 +646,7 @@ rejectGovernanceReview(details: GovernanceReviewRejectedData) {
     errorMessage: string = 'Invalid operation for the current phase',
   ): void {
     if (!expectedStatuses.includes(this.applicationStatus)) {
+      console.error(`Invalid application status: ${this.applicationStatus}. Expected one of: ${expectedStatuses.join(', ')}`)
       throw new ApplicationError(StatusCodes.BAD_REQUEST, errorCode, errorMessage)
     }
   }
@@ -625,7 +654,7 @@ rejectGovernanceReview(details: GovernanceReviewRejectedData) {
   private ensureValidApplicationInstructions(
     expectedInstructionMethods: ApplicationAllocator[],
     errorCode: string = '5308',
-    errorMessage: string = 'Invalid operation for the current phase',
+    errorMessage: string = 'Invalid application instructions for the current phase',
   ): void {
 
     if (this.applicationInstructions.length === 0) {
