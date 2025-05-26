@@ -20,7 +20,6 @@ const OPTIONS: Option[] = [
 ];
 
 const FILTER_LABELS: Record<string, string> = {
-  SUBMISSION_PHASE: "Submission",
   KYC_PHASE: "KYC",
   GOVERNANCE_REVIEW_PHASE: "Governance Review",
   RKH_APPROVAL_PHASE: "RKH Approval",
@@ -43,7 +42,6 @@ export function DashboardHeader({
   setActiveFilters,
 }: DashboardHeaderProps) {
   const filters: string[] = [
-    "SUBMISSION_PHASE",
     "KYC_PHASE",
     "GOVERNANCE_REVIEW_PHASE",
     "RKH_APPROVAL_PHASE",

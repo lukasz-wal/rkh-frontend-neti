@@ -23,21 +23,6 @@ function getActionConfig(application: Application, account?: { role: AccountRole
   let label = ""
 
   switch (status) {
-    case "SUBMISSION_PHASE":
-      // If gov team is logged in they can override KYC.
-      // If not, the viewer can see the submitted KYC
-      if (account?.role === AccountRole.GOVERNANCE_TEAM || account?.role === AccountRole.ADMIN) {
-        return {
-          label,
-          component: OverrideKYCButton,
-        };
-      } else {
-        return {
-          label: "View",
-          href: `${application.githubPrLink}`,
-        };
-      }
-
     case "KYC_PHASE":
       // If gov team is logged in they can override KYC.
       // If not, the viewer can submit KYC

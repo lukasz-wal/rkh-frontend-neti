@@ -1,4 +1,4 @@
-export type ApplicationStatus = "SUBMISSION_PHASE" | "KYC_PHASE" | "GOVERNANCE_REVIEW_PHASE" | "RKH_APPROVAL_PHASE" | "META_APPROVAL_PHASE" | "APPROVED" | "REJECTED";
+export type ApplicationStatus = "KYC_PHASE" | "GOVERNANCE_REVIEW_PHASE" | "RKH_APPROVAL_PHASE" | "META_APPROVAL_PHASE" | "APPROVED" | "REJECTED";
 
 export interface Application {
   id: string;
