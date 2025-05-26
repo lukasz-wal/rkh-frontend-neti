@@ -76,7 +76,7 @@ export class MessageService {
         return this.getRKHApprovalStatusMessage(application)
       case ApplicationStatus.META_APPROVAL_PHASE:
         return this.getMetaApprovalStatusMessage(application)
-      case ApplicationStatus.APPROVED:
+      case ApplicationStatus.DC_ALLOCATED:
         return this.getApprovedStatusMessage(application)
       case ApplicationStatus.REJECTED:
         return this.getRejectedStatusMessage(application)
