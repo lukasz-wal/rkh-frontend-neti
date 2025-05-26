@@ -440,8 +440,10 @@ rejectGovernanceReview(details: GovernanceReviewRejectedData) {
     this.allocationDatacapAllocationLimits = event.datacapAllocationLimits
     this.onChainAddressForDataCapAllocation = event.onChainAddressForDataCapAllocation
 
+    
     if(!this.applicationStatus){
       this.applicationStatus = ApplicationStatus.KYC_PHASE;
+
       this.applicationInstructions = [
       {
         method: '',
@@ -451,6 +453,7 @@ rejectGovernanceReview(details: GovernanceReviewRejectedData) {
       },
     ]
     }
+    
 
     console.log(`Application Created Ended`, this)
   }
@@ -560,6 +563,7 @@ rejectGovernanceReview(details: GovernanceReviewRejectedData) {
       this.status["Approved"] ??= event.timestamp.getTime()
     }
     //this.applicationStatus = ApplicationStatus.APPROVED
+    this.applicationInstructions = event.applicationInstructions
   }
 
   applyGovernanceReviewRejected(event: GovernanceReviewRejected) {
@@ -594,10 +598,10 @@ rejectGovernanceReview(details: GovernanceReviewRejectedData) {
       this.status["DC Allocated"] ??= event.timestamp.getTime()
     }
     this.applicationStatus = ApplicationStatus.DC_ALLOCATED
-    const index = this.applicationInstructions.length - 1
-    this.applicationInstructions[index].timestamp = event.timestamp.getTime()
-    this.applicationInstructions[index].status = ApplicationInstructionStatus.GRANTED
-    this.applicationInstructions[index].datacap_amount = event.applicationInstructions[index].datacap_amount
+    //const index = this.applicationInstructions.length - 1
+    //this.applicationInstructions[index].timestamp = event.timestamp.getTime()
+    //this.applicationInstructions[index].status = ApplicationInstructionStatus.GRANTED
+    //this.applicationInstructions[index].datacap_amount = event.applicationInstructions[index].datacap_amount
   }
 
   applyMetaAllocatorApprovalStarted(event: MetaAllocatorApprovalStarted) {
