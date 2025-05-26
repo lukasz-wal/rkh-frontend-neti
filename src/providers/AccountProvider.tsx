@@ -139,7 +139,8 @@ export const AccountProvider: React.FC<{
       env.useTestnet
     );
 
-    const fullDataCap = BigInt(datacap * 1000000000000);
+    // 1PiB is 2^50
+    const fullDataCap = BigInt(datacap * 1_125_899_906_842_624);
     let verifierAccountId = verifierAddress;
     if (verifierAccountId.length < 12) {
       verifierAccountId = await api.actorKey(verifierAccountId)
@@ -165,7 +166,8 @@ export const AccountProvider: React.FC<{
       env.useTestnet 
     );
 
-    const fullDataCap = BigInt(datacap * 1000000000000);
+    // 1PiB is 2^50
+    const fullDataCap = BigInt(datacap * 1_125_899_906_842_624);
     let verifierAccountId = verifierAddress;
     if (verifierAccountId.length < 12) {
       verifierAccountId = await api.actorKey(verifierAccountId)
