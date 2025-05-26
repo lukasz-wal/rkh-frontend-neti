@@ -419,7 +419,6 @@ rejectGovernanceReview(details: GovernanceReviewRejectedData) {
     this.applyChange(new DatacapRefreshRequested(this.guid, refreshAmount, refreshMethod))
 
   }
-
   applyApplicationCreated(event: ApplicationCreated) {
     //console.log('applyApplicationCreated', event)
     this.guid = event.guid
@@ -439,8 +438,6 @@ rejectGovernanceReview(details: GovernanceReviewRejectedData) {
     this.allocationTooling = []
     this.allocationDatacapAllocationLimits = event.datacapAllocationLimits
     this.onChainAddressForDataCapAllocation = event.onChainAddressForDataCapAllocation
-
-    
     if(!this.applicationStatus){
       this.applicationStatus = ApplicationStatus.KYC_PHASE;
 
@@ -453,8 +450,6 @@ rejectGovernanceReview(details: GovernanceReviewRejectedData) {
       },
     ]
     }
-    
-
     console.log(`Application Created Ended`, this)
   }
 

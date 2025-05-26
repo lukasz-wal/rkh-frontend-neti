@@ -38,7 +38,7 @@ export class MessageService {
       [ApplicationStatus.GOVERNANCE_REVIEW_PHASE]: 'Governance Review Phase',
       [ApplicationStatus.RKH_APPROVAL_PHASE]: 'RKH Approval Phase',
       [ApplicationStatus.META_APPROVAL_PHASE]: 'Meta Allocator Approval Phase',
-      [ApplicationStatus.APPROVED]: 'Approved',
+      [ApplicationStatus.DC_ALLOCATED]: 'Approved&Allocated',
       [ApplicationStatus.REJECTED]: 'Rejected',
     }
     
@@ -47,7 +47,7 @@ export class MessageService {
       [ApplicationStatus.GOVERNANCE_REVIEW_PHASE]: '👥',
       [ApplicationStatus.RKH_APPROVAL_PHASE]: '🔑',
       [ApplicationStatus.META_APPROVAL_PHASE]: '🔑',
-      [ApplicationStatus.APPROVED]: '✅',
+      [ApplicationStatus.DC_ALLOCATED]: '✅',
       [ApplicationStatus.REJECTED]: '❌',
     }
 
