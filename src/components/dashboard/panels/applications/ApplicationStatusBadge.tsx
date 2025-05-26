@@ -15,7 +15,6 @@ interface ApplicationStatusBadgeProps {
 }
 
 const phaseColors: Record<ApplicationStatus, string> = {
-  SUBMISSION_PHASE: 'bg-purple-600',
   KYC_PHASE: 'bg-blue-600',
   GOVERNANCE_REVIEW_PHASE: 'bg-yellow-600',
   RKH_APPROVAL_PHASE: 'bg-orange-600',
@@ -25,7 +24,6 @@ const phaseColors: Record<ApplicationStatus, string> = {
 };
 
 const phaseDescriptions: Record<ApplicationStatus, string> = {
-  SUBMISSION_PHASE: 'The application has been submitted',
   KYC_PHASE: 'Awaiting Know Your Customer verification. Go to Github to proceed',
   GOVERNANCE_REVIEW_PHASE: 'Application in review by governance team',
   RKH_APPROVAL_PHASE: 'Awaiting Root Key Holder approval',
@@ -35,7 +33,6 @@ const phaseDescriptions: Record<ApplicationStatus, string> = {
 };
 
 const phaseNames: Record<ApplicationStatus, string> = {
-  SUBMISSION_PHASE: 'Submitted',
   KYC_PHASE: 'KYC',
   GOVERNANCE_REVIEW_PHASE: 'Gov Review',
   RKH_APPROVAL_PHASE: 'RKH Approval ',

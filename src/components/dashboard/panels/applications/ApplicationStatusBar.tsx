@@ -15,7 +15,6 @@ interface ApplicationStatusBarProps {
 }
 
 const phases: ApplicationStatus[] = [
-  "SUBMISSION_PHASE",
   "KYC_PHASE",
   "GOVERNANCE_REVIEW_PHASE",
   "RKH_APPROVAL_PHASE",
@@ -25,7 +24,6 @@ const phases: ApplicationStatus[] = [
 ];
 
 const phaseColors: Record<ApplicationStatus, string> = {
-  SUBMISSION_PHASE: 'bg-purple-600',
   KYC_PHASE: 'bg-blue-600',
   GOVERNANCE_REVIEW_PHASE: 'bg-yellow-600',
   RKH_APPROVAL_PHASE: 'bg-orange-600',
@@ -35,7 +33,6 @@ const phaseColors: Record<ApplicationStatus, string> = {
 };
 
 const phaseDescriptions: Record<ApplicationStatus, string> = {
-  SUBMISSION_PHASE: 'Initial application submission phase',
   KYC_PHASE: 'Know Your Customer verification process',
   GOVERNANCE_REVIEW_PHASE: 'Application review by governance committee',
   RKH_APPROVAL_PHASE: 'Final approval by RKH',
@@ -45,7 +42,6 @@ const phaseDescriptions: Record<ApplicationStatus, string> = {
 };
 
 const phaseNames: Record<ApplicationStatus, string> = {
-  SUBMISSION_PHASE: 'Submit',
   KYC_PHASE: 'KYC',
   GOVERNANCE_REVIEW_PHASE: 'Review',
   RKH_APPROVAL_PHASE: 'RKH Approval',
