@@ -139,11 +139,12 @@ The governance team will review your comments and make any necessary adjustments
 
   private getApprovedStatusMessage(application: DatacapAllocator): string {
     return `
-### Application Approved
-- Congratulations! Your application to become a DataCap allocator has been approved
-- You will receive further instructions shortly
+### Action Completed
+- Congratulations! Your application has been approved and executed
+- You should have received  ${application.applicationInstructions[application.applicationInstructions.length - 1].datacap_amount} PiBs of DataCap on the wallet you specified:  ${application.allocatorMultisigAddress} 
+- Please let us know if you have any further questions
 
-🎉 Welcome to the Filecoin Plus community!
+🎉 Thank you for being part of the Filecoin Plus community!
 `
   }
 

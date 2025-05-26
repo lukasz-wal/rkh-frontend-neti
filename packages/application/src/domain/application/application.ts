@@ -442,9 +442,7 @@ rejectGovernanceReview(details: GovernanceReviewRejectedData) {
 
     if(!this.applicationStatus){
       this.applicationStatus = ApplicationStatus.KYC_PHASE;
-    }
-
-    this.applicationInstructions = [
+      this.applicationInstructions = [
       {
         method: '',
         datacap_amount: 5,
@@ -452,6 +450,8 @@ rejectGovernanceReview(details: GovernanceReviewRejectedData) {
         status: ApplicationInstructionStatus.PENDING,
       },
     ]
+    }
+
     console.log(`Application Created Ended`, this)
   }
 
