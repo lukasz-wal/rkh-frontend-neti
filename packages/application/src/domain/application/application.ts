@@ -557,7 +557,6 @@ rejectGovernanceReview(details: GovernanceReviewRejectedData) {
      if (this.applicationStatus === ApplicationStatus.GOVERNANCE_REVIEW_PHASE) {
       this.status["Approved"] ??= event.timestamp.getTime()
     }
-    this.applicationInstructions = event.applicationInstructions
     //this.applicationStatus = ApplicationStatus.APPROVED
     this.applicationInstructions = event.applicationInstructions
   }
