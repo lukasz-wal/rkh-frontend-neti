@@ -567,7 +567,9 @@ export class DatacapAllocator extends AggregateRoot {
   applyRKHApprovalStarted(event: RKHApprovalStarted) {
     console.log('applyRKHApprovalStarted')
     this.applicationStatus = ApplicationStatus.RKH_APPROVAL_PHASE
-    ;(this.allocationTooling = []), (this.pathway = 'RKH'), (this.ma_address = 'f080')
+    this.allocationTooling = []
+    this.pathway = 'RKH'
+    this.ma_address = 'f080'
     this.rkhApprovalThreshold = event.approvalThreshold
   }
 
