@@ -481,7 +481,9 @@ export class DatacapAllocator extends AggregateRoot {
       this.ma_address = '0xB6F5d279AEad97dFA45209F3E53969c2EF43C21d'
     }
     if (this.applicationStatus === ApplicationStatus.RKH_APPROVAL_PHASE) {
-      ;(this.allocationTooling = []), (this.pathway = 'RKH'), (this.ma_address = 'f080')
+      this.allocationTooling = []
+      this.pathway = 'RKH'
+      this.ma_address = 'f080'
     }
     this.applicantOrgAddresses = event.file.associated_org_addresses || this.applicantOrgAddresses
     this.allocationStandardizedAllocations =
