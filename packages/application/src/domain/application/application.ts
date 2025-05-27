@@ -451,7 +451,7 @@ export class DatacapAllocator extends AggregateRoot {
     if (this.applicationStatus === ApplicationStatus.META_APPROVAL_PHASE) {
       this.allocationTooling = ['smart_contract_allocator']
       this.pathway = 'MA'
-      this.ma_address = '0xB6F5d279AEad97dFA45209F3E53969c2EF43C21d'
+      this.ma_address = 'f410fw325e6novwl57jcsbhz6koljylxuhqq5jnp5ftq'
     }
     if (this.applicationStatus === ApplicationStatus.RKH_APPROVAL_PHASE) {
       this.allocationTooling = []

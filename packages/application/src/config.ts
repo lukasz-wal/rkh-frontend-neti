@@ -47,7 +47,7 @@ export default {
   //MA addresses
   MA_ADDRESSES: process.env.MA_ADDRESSES 
   ? process.env.MA_ADDRESSES.split(',').map((handle) => handle.trim())
-  : ["0xD8DA234E8B7763d5321B0b518f220A22dE6982A6"],
+  : ["0xB6F5d279AEad97dFA45209F3E53969c2EF43C21d"],
 
   // Admin API key configuration
   ADMIN_API_KEY: process.env.ADMIN_API_KEY || 'default_admin_api_key',

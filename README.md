@@ -118,7 +118,7 @@ The Docker setup can be configured by setting the following environment variable
 | `GOVERNANCE_TEAM_GITHUB_HANDLES`| github handles of the governance team                                         |'galen-mcandrew'          
 | `GOVERNANCE_REVIEW_ADDRESSES`| Wallet addresses of people on the Fil+ governance team                                         |'f1..., f1....'  
 | `RKH_ADDRESSES`| Wallet addresses of Root Key Holders                                         |'f1..., f1....'  
-| `MA_ADDRESSES`| Addresses of contracts controlling Metaallocator Pathways                                         |' 0x15a9d9b81e3c67b95ffedfb4416d25a113c8c6df'  
+| `MA_ADDRESSES`| Addresses of contracts controlling Metaallocator Pathways                                         |' 0xB6F5d279AEad97dFA45209F3E53969c2EF43C21d  
 | `AIRTABLE_API_KEY`       | API key for accessing the Airtable API                                   | `pat*******************`         |
 | `AIRTABLE_BASE_ID`       | ID of the Airtable base                                                  | `app*******************`         |
 | `AIRTABLE_TABLE_NAME`    | Name of the Airtable table                                               | `tbl*******************`         |
