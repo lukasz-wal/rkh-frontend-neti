@@ -23,6 +23,7 @@ import {
 } from './application.events'
 import { KYCApprovedData, KYCRejectedData, GovernanceReviewApprovedData, GovernanceReviewRejectedData } from '@src/domain/types'
 import { ApplicationPullRequestFile } from '@src/application/services/pull-request.types'
+import { epochToZulu, zuluToEpoch } from '@filecoin-plus/core'
 
 export interface IDatacapAllocatorRepository extends IRepository<DatacapAllocator> { }
 
@@ -64,7 +65,9 @@ export type ApplicationApplicantData = {
 export type ApplicationInstruction = {
   method: string
   datacap_amount: number
-  timestamp?: number
+  startTimestamp?: number
+  endTimestamp?: number
+  allocatedTimestamp?: number
   status?: string
 }
 
@@ -309,38 +312,6 @@ rejectGovernanceReview(details: GovernanceReviewRejectedData) {
   this.applyChange(new GovernanceReviewRejected(this.guid, this.applicationInstructions))
 }
 
-/*
-  approveGovernanceReview(details: GovernanceReviewApprovedData) {
-    this.ensureValidApplicationStatus([ApplicationStatus.GOVERNANCE_REVIEW_PHASE])    
-    this.ensureValidApplicationInstructions([
-      ApplicationAllocator.META_ALLOCATOR,
-      ApplicationAllocator.RKH_ALLOCATOR,
-    ])
-    // NOTE: 'GRANTED' happens at MetaAllocatorApprovalCompleted or RKHApprovalCompleted
-    const lastInstructionIndex = this.applicationInstructions.length - 1
-    this.applicationInstructions[lastInstructionIndex].status = ApplicationInstructionStatus.PENDING
-    this.applicationInstructions[lastInstructionIndex].timestamp = Math.floor(Date.now() / 1000)
-    this.applyChange(new GovernanceReviewApproved(this.guid, this.applicationInstructions))
-    if (this.applicationInstructions[lastInstructionIndex].method === ApplicationAllocator.META_ALLOCATOR) {
-      this.applyChange(new MetaAllocatorApprovalStarted(this.guid))
-    } else {
-      this.applyChange(new RKHApprovalStarted(this.guid, 2)) // TODO: Hardcoded 2 for multisig threshold
-    }
-  }
-
-  rejectGovernanceReview(details: GovernanceReviewRejectedData) {
-    this.ensureValidApplicationStatus([ApplicationStatus.GOVERNANCE_REVIEW_PHASE])
-    this.ensureValidApplicationInstructions([
-      ApplicationAllocator.META_ALLOCATOR,
-      ApplicationAllocator.RKH_ALLOCATOR,
-    ])
-    const lastInstructionIndex = this.applicationInstructions.length - 1
-    this.applicationInstructions[lastInstructionIndex].status = ApplicationInstructionStatus.DENIED
-    this.applicationInstructions[lastInstructionIndex].timestamp = Math.floor(Date.now() / 1000)
-    this.applyChange(new GovernanceReviewRejected(this.guid, this.applicationInstructions))
-  }
-*/
-
   updateRKHApprovals(messageId: number, approvals: string[]) {
     this.ensureValidApplicationStatus([ApplicationStatus.RKH_APPROVAL_PHASE])
 
@@ -445,7 +416,8 @@ rejectGovernanceReview(details: GovernanceReviewRejectedData) {
       {
         method: '',
         datacap_amount: 5,
-        timestamp: event.timestamp.getTime(),
+        // FIXME do we want to set the timestamp here, or only start the clock when Gov Team review starts?
+        startTimestamp: event.timestamp.getTime(),
         status: ApplicationInstructionStatus.PENDING,
       },
     ]
@@ -491,10 +463,13 @@ rejectGovernanceReview(details: GovernanceReviewRejectedData) {
     this.allocatorMultisigAddress = event.file.pathway_addresses?.msig || this.allocatorMultisigAddress
     this.allocatorMultisigSigners = event.file.pathway_addresses?.signers || this.allocatorMultisigSigners
 
-    this.applicationInstructions = Object.entries(event.file.audit_outcomes).map(([_, value]) => ({
+    this.applicationInstructions = event.file.audits.map((ao) => ({
       method: event.file.metapathway_type === "MA" ? ApplicationAllocator.META_ALLOCATOR : ApplicationAllocator.RKH_ALLOCATOR,
-      datacap_amount: parseInt(value[1]),
-      timestamp: parseInt(value[0]),
+      startTimestamp: zuluToEpoch(ao.started),
+      endTimestamp: zuluToEpoch(ao.ended),
+      allocatedTimestamp: zuluToEpoch(ao.dc_allocated),
+      status: ao.outcome || "PENDING",
+      datacap_amount: ao.datacap_amount || 0
     }))
     console.log(`Application Edited Ended`, this)
   }
@@ -593,10 +568,10 @@ rejectGovernanceReview(details: GovernanceReviewRejectedData) {
       this.status["DC Allocated"] ??= event.timestamp.getTime()
     }
     this.applicationStatus = ApplicationStatus.DC_ALLOCATED
-    //const index = this.applicationInstructions.length - 1
-    //this.applicationInstructions[index].timestamp = event.timestamp.getTime()
-    //this.applicationInstructions[index].status = ApplicationInstructionStatus.GRANTED
-    //this.applicationInstructions[index].datacap_amount = event.applicationInstructions[index].datacap_amount
+    const index = this.applicationInstructions.length - 1
+    this.applicationInstructions[index].allocatedTimestamp = event.timestamp.getTime()
+    this.applicationInstructions[index].status = ApplicationInstructionStatus.GRANTED
+    this.applicationInstructions[index].datacap_amount = event.applicationInstructions[index].datacap_amount
   }
 
   applyMetaAllocatorApprovalStarted(event: MetaAllocatorApprovalStarted) {
@@ -613,7 +588,7 @@ rejectGovernanceReview(details: GovernanceReviewRejectedData) {
     this.applicationStatus = ApplicationStatus.DC_ALLOCATED
 
     const index = this.applicationInstructions.length - 1
-    this.applicationInstructions[index].timestamp = event.timestamp.getTime()
+    this.applicationInstructions[index].allocatedTimestamp = event.timestamp.getTime()
     this.applicationInstructions[index].status = ApplicationInstructionStatus.GRANTED
     this.applicationInstructions[index].datacap_amount = event.applicationInstructions[index].datacap_amount
 
@@ -633,7 +608,8 @@ rejectGovernanceReview(details: GovernanceReviewRejectedData) {
     this.applicationInstructions.push({
       method: event.method,
       datacap_amount: event.amount,
-      timestamp: event.timestamp.getTime(),
+      // FIXME do we want to set the timestamp here, or only start the clock when Gov Team review starts?
+      startTimestamp: event.timestamp.getTime(),
       status: ApplicationInstructionStatus.PENDING,
     })
     console.log('applyDatacapRefreshRequested', this.applicationInstructions)
